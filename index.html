@@ -1,12 +1,706 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Logger</title>
+<meta charset="utf-8" />
+<title>RCC Pro Logger</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
+
+<style>
+  :root{
+    --bg:#0b0f1a; --panel:#0d1426; --ink:#e7ecf5; --muted:#9fb1d1;
+    --line:#1a2540; --accent:#22c55e; --warn:#f59e0b; --err:#ef4444; --focus:#3b82f6;
+    --chip:#0a1229; --ink-strong:#ffffff; --ok:#16a34a;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--ink);
+    font-family: ui-sans-serif, system-ui, -apple-system, "SF Pro", Segoe UI, Roboto, Arial;
+    background: radial-gradient(1200px 600px at 10% -10%, #121a34 0%, #0b0f1a 40%, #070a14 100%);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  header{
+    padding:14px 16px;
+    position:sticky; top:0; z-index:10;
+    backdrop-filter:saturate(140%) blur(6px);
+    background:#080d1acc; border-bottom:1px solid var(--line);
+  }
+  .header-wrap{max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px}
+  .brand{display:flex; align-items:center; gap:10px}
+  .logo{
+    width:36px; height:36px; border-radius:10px; overflow:hidden; display:grid; place-items:center;
+    background:linear-gradient(135deg,#2dd4bf 0%,#22c55e 35%,#4ade80 70%,#60a5fa 100%);
+    box-shadow: 0 5px 28px #22c55e22;
+  }
+  .logo svg{width:22px; height:22px; color:#05140a}
+  h1{margin:0; font-size:16px; letter-spacing:.3px}
+  .pill{background:var(--chip); border:1px solid var(--line); padding:6px 10px; border-radius:999px; font-size:12px; color:#cbd5e1}
+  .btn{cursor:pointer; padding:12px 12px; border-radius:12px; border:1px solid #243255; background:#0f172a; color:var(--ink); font-weight:700; letter-spacing:.2px; touch-action:manipulation; transition:transform .05s ease, opacity .2s}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:linear-gradient(180deg,#22c55e,#16a34a); color:#03140b; border-color:#0b3b22}
+  .btn.secondary{background:#0c1224}
+  .btn.warning{background:linear-gradient(180deg,#f59e0b,#d97706); color:#1a1203; border-color:#6b3f03}
+  main{max-width:1100px; margin:18px auto 60px; padding:0 14px}
+  .grid{display:grid; gap:18px; grid-template-columns:1.3fr .7fr}
+  .card{
+    background:linear-gradient(180deg,#0c1328 0%, #0a1022 100%); border:1px solid var(--line);
+    border-radius:16px; padding:16px; box-shadow: 0 18px 60px #0007;
+  }
+  .section-title{margin:0 0 12px; font-size:16px; font-weight:800; color:var(--ink-strong)}
+  .row{display:grid; gap:12px; grid-template-columns:repeat(2,minmax(0,1fr)); margin-bottom:10px}
+  label{font-size:12px; color:var(--muted); display:block; margin-bottom:6px}
+  .input-wrap{position:relative}
+  input{
+    width:100%; padding:14px 12px; border-radius:12px; border:1px solid #223055; outline:none;
+    background:#0b132a; color:var(--ink); font-size:16px; transition:border .15s ease, box-shadow .15s ease;
+  }
+  input:focus{border-color:var(--focus); box-shadow:0 0 0 3px #3b82f633}
+  input::placeholder{color:#7383a6}
+  .unit{position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#a9b4cf; font-size:12px; background:#09122a; border:1px solid #1d2a4b; padding:2px 6px; border-radius:8px; pointer-events:none}
+  .inline{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+  .muted{color:var(--muted); font-size:12px}
+  .kbd{font-family:ui-monospace,Menlo,monospace; background:#0c1328; border:1px solid #1d2a4b; padding:2px 6px; border-radius:6px; font-size:12px; color:#cbd5e1}
+  .divider{height:1px; background:linear-gradient(90deg,transparent,#1b2746,transparent); margin:12px 0}
+  .help{margin-top:4px; color:#94a3b8; font-size:12px}
+  .banner{border:1px solid #1e2b50; background:#0b152f; color:#bcd3ff; padding:10px 12px; border-radius:12px; font-size:13px}
+  .banner.ok{border-color:#0a3e25; background:#082317; color:#b9f2ce}
+  .banner.err{border-color:#4a1b1b; background:#220b0b; color:#fbcaca}
+  table{width:100%; border-collapse:collapse; font-size:14px}
+  th, td{border-bottom:1px dashed #223055; padding:10px 8px; text-align:left}
+  th{color:#cbd5e1; font-weight:800; position:sticky; top:0; background:#0a0f20}
+  tbody tr:hover{background:#0b1123}
+  .hidden{display:none !important}
+  .miss{color:#f59e0b; font-style:italic}
+  .misscell{background:#2c1706}
+  .export-bar .btn{padding:10px 10px}
+  .badge{font-size:11px; padding:4px 8px; border:1px solid #253055; border-radius:8px; color:#9fb0d4; background:#09122a}
+  video{width:100%; border:1px solid #1f294a; border-radius:10px; background:#000}
+  canvas{max-width:100%; background:#050816; border:1px dashed #233057; border-radius:8px}
+  /* Modal sheet */
+  .modal{position:fixed; inset:0; background:#0009; display:flex; align-items:flex-end; justify-content:center; z-index:50}
+  .sheet{width:min(920px, 96vw); max-height:90vh; overflow:auto; background:#0a0f20; border:1px solid #1c2540; border-radius:16px 16px 0 0; padding:14px}
+  .scan-grid{display:grid; grid-template-columns:1.2fr .8fr; gap:12px}
+  @media (max-width: 960px){ .grid{grid-template-columns:1fr} .scan-grid{grid-template-columns:1fr} }
+  @media (max-width: 600px){ input{padding:16px 14px; font-size:17px} .unit{right:12px} }
+</style>
 </head>
 <body>
-    <h1>Welcome to RCC Pro Logger</h1>
-    <p>This is a simple static site deployed with Vercel.</p>
+<header>
+  <div class="header-wrap">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <!-- simple mark: compact R logotype -->
+        <svg viewBox="0 0 24 24" fill="none"><path d="M6 18V6h7.2a4.8 4.8 0 0 1 0 9.6H10l4 2.4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h1>RCC Pro Logger</h1>
+    </div>
+    <div class="inline">
+      <span class="pill">Local Save: <strong id="lsStatus">ready</strong></span>
+      <button class="btn secondary" id="btnReset" aria-label="Reset App">Reset</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- SETUP -->
+  <section id="setupCard" class="card">
+    <div class="section-title">1) Job Setup</div>
+    <div class="banner" id="httpsHint">For camera & GPS on iPhone, open over <span class="kbd">https://</span> or from Files.</div>
+    <div class="divider"></div>
+
+    <div class="row">
+      <div><label for="jobName">Job Name</label><input id="jobName" type="text" placeholder="e.g., I‑71 Ramp Improvements — Section B" required autocomplete="on"></div>
+      <div><label for="jobDate">Job Date</label><input id="jobDate" type="date" required></div>
+    </div>
+
+    <div class="row">
+      <div class="input-wrap"><label for="targetDensity">Target Density</label><input id="targetDensity" type="number" step="0.1" inputmode="decimal" placeholder="e.g., 135.0"><span class="unit">pcf</span></div>
+      <div class="input-wrap"><label for="targetMoist">Target Moisture</label><input id="targetMoist" type="number" step="0.1" inputmode="decimal" placeholder="e.g., 7.0"><span class="unit">%</span></div>
+    </div>
+
+    <div class="row">
+      <div style="grid-column:1 / -1">
+        <label for="jobLocation">Job Location (address, city, state)</label>
+        <div class="inline" style="gap:8px">
+          <div class="input-wrap" style="flex:1"><input id="jobLocation" type="text" placeholder="e.g., 123 Main St, Columbus, OH" autocomplete="street-address"></div>
+          <button class="btn secondary" id="btnUseGPS" style="white-space:nowrap">Use Current Location</button>
+        </div>
+        <div class="help" id="gpsStatus" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <div class="inline" style="gap:10px; margin-top:8px">
+      <button class="btn primary" id="btnStart">Start Logging</button>
+      <button class="btn secondary" id="btnLoad">Load Last Session</button>
+    </div>
+
+    <div class="inline pill" style="margin-top:10px; gap:12px; flex-wrap:wrap">
+      <div>Origin: <span class="kbd">Geotechnical Consultants Inc., Westerville, Ohio</span></div>
+      <div>Mileage Method: <span id="method" class="kbd">Routing (OSRM)</span></div>
+      <div>Status: <span id="netStatus" class="kbd">idle</span></div>
+    </div>
+  </section>
+
+  <div class="grid">
+    <!-- ENTRY -->
+    <section id="entryCard" class="card hidden">
+      <div class="section-title">2) RCC Results Entry</div>
+
+      <div class="row">
+        <div><label>Test # (auto)</label><input id="testNumber" type="text" disabled value="1"></div>
+        <div><label for="testLocation">Test Location</label><input id="testLocation" type="text" placeholder="e.g., Sta. 10+50, LT 12’"></div>
+      </div>
+
+      <div class="row">
+        <div class="input-wrap"><label for="wetDensity">Wet Density</label><input id="wetDensity" type="number" step="0.1" inputmode="decimal" placeholder="e.g., 149.0"><span class="unit">pcf</span></div>
+        <div class="input-wrap"><label for="moisture">Moisture</label><input id="moisture" type="number" step="0.1" inputmode="decimal" placeholder="e.g., 11.2"><span class="unit">%</span></div>
+      </div>
+
+      <div class="row">
+        <div class="input-wrap"><label for="densityPct">% of Target (auto)</label><input id="densityPct" type="text" disabled placeholder="—"><span class="unit">%</span></div>
+        <div class="inline" style="align-items:flex-end">
+          <button class="btn secondary" id="btnScan">Scan Gauge (OCR)</button>
+          <button class="btn secondary" id="btnImportNotes">Import Notes Screenshot</button>
+        </div>
+      </div>
+
+      <div class="help">OCR tuned to screens like: <span class="kbd">Moist: 11.2</span> / <span class="kbd">WD: 149.0 PCF</span>. Move closer, avoid glare.</div>
+
+      <div class="inline" style="gap:10px; margin-top:10px">
+        <button class="btn primary" id="btnSaveNext">Save & Next Test</button>
+        <button class="btn secondary" id="btnClearForm">Clear</button>
+        <button class="btn warning" id="btnFinish">Finish & View Summary</button>
+      </div>
+    </section>
+
+    <!-- SUMMARY -->
+    <section id="summaryCard" class="card hidden">
+      <div class="section-title">3) Summary</div>
+
+      <div id="statusBanner" class="banner hidden"></div>
+
+      <div class="inline" style="justify-content:space-between; gap:14px; margin:10px 0 6px">
+        <div class="inline" style="gap:10px; flex-wrap:wrap">
+          <span class="badge">Job: <strong id="summaryJobName">—</strong></span>
+          <span class="badge">Target: <strong id="summaryTarget">—</strong></span>
+          <span class="badge">Date: <strong id="summaryJobDate">—</strong></span>
+          <span class="badge">Location: <strong id="summaryJobLocation">—</strong></span>
+          <span class="badge">Mileage: <strong id="summaryMileage">— mi</strong></span>
+        </div>
+        <div class="inline export-bar" style="gap:8px">
+          <button class="btn secondary" id="btnPNG">PNG</button>
+          <button class="btn secondary" id="btnPDF">PDF</button>
+          <button class="btn secondary" id="btnDownloadCSV">CSV</button>
+          <button class="btn secondary" id="btnDownloadSVD">SVD</button>
+          <button class="btn secondary" id="btnCopyLink">Share Link</button>
+        </div>
+      </div>
+
+      <div id="exportArea" class="card" style="background:#091126; border-color:#16244a; padding:0">
+        <div style="padding:16px 16px 0; border-bottom:1px solid #16244a">
+          <h2 style="margin:0 0 6px; font-size:18px">RCC Test Log</h2>
+          <div class="muted" id="summarySubtitle"></div>
+        </div>
+        <div style="overflow:auto; max-height:420px">
+          <table id="testsTable">
+            <thead><tr>
+              <th style="width:70px">#</th><th>Test Location</th><th>Wet Density (pcf)</th>
+              <th>Moisture (%)</th><th>% of Target</th><th style="width:110px">Mileage (mi)</th>
+            </tr></thead>
+            <tbody id="testsTbody"></tbody>
+          </table>
+        </div>
+        <div style="padding:10px 16px; display:flex; justify-content:space-between; align-items:center">
+          <div class="muted">Generated by RCC Pro Logger</div>
+          <div class="muted" id="generatedAt"></div>
+        </div>
+      </div>
+
+      <div class="inline" style="margin-top:10px">
+        <button class="btn secondary" id="btnBackToEntry">Back to Entry</button>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- libs -->
+<script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js" crossorigin="anonymous"></script>
+
+<script>
+/* ========================= Utilities & State ========================= */
+const $  = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const todayISO = () => new Date().toISOString().slice(0,10);
+const miles = meters => +(meters / 1609.344).toFixed(2);
+const clamp1 = v => Math.round(v*10)/10;
+const fmt = v => v==null ? '' : String(v);
+const toNumber = v => { const n = Number(String(v).trim()); return Number.isFinite(n) ? n : null; };
+
+const LS_KEY = 'rcc_pro_logger_v1';
+const ORIGIN_TEXT = 'Geotechnical Consultants Inc., Westerville, Ohio';
+const NOMINATIM = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=';
+const NOMI_REV  = (lat,lon) => `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
+const OSRM = 'https://router.project-osrm.org/route/v1/driving/';
+const geocache = JSON.parse(localStorage.getItem('rcc_geo_cache') || '{}');
+
+const state = {
+  job: { name:'', date: todayISO(), location:'', targetDensity:null, targetMoist:null, mileageMi:null, origin: ORIGIN_TEXT, coords:null },
+  tests: [] // {n, loc, wet, moist, pct}
+};
+
+/* ========================= DOM & events ========================= */
+const setupCard = $('#setupCard'), entryCard = $('#entryCard'), summaryCard = $('#summaryCard');
+
+const jobName = $('#jobName'), jobDate = $('#jobDate'), jobLocation = $('#jobLocation'), targetDensity = $('#targetDensity'), targetMoist = $('#targetMoist');
+const gpsStatus = $('#gpsStatus');
+const testNumber = $('#testNumber'), testLocation = $('#testLocation'), wetDensity = $('#wetDensity'), moisture = $('#moisture'), densityPct = $('#densityPct');
+
+const summaryJobName = $('#summaryJobName'), summaryTarget = $('#summaryTarget'), summaryJobDate = $('#summaryJobDate'), summaryJobLocation = $('#summaryJobLocation'), summaryMileage = $('#summaryMileage'), summarySubtitle = $('#summarySubtitle'), testsTbody = $('#testsTbody'), generatedAt = $('#generatedAt');
+const statusBanner = $('#statusBanner');
+const lsStatus = $('#lsStatus'), netStatus = $('#netStatus'), methodEl = $('#method');
+
+$('#btnStart').addEventListener('click', startLogging);
+$('#btnLoad').addEventListener('click', loadLast);
+$('#btnReset').addEventListener('click', resetAll);
+
+$('#btnUseGPS').addEventListener('click', useCurrentLocation);
+
+$('#btnSaveNext').addEventListener('click', onSaveNext);
+$('#btnClearForm').addEventListener('click', () => clearEntry(false));
+$('#btnFinish').addEventListener('click', showSummary);
+$('#btnBackToEntry').addEventListener('click', () => { summaryCard.classList.add('hidden'); entryCard.classList.remove('hidden'); testLocation.focus(); });
+
+$('#btnPNG').addEventListener('click', exportPNG);
+$('#btnPDF').addEventListener('click', exportPDF);
+$('#btnDownloadCSV').addEventListener('click', exportCSV);
+$('#btnDownloadSVD').addEventListener('click', exportSVD);
+$('#btnCopyLink').addEventListener('click', copyShareLink);
+
+$('#btnScan').addEventListener('click', openScanner);
+$('#btnImportNotes').addEventListener('click', openImportNotes);
+
+[wetDensity, targetDensity].forEach(i => i.addEventListener('input', updatePctField));
+document.addEventListener('keydown', e => {
+  if (!entryCard.classList.contains('hidden') && e.key === 'Enter') { e.preventDefault(); onSaveNext(); }
+});
+
+jobDate.value = todayISO();
+if (location.protocol === 'https:') $('#httpsHint').classList.add('hidden');
+restoreFromURL();
+
+/* ========================= Core ========================= */
+function startLogging(){
+  const name = jobName.value.trim();
+  const date = jobDate.value || todayISO();
+  const loc  = jobLocation.value.trim();
+  const tD   = toNumber(targetDensity.value);
+  const tM   = toNumber(targetMoist.value);
+
+  if (!name) return fieldError(jobName, 'Please enter a Job Name.');
+  if (!loc)  return fieldError(jobLocation, 'Please enter a Job Location.');
+
+  clearFieldError(jobName); clearFieldError(jobLocation);
+
+  Object.assign(state.job, { name, date, location:loc, targetDensity:tD, targetMoist:tM });
+  disableSetup();
+
+  entryCard.classList.remove('hidden');
+  testNumber.value = String(state.tests.length + 1);
+  testLocation.focus();
+  save();
+
+  computeMileage()
+    .then(mi => { state.job.mileageMi = mi; summaryMileage.textContent = `${mi} mi`; save(); toast(`Mileage computed: ${mi} mi ✔️`, 'ok'); })
+    .catch(() => { methodEl.textContent = 'Fallback (straight-line)'; toast('Routing failed, using straight‑line distance.', 'warn'); });
+}
+
+function disableSetup(){
+  [jobName, jobDate, jobLocation, targetDensity, targetMoist].forEach(i => i.disabled = true);
+  $('#btnStart').disabled = true; $('#btnUseGPS').disabled = true;
+}
+function fieldError(input, msg){ input.focus(); toast(msg, 'warn'); input.scrollIntoView({behavior:'smooth', block:'center'}); }
+function clearFieldError(){}
+
+async function computeMileage(){
+  netStatus.textContent = 'geocoding…';
+  const [o, d] = await Promise.all([ geocodeCached(ORIGIN_TEXT), state.job.coords ? Promise.resolve(state.job.coords) : geocodeCached(state.job.location) ]);
+  if (!o || !d) throw new Error('Geocoding failed');
+  netStatus.textContent = 'routing…';
+  const url = `${OSRM}${o.lon},${o.lat};${d.lon},${d.lat}?overview=false&alternatives=false&steps=false`;
+  const res = await fetch(url, { headers:{'User-Agent':'RCC-Pro-Logger'} });
+  if (res.ok){
+    const j = await res.json(); const m = j?.routes?.[0]?.distance;
+    if (typeof m === 'number'){ methodEl.textContent='Routing (OSRM)'; netStatus.textContent='ready'; return miles(m); }
+  }
+  methodEl.textContent='Fallback (straight-line)'; netStatus.textContent='ready';
+  const mi = haversine(o.lat,o.lon,d.lat,d.lon); return +mi.toFixed(2);
+}
+async function geocodeCached(q){ if (geocache[q]) return geocache[q]; const hit = await geocode(q); if (hit){ geocache[q]=hit; localStorage.setItem('rcc_geo_cache', JSON.stringify(geocache)); } return hit; }
+async function geocode(q){ const res = await fetch(NOMINATIM + encodeURIComponent(q), { headers:{'Accept-Language':'en'} }); if (!res.ok) return null; const a = await res.json(); if (!a?.length) return null; const {lat,lon,display_name} = a[0]; return {lat:+lat, lon:+lon, label:display_name}; }
+async function reverseGeocode(lat,lon){ const res = await fetch(NOMI_REV(lat,lon), { headers:{'Accept-Language':'en'} }); if (!res.ok) return null; const d = await res.json(); return {lat:+lat, lon:+lon, label: d?.display_name || `${lat.toFixed(6)}, ${lon.toFixed(6)}` }; }
+function haversine(lat1, lon1, lat2, lon2){ const toRad=d=>d*Math.PI/180, R=3958.761; const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1); const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2; return 2*R*Math.asin(Math.sqrt(a)); }
+
+/* ========================= Entry & %Target ========================= */
+function updatePctField(){ const wet=toNumber(wetDensity.value), t=toNumber(targetDensity.value); const pct=(wet!=null && t && t>0)? clamp1(wet/t*100): null; densityPct.value = pct==null ? '' : pct; }
+
+function onSaveNext(){
+  const loc = testLocation.value.trim();
+  const wet = toNumber(wetDensity.value);
+  const moi = toNumber(moisture.value);
+
+  if (!loc) return toast('Enter a Test Location.', 'warn');
+  if (wet === null) return toast('Enter Wet Density (pcf) as a number.', 'warn');
+  if (moi === null) return toast('Enter Moisture (%) as a number.', 'warn');
+
+  if (wet < 100 || wet > 170) toast('Wet Density seems off for RCC (~120–145 pcf).', 'warn');
+  if (moi < 1 || moi > 20) toast('Moisture seems off (~4–10%).', 'warn');
+
+  const t = state.job.targetDensity; const pct = (t && t>0) ? clamp1(wet/t*100) : null;
+  const n = state.tests.length + 1; state.tests.push({ n, loc, wet, moist:moi, pct });
+
+  save(); clearEntry(true); testNumber.value = String(state.tests.length + 1); testLocation.focus();
+}
+function clearEntry(keep){ if(!keep) testNumber.value = String(state.tests.length + 1); testLocation.value=''; wetDensity.value=''; moisture.value=''; densityPct.value=''; }
+
+/* ========================= Summary ========================= */
+function showSummary(){
+  summaryCard.classList.remove('hidden'); entryCard.classList.add('hidden');
+  banner('ok', `Ready — ${state.tests.length} test${state.tests.length===1?'':'s'} logged.`);
+  summaryJobName.textContent = state.job.name || '—';
+  summaryTarget.textContent  = (state.job.targetDensity ? `${state.job.targetDensity} pcf` : '—') + (state.job.targetMoist!=null ? ` @ ${state.job.targetMoist}%` : '');
+  summaryJobDate.textContent = state.job.date || '—';
+  summaryJobLocation.textContent = state.job.location || '—';
+  summaryMileage.textContent = (state.job.mileageMi ?? '—') + (state.job.mileageMi ? ' mi':'');
+  const subtitle = []; if (state.tests.length) subtitle.push(`${state.tests.length} tests`); if (state.job.origin) subtitle.push(`Origin: ${state.job.origin}`);
+  summarySubtitle.textContent = subtitle.join(' • ');
+  generatedAt.textContent = 'Generated ' + new Date().toLocaleString();
+
+  testsTbody.innerHTML = '';
+  const mi = state.job.mileageMi ?? '—';
+  for (const t of state.tests){
+    const tdLoc = t.loc ? escapeHTML(t.loc) : `<span class="miss">missing</span>`;
+    const tdWet = (t.wet!=null) ? t.wet : `<span class="miss">missing</span>`;
+    const tdMoi = (t.moist!=null) ? t.moist : `<span class="miss">missing</span>`;
+    const tdPct = (t.pct!=null) ? (Number.isFinite(t.pct) ? t.pct.toFixed(1) : t.pct) + '%' : `<span class="miss">—</span>`;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${t.n}</td><td class="${t.loc?'':'misscell'}">${tdLoc}</td><td class="${t.wet!=null?'':'misscell'}">${tdWet}</td><td class="${t.moist!=null?'':'misscell'}">${tdMoi}</td><td class="${t.pct!=null?'':'misscell'}">${tdPct}</td><td>${mi}</td>`;
+    testsTbody.appendChild(tr);
+  }
+}
+function banner(kind, msg){
+  statusBanner.classList.remove('hidden','ok','err');
+  statusBanner.classList.add(kind==='ok'?'ok':'err', 'banner');
+  statusBanner.textContent = msg;
+}
+function escapeHTML(s){ return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#039;"); }
+
+/* ========================= Save/Share ========================= */
+function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); lsStatus.textContent='saved'; } catch{ lsStatus.textContent='error'; } }
+function loadLast(){
+  try{
+    const raw = localStorage.getItem(LS_KEY); if (!raw) return toast('No saved session found.', 'warn');
+    const data = JSON.parse(raw); if (!data?.job) return;
+    Object.assign(state, data);
+    jobName.value = state.job.name; jobDate.value = state.job.date; jobLocation.value = state.job.location;
+    targetDensity.value = state.job.targetDensity ?? ''; targetMoist.value = state.job.targetMoist ?? '';
+    disableSetup(); entryCard.classList.remove('hidden'); testNumber.value = String(state.tests.length + 1); testLocation.focus();
+    toast('Session loaded ✔️','ok');
+  }catch{ toast('Failed to load session.', 'err'); }
+}
+function resetAll(){ if (!confirm('Clear all data and restart?')) return; localStorage.removeItem(LS_KEY); location.href = location.pathname; }
+async function copyShareLink(){
+  const payload = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
+  const url = `${location.origin}${location.pathname}#${payload}`;
+  try{ await navigator.clipboard.writeText(url); toast('Share link copied ✔️','ok'); } catch{ toast('Could not copy link','err'); }
+}
+function restoreFromURL(){
+  const hash = location.hash.slice(1); if (!hash) return;
+  try{
+    const data = JSON.parse(decodeURIComponent(escape(atob(hash))));
+    if (data?.job && data?.tests){
+      Object.assign(state, data);
+      jobName.value = state.job.name; jobDate.value = state.job.date; jobLocation.value = state.job.location;
+      targetDensity.value = state.job.targetDensity ?? ''; targetMoist.value = state.job.targetMoist ?? '';
+      disableSetup(); entryCard.classList.remove('hidden'); testNumber.value = String(state.tests.length + 1);
+      showSummary(); toast('Loaded from shared link ✔️','ok');
+    }
+  }catch{}
+}
+
+/* ========================= Exports ========================= */
+async function ensureSummaryRendered(){ if (summaryCard.classList.contains('hidden')) showSummary(); await new Promise(r=>setTimeout(r,50)); }
+async function exportPNG(){ await ensureSummaryRendered(); const c = await html2canvas($('#exportArea'), { backgroundColor:'#091126', scale:2 }); download(c.toDataURL('image/png'), `${slug(state.job.name)}-${state.job.date}-RCC.png`); }
+async function exportPDF(){ await ensureSummaryRendered(); const c = await html2canvas($('#exportArea'), { backgroundColor:'#091126', scale:2 }); const img = c.toDataURL('image/png'); const { jsPDF } = window.jspdf; const pdf = new jsPDF({ unit:'pt', format:'a4' }); const pageW = pdf.internal.pageSize.getWidth(); const imgW = pageW - 48; const ratio = imgW / c.width; const imgH = c.height * ratio; pdf.addImage(img, 'PNG', 24, 24, imgW, imgH); pdf.save(`${slug(state.job.name)}-${state.job.date}-RCC.pdf`); }
+function exportCSV(){
+  if (!state.tests.length) return toast('No tests to export.', 'warn');
+  const mi = state.job.mileageMi ?? '';
+  const rows = [
+    ['Job Name', state.job.name], ['Job Date', state.job.date], ['Job Location', state.job.location],
+    ['Target Density (pcf)', state.job.targetDensity ?? ''], ['Target Moisture (%)', state.job.targetMoist ?? ''], ['Mileage (mi)', mi], [],
+    ['#','Test Location','Wet Density (pcf)','Moisture (%)','% of Target','Mileage (mi)']
+  ];
+  for (const t of state.tests){ rows.push([t.n, t.loc ?? '', t.wet ?? '', t.moist ?? '', t.pct!=null ? t.pct : '', mi]); }
+  const csv = rows.map(r => r.map(v => `"${String(v).replaceAll('"','""')}"`).join(',')).join('\r\n');
+  download('data:text/csv;charset=utf-8,' + encodeURIComponent(csv), `${slug(state.job.name)}-${state.job.date}-RCC.csv`);
+}
+function exportSVD(){
+  if (!state.tests.length) return toast('No tests to export.', 'warn');
+  const mi = state.job.mileageMi ?? '';
+  const header = [
+    '# SVD 1.1',
+    `JobName|${state.job.name}`, `JobDate|${state.job.date}`, `JobLocation|${state.job.location}`,
+    `TargetDensity_pcf|${state.job.targetDensity ?? ''}`, `TargetMoist_pct|${state.job.targetMoist ?? ''}`,
+    `Mileage_mi|${mi}`,
+    '# Columns: Test#,TestLocation,WetDensity_pcf,Moisture_pct,PercentOfTarget,Mileage_mi'
+  ].join('\n');
+  const lines = state.tests.map(t => [t.n, t.loc ?? '', t.wet ?? '', t.moist ?? '', t.pct!=null ? t.pct : '', mi].map(x=>String(x).replaceAll('|','/')).join('|'));
+  download('data:text/plain;charset=utf-8,' + encodeURIComponent(header+'\n'+lines.join('\n')+'\n'), `${slug(state.job.name)}-${state.job.date}-RCC.svd`);
+}
+function slug(s=''){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+function download(href, filename){ const a=document.createElement('a'); a.href=href; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); }
+
+/* ========================= GPS ========================= */
+async function useCurrentLocation(){
+  if (!('geolocation' in navigator)){ gpsStatus.textContent='Geolocation not supported.'; return toast('Geolocation unavailable','err'); }
+  gpsStatus.textContent='Requesting location…'; $('#btnUseGPS').disabled = true;
+  try{
+    const pos = await new Promise((resolve,reject)=> navigator.geolocation.getCurrentPosition(resolve,reject,{ enableHighAccuracy:true, timeout:15000, maximumAge:0 }));
+    const { latitude:lat, longitude:lon } = pos.coords;
+    gpsStatus.textContent = `GPS: ${lat.toFixed(5)}, ${lon.toFixed(5)} — reverse geocoding…`;
+    const rev = await reverseGeocode(lat,lon);
+    if (rev){ jobLocation.value = rev.label; state.job.coords = {lat:rev.lat, lon:rev.lon, label:rev.label}; gpsStatus.textContent='Location set from GPS ✔️'; toast('Job location filled from current GPS','ok'); save(); }
+    else { gpsStatus.textContent='Could not find address for GPS.'; toast('Reverse geocoding failed','warn'); }
+  }catch{ gpsStatus.textContent='Location permission denied or timed out.'; toast('Location permission needed for GPS','warn'); }
+  finally{ $('#btnUseGPS').disabled = false; }
+}
+
+/* ========================= OCR: Gauge Scanner ========================= */
+let scanModal=null, scanStream=null;
+function openScanner(){
+  if (!scanModal) buildScannerModal();
+  $('#scanStatus').textContent = 'Initializing camera…';
+  scanModal.classList.remove('hidden');
+  startCamera();
+}
+function buildScannerModal(){
+  scanModal = document.createElement('div');
+  scanModal.className='modal hidden';
+  scanModal.innerHTML = `
+    <div class="sheet">
+      <header class="inline" style="justify-content:space-between">
+        <h2>Scan Gauge (OCR)</h2>
+        <div class="inline">
+          <input type="file" id="fileInput" accept="image/*" class="btn secondary" style="padding:8px 10px; width:auto">
+          <button class="btn secondary" id="btnCloseScan" style="width:auto">Close</button>
+        </div>
+      </header>
+      <div class="scan-grid">
+        <div><video id="video" playsinline autoplay muted></video></div>
+        <div>
+          <canvas id="frameCanvas" height="360"></canvas>
+          <div id="scanStatus" class="help">—</div>
+          <div class="inline" style="gap:8px">
+            <button class="btn primary" id="btnCapture">Capture & Read</button>
+            <button class="btn secondary" id="btnFill" disabled>Fill Fields</button>
+          </div>
+          <div class="help">Aim at lines like <span class="kbd">Moist: 11.2</span> and <span class="kbd">WD: 149.0 PCF</span>. Avoid glare; move closer.</div>
+          <pre id="ocrOut" class="muted" style="margin-top:8px; white-space:pre-wrap"></pre>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(scanModal);
+  $('#btnCloseScan').addEventListener('click', closeScanner);
+  $('#btnCapture').addEventListener('click', onCaptureAndRead);
+  $('#btnFill').addEventListener('click', fillFromOCR);
+  $('#fileInput').addEventListener('change', onPickImage);
+}
+function closeScanner(){ scanModal.classList.add('hidden'); stopCamera(); }
+async function startCamera(){
+  try{
+    scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal:'environment' } }, audio:false });
+    $('#video').srcObject = scanStream; await $('#video').play();
+    $('#scanStatus').textContent = 'Camera ready. Capture when text is sharp.';
+  }catch(e){ console.error(e); $('#scanStatus').textContent = 'Camera blocked/unavailable. Upload a photo instead.'; }
+}
+function stopCamera(){ if (scanStream){ for (const t of scanStream.getTracks()) t.stop(); scanStream=null; } const v=$('#video'); if (v) v.srcObject=null; }
+
+async function onCaptureAndRead(){
+  const v = $('#video');
+  if (!v.videoWidth) return $('#scanStatus').textContent = 'Camera not ready.';
+  const W = 1000, H = Math.round(v.videoHeight * (W / v.videoWidth));
+  const c = $('#frameCanvas'); c.width=W; c.height=H;
+  const ctx = c.getContext('2d'); ctx.drawImage(v, 0, 0, W, H);
+  preprocess(ctx, W, H);
+  $('#scanStatus').textContent = 'Reading…';
+  const { text, wd, moist } = await ocrGauge(c);
+  showOcrResult(text, wd, moist);
+}
+async function onPickImage(ev){
+  const file = ev.target.files?.[0]; if (!file) return;
+  const img = new Image();
+  img.onload = async ()=>{
+    const maxW = 1600, scale = Math.min(1, maxW / img.width);
+    const c = $('#frameCanvas'); c.width = Math.round(img.width*scale); c.height = Math.round(img.height*scale);
+    const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, c.width, c.height);
+    preprocess(ctx, c.width, c.height);
+    $('#scanStatus').textContent = 'Reading image…';
+    const { text, wd, moist } = await ocrGauge(c);
+    showOcrResult(text, wd, moist);
+  };
+  img.onerror = ()=> $('#scanStatus').textContent = 'Could not load image.';
+  img.src = URL.createObjectURL(file);
+}
+function showOcrResult(text, wd, moist){
+  $('#ocrOut').textContent = text.trim() || '(no text recognized)';
+  if (wd!=null || moist!=null){
+    $('#scanStatus').textContent = `Found: WD=${wd ?? '—'} pcf, %Moist=${moist ?? '—'} %`;
+    scanModal.dataset.lastWd = wd ?? '';
+    scanModal.dataset.lastMoist = moist ?? '';
+    $('#btnFill').disabled = false;
+    banner('ok', 'Gauge scan successful.');
+  } else {
+    $('#scanStatus').textContent = 'Couldn’t find WD/%Moist. Try closer, sharper image, or upload a photo.';
+    $('#btnFill').disabled = true;
+    banner('err', 'Gauge scan did not detect values.');
+  }
+}
+function preprocess(ctx,w,h){
+  const img = ctx.getImageData(0,0,w,h), d=img.data;
+  const contrast=1.25, bright=10;
+  for(let i=0;i<d.length;i+=4){ const r=d[i],g=d[i+1],b=d[i+2]; let y=(r*0.299+g*0.587+b*0.114); y=(y-128)*contrast+128+bright; y=y<0?0:y>255?255:y; d[i]=d[i+1]=d[i+2]=y; }
+  ctx.putImageData(img,0,0);
+}
+async function ocrGauge(canvas){
+  const out = { text:'', wd:null, moist:null };
+  try{
+    const res = await Tesseract.recognize(canvas, 'eng', { logger: m=>{} });
+    const text = (res?.data?.text || '').replace(/\r/g,'');
+    out.text = text;
+    // Patterns for your screens:
+    // "WD: 149.0 PCF"  -> WD numeric
+    // "Moist: 11.2" or "%Moist: 8.1" or "W%: 8.1"
+    const wd = matchNumber(text, /W\s*D\s*[:=]?\s*([0-9]{3}(?:\.[0-9])?)/i);
+    const moist = matchNumber(text, /(Moist|%Moist|W\s*%)[^0-9]*([0-9]{1,2}(?:\.[0-9])?)/i, 2);
+    out.wd = wd!=null && wd>=100 && wd<=200 ? wd : null;
+    out.moist = moist!=null && moist>=0 && moist<=40 ? moist : null;
+  }catch(e){ console.error(e); }
+  return out;
+}
+function matchNumber(s, regex, group=1){ const m = s.match(regex); return m ? parseFloat(m[group]) : null; }
+function fillFromOCR(){
+  const wd = scanModal.dataset.lastWd, m = scanModal.dataset.lastMoist;
+  if (wd) wetDensity.value = wd;
+  if (m)  moisture.value = m;
+  updatePctField();
+  toast(`Filled ${wd? 'WD':''}${wd&&m?', ':''}${m? '%Moist':''} from OCR ✔️`, 'ok');
+  closeScanner();
+}
+
+/* ========================= OCR: Notes Import ========================= */
+let importModal=null, parsedNotes=[];
+function openImportNotes(){ if(!importModal) buildImportModal(); importModal.classList.remove('hidden'); }
+function buildImportModal(){
+  importModal = document.createElement('div'); importModal.className='modal hidden';
+  importModal.innerHTML = `
+    <div class="sheet">
+      <header class="inline" style="justify-content:space-between">
+        <h2>Import Notes Screenshot</h2>
+        <div class="inline">
+          <input type="file" id="notesFile" accept="image/*" class="btn secondary" style="padding:8px 10px; width:auto">
+          <button class="btn secondary" id="btnCloseImport" style="width:auto">Close</button>
+        </div>
+      </header>
+      <div class="row" style="grid-template-columns:1fr">
+        <div class="help">Rules: we look for <strong>numbered test lines</strong>. On each line, the <strong>lower number (≤2 digits, ≤1 decimal)</strong> is <em>Moisture</em> and the <strong>higher number (≥3 digits, ≤1 decimal)</strong> is <em>Wet Density</em>. Remaining text is the location. Headings or lines without both numbers are ignored.</div>
+        <canvas id="notesCanvas" height="360" class="hidden"></canvas>
+        <pre id="notesOut" class="muted" style="white-space:pre-wrap"></pre>
+        <div class="inline" style="gap:8px"><button class="btn primary" id="btnApplyNotes" disabled>Add Parsed Tests</button></div>
+      </div>
+    </div>`;
+  document.body.appendChild(importModal);
+  $('#btnCloseImport').addEventListener('click', ()=>importModal.classList.add('hidden'));
+  $('#notesFile').addEventListener('change', onNotesPick);
+  $('#btnApplyNotes').addEventListener('click', applyParsedNotes);
+}
+async function onNotesPick(ev){
+  const file = ev.target.files?.[0]; if (!file) return;
+  const img = new Image();
+  img.onload = async ()=>{
+    const maxW = 1800, scale = Math.min(1, maxW / img.width);
+    const c = $('#notesCanvas'); c.width = Math.round(img.width*scale); c.height = Math.round(img.height*scale);
+    const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, c.width, c.height);
+    preprocess(ctx, c.width, c.height);
+    let text=''; try{ const res = await Tesseract.recognize(c, 'eng', { logger: m=>{} }); text = (res?.data?.text || '').replace(/\r/g,''); } catch{}
+    const lines = text.split('\n').map(s=>s.trim()).filter(Boolean);
+    parsedNotes = parseNumberedTests(lines);
+    const preview = parsedNotes.length ? parsedNotes.map(o => `#${o.n} | ${o.loc || '(no location)'} | WD:${o.wet ?? '—'} | %Moist:${o.moist ?? '—'} | %Target:${o.pct ?? '—'}`).join('\n') : '(No valid test lines found)';
+    $('#notesOut').textContent = preview;
+    $('#btnApplyNotes').disabled = !parsedNotes.length;
+    if (parsedNotes.length) toast(`Detected ${parsedNotes.length} test line(s) ✔️`, 'ok'); else toast('No numbered test lines detected', 'warn');
+  };
+  img.onerror = ()=> { $('#notesOut').textContent = 'Could not load image.'; };
+  img.src = URL.createObjectURL(file);
+}
+function parseNumberedTests(lines){
+  // Detect lines that begin with a number marker like "1", "1.", "1)", "#1", "- 1."
+  const testLine = s => /^\s*(?:#|-)?\s*(\d{1,3})[.)]?\s+/i.test(s);
+  let items = [];
+  for (const line of lines){
+    if (!testLine(line)) continue;
+    // Extract numbers with at most one decimal: captures both 11.2 and 149.0
+    const nums = [...line.matchAll(/([0-9]+(?:\.[0-9])?)/g)].map(m => parseFloat(m[1]));
+    if (nums.length < 2) continue;
+    const smalls = nums.filter(n => n < 100);           // potential moisture
+    const bigs   = nums.filter(n => n >= 100 && n < 1000); // potential wet density
+    if (!smalls.length || !bigs.length) continue;
+
+    // Choose moisture as smallest value with ≤1 decimal; density as largest with ≥3 digits (>=100)
+    const moist = Math.min(...smalls);
+    const wet   = Math.max(...bigs);
+
+    // Location = line minus the numbers and list markers
+    let loc = line
+      .replace(/^\s*(?:#|-)?\s*\d{1,3}[.)]?\s*/,'')
+      .replace(/[0-9]+(?:\.[0-9])?/g,'')
+      .replace(/\s{2,}/g,' ')
+      .trim();
+
+    if (!loc) loc = null;
+
+    const t = state.job.targetDensity;
+    const pct = (t && t>0 && wet!=null) ? clamp1(wet / t * 100) : null;
+    items.push({ n: items.length+1, loc, wet, moist, pct });
+  }
+  return items;
+}
+function applyParsedNotes(){
+  if (!parsedNotes.length) { toast('Nothing to add', 'warn'); return; }
+  for (const r of parsedNotes){ state.tests.push({ n: state.tests.length+1, loc:r.loc, wet:r.wet, moist:r.moist, pct:r.pct }); }
+  save(); toast(`Added ${parsedNotes.length} test(s) ✔️`, 'ok'); importModal.classList.add('hidden'); testNumber.value = String(state.tests.length + 1);
+}
+
+/* ========================= Toast ========================= */
+let toastTimer=null;
+function toast(msg, type='ok'){
+  clearTimeout(toastTimer);
+  let bar = document.getElementById('toast');
+  if (!bar){
+    bar = document.createElement('div'); bar.id='toast'; document.body.appendChild(bar);
+    Object.assign(bar.style, { position:'fixed', left:'50%', bottom:'22px', transform:'translateX(-50%)',
+      padding:'12px 14px', borderRadius:'12px', border:'1px solid #203050', background:'#0b1227',
+      color:'#e5e7eb', fontSize:'14px', zIndex:9999, boxShadow:'0 10px 30px #0007' });
+  }
+  const color = type==='ok'? '#22c55e' : type==='warn'? '#f59e0b' : '#ef4444';
+  bar.style.borderColor = color + '88';
+  bar.innerHTML = `<span style="color:${color}; font-weight:800; margin-right:8px">•</span>${msg}`;
+  bar.style.opacity='1';
+  toastTimer = setTimeout(()=> bar.style.opacity='0', 2500);
+}
+</script>
 </body>
 </html>
