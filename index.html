@@ -11,7 +11,7 @@
   :root{
     --bg:#0b0f1a; --panel:#0d1426; --ink:#e7ecf5; --muted:#9fb1d1;
     --line:#1a2540; --accent:#22c55e; --warn:#f59e0b; --err:#ef4444; --focus:#3b82f6;
-    --chip:#0a1229; --ink-strong:#ffffff; --ok:#16a34a;
+    --chip:#0a1229; --ink-strong:#ffffff; --ok:#16a34a; --labelBg:#0b132a; --shade:#0c172e;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -21,11 +21,7 @@
     background: radial-gradient(1200px 600px at 10% -10%, #121a34 0%, #0b0f1a 40%, #070a14 100%);
     padding-bottom: env(safe-area-inset-bottom);
   }
-  header{
-    padding:14px 16px; position:sticky; top:0; z-index:10;
-    backdrop-filter:saturate(140%) blur(6px);
-    background:#080d1acc; border-bottom:1px solid var(--line);
-  }
+  header{padding:14px 16px; position:sticky; top:0; z-index:10; backdrop-filter:saturate(140%) blur(6px); background:#080d1acc; border-bottom:1px solid var(--line)}
   .header-wrap{max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px}
   .brand{display:flex; align-items:center; gap:10px}
   .logo{width:36px; height:36px; border-radius:10px; overflow:hidden; display:grid; place-items:center; background:linear-gradient(135deg,#2dd4bf 0%,#22c55e 35%,#4ade80 70%,#60a5fa 100%); box-shadow:0 5px 28px #22c55e22}
@@ -33,10 +29,8 @@
   h1{margin:0; font-size:16px; letter-spacing:.3px}
   .pill{background:var(--chip); border:1px solid var(--line); padding:6px 10px; border-radius:999px; font-size:12px; color:#cbd5e1}
   .btn{cursor:pointer; padding:12px 12px; border-radius:12px; border:1px solid #243255; background:#0f172a; color:var(--ink); font-weight:700; letter-spacing:.2px; transition:transform .05s ease}
-  .btn:active{transform:translateY(1px)}
-  .btn.primary{background:linear-gradient(180deg,#22c55e,#16a34a); color:#03140b; border-color:#0b3b22}
-  .btn.secondary{background:#0c1224}
-  .btn.warning{background:linear-gradient(180deg,#f59e0b,#d97706); color:#1a1203; border-color:#6b3f03}
+  .btn:active{transform:translateY(1px)} .btn.primary{background:linear-gradient(180deg,#22c55e,#16a34a); color:#03140b; border-color:#0b3b22}
+  .btn.secondary{background:#0c1224} .btn.warning{background:linear-gradient(180deg,#f59e0b,#d97706); color:#1a1203; border-color:#6b3f03}
   main{max-width:1100px; margin:18px auto 90px; padding:0 14px}
   .grid{display:grid; gap:18px; grid-template-columns:1.3fr .7fr}
   .card{background:linear-gradient(180deg,#0c1328 0%, #0a1022 100%); border:1px solid var(--line); border-radius:16px; padding:16px; box-shadow:0 18px 60px #0007}
@@ -63,9 +57,8 @@
   th, td{border-bottom:1px dashed #223055; padding:10px 8px; text-align:left}
   th{color:#cbd5e1; font-weight:800; position:sticky; top:0; background:#0a0f20}
   tbody tr:hover{background:#0b1123}
-  .hidden{display:none !important}
-  .miss{color:#f59e0b; font-style:italic}
-  .misscell{background:#2c1706}
+  td[contenteditable="true"]{outline:2px dashed #1f2e56; outline-offset:2px; border-radius:6px}
+  .hidden{display:none !important} .miss{color:#f59e0b; font-style:italic} .misscell{background:#2c1706}
   .badge{font-size:11px; padding:4px 8px; border:1px solid #253055; border-radius:8px; color:#9fb0d4; background:#09122a}
   video{width:100%; border:1px solid #1f294a; border-radius:10px; background:#000}
   canvas{max-width:100%; background:#050816; border:1px dashed #233057; border-radius:8px}
@@ -79,14 +72,12 @@
   .bar-btn{flex:1; min-height:52px; font-weight:800; border-radius:12px; border:1px solid #243255; background:#0f172a; color:#e7ecf5}
   .bar-btn.primary{background:linear-gradient(180deg,#22c55e,#16a34a); color:#07130b; border-color:#0b3b22}
   @media (min-width:860px){ #actionBar{position:sticky; bottom:auto; padding:0; background:transparent; border:0} main{margin-bottom:60px} }
-  #sessionProgress{margin:10px 0}
-  #progTrack{height:8px; border-radius:999px; background:#111a34; margin-top:8px; overflow:hidden}
+  #sessionProgress{margin:10px 0} #progTrack{height:8px; border-radius:999px; background:#111a34; margin-top:8px; overflow:hidden}
   #progFill{height:100%; width:0%; background:linear-gradient(90deg,#22c55e,#60a5fa); transition:width .35s ease}
-  #resumeBadge{cursor:pointer}
-  .diff-ins{color:#b9f2ce}
-  .diff-move{color:#fcd98d}
+  #resumeBadge{cursor:pointer} .diff-ins{color:#b9f2ce} .diff-move{color:#fcd98d}
   @media (max-width: 980px){ .grid{grid-template-columns:1fr} .scan-grid{grid-template-columns:1fr} }
   @media (max-width: 600px){ input{padding:16px 14px; font-size:17px} .unit{right:12px} }
+  .iconbtn{padding:10px 12px}
 </style>
 </head>
 <body>
@@ -159,8 +150,17 @@
     <section id="entryCard" class="card hidden">
       <div class="section-title">2) RCC Results Entry</div>
 
+      <!-- Test navigator -->
+      <div class="inline" style="gap:8px; margin-bottom:8px">
+        <button class="btn iconbtn" id="btnPrev" title="Previous test">◀</button>
+        <select id="testPicker" style="min-width:160px"></select>
+        <button class="btn iconbtn" id="btnNext" title="Next test">▶</button>
+        <button class="btn secondary" id="btnNew" title="New test">New Test</button>
+        <span class="muted" id="editModeHint">Adding new test</span>
+      </div>
+
       <div class="row">
-        <div><label>Test # (auto)</label><input id="testNumber" type="text" disabled value="1"></div>
+        <div><label>Test #</label><input id="testNumber" type="number" min="1" step="1" value="1"></div>
         <div><label for="testLocation">Test Location</label><input id="testLocation" type="text" placeholder="e.g., Sta. 10+50, LT 12’"></div>
       </div>
 
@@ -169,7 +169,6 @@
         <div class="input-wrap"><label for="moisture">Moisture</label><input id="moisture" type="number" step="0.1" inputmode="decimal" placeholder="e.g., 8.9"><span class="unit">%</span></div>
       </div>
 
-      <!-- Grid Coord -->
       <div class="row">
         <div class="input-wrap">
           <label for="gridCoord">Grid Coord (optional)</label>
@@ -188,7 +187,8 @@
       <div class="help">WD & Moisture accept whole numbers or one decimal. Grid Coord validated against your configured grid.</div>
 
       <div class="inline" style="gap:10px; margin-top:10px">
-        <button class="btn primary" id="btnSaveNext">Save & Next Test</button>
+        <button class="btn primary" id="btnSaveNext">Save & Next</button>
+        <button class="btn secondary" id="btnUpdate" disabled>Update Test</button>
         <button class="btn secondary" id="btnClearForm">Clear</button>
         <button class="btn warning" id="btnFinish">Finish & View Summary</button>
       </div>
@@ -196,7 +196,7 @@
 
     <!-- SUMMARY -->
     <section id="summaryCard" class="card hidden">
-      <div class="section-title">3) Summary</div>
+      <div class="section-title">3) Summary (click cells to edit)</div>
 
       <div id="statusBanner" class="banner hidden"></div>
 
@@ -221,7 +221,6 @@
         </div>
       </div>
 
-      <!-- EXPORT AREA includes the photo -->
       <div id="exportArea" class="card" style="background:#091126; border-color:#16244a; padding:0">
         <div style="padding:16px 16px 0; border-bottom:1px solid #16244a">
           <h2 style="margin:0 0 6px; font-size:18px">RCC Test Log</h2>
@@ -240,8 +239,13 @@
         <div style="overflow:auto; max-height:420px">
           <table id="testsTable">
             <thead><tr>
-              <th style="width:60px">#</th><th>Test Location</th><th>Wet Density (pcf)</th>
-              <th>Moisture (%)</th><th>% of Target</th><th style="width:90px">Grid</th><th style="width:110px">Mileage (mi)</th>
+              <th style="width:60px">#</th>
+              <th>Test Location</th>
+              <th>Wet Density (pcf)</th>
+              <th>Moisture (%)</th>
+              <th>% of Target</th>
+              <th style="width:90px">Grid</th>
+              <th style="width:110px">Mileage (mi)</th>
             </tr></thead>
             <tbody id="testsTbody"></tbody>
           </table>
@@ -276,7 +280,6 @@
 <script>
 /* ================= Permanent crash-guard + migrator (runs first) ================= */
 (function(){
-  // Visible toast if something throws early
   window.addEventListener('error', e => {
     try {
       const bar = document.createElement('div');
@@ -287,31 +290,20 @@
     } catch(_) {}
   });
 
-  // Self-heal saved sessions across versions
   const KEY = 'rcc_pro_logger_v6';
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return;
     const saved = JSON.parse(raw);
     let changed = false;
-
-    // Ensure basic shape
     if (!saved || typeof saved !== 'object') { localStorage.removeItem(KEY); return; }
     if (!saved.job || typeof saved.job !== 'object') { saved.job = {}; changed = true; }
     if (!Array.isArray(saved.tests)) { saved.tests = []; changed = true; }
-
-    // Ensure photo object and defaults
-    const photoDefaults = { original:null, annotatedBase:null, width:null, height:null, rows:10, cols:10, line:'#22c55e', alpha:0.8, lw:2, labels:true, markers:[] };
+    const photoDefaults = { original:null, annotatedBase:null, width:null, height:null, rows:10, cols:10, line:'#22c55e', alpha:0.8, lw:2, labels:true, markers:[], roi:{x:0,y:0,w:0,h:0}, labelMode:'lettersRows', zoom:1, bright:1, contrast:1, saturate:1, bandTop:36, bandLeft:48 };
     if (!saved.photo || typeof saved.photo !== 'object'){ saved.photo = {...photoDefaults}; changed = true; }
     else { saved.photo = Object.assign({}, photoDefaults, saved.photo); changed = true; }
-
     if (changed) localStorage.setItem(KEY, JSON.stringify(saved));
-  } catch {
-    // If parse fails, clear the bad payload
-    localStorage.removeItem(KEY);
-  }
-
-  // Manual wipe helper: open with #wipe if you ever need to nuke storage
+  } catch { localStorage.removeItem('rcc_pro_logger_v6'); }
   if (location.hash === '#wipe') { localStorage.removeItem('rcc_pro_logger_v6'); location.hash=''; }
 })();
 
@@ -319,11 +311,11 @@
 const $  = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const todayISO = () => new Date().toISOString().slice(0,10);
-const miles = meters => +(meters / 1609.344).toFixed(2);
 const clamp1 = v => Math.round(v*10)/10;
 const toNumber = v => { const n = Number(String(v).trim()); return Number.isFinite(n) ? n : null; };
+const slug = (s='') => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
 
-const APP_VERSION = '6.1';
+const APP_VERSION = '7.0';
 const LS_KEY = 'rcc_pro_logger_v6';
 const ORIGIN_TEXT = 'Geotechnical Consultants Inc., Westerville, Ohio';
 const NOMINATIM = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=';
@@ -334,18 +326,17 @@ const geocache = JSON.parse(localStorage.getItem('rcc_geo_cache') || '{}');
 const state = {
   job: { name:'', date: todayISO(), location:'', targetDensity:null, targetMoist:null, mileageMi:null, origin: ORIGIN_TEXT, coords:null, version: APP_VERSION },
   tests: [], // {n, loc, wet, moist, pct, grid}
-  photo: { original:null, annotatedBase:null, width:null, height:null, rows:10, cols:10, line:'#22c55e', alpha:0.8, lw:2, labels:true, markers:[] }
+  photo: { original:null, annotatedBase:null, width:null, height:null, rows:10, cols:10, line:'#22c55e', alpha:0.8, lw:2, labels:true, markers:[],
+           roi:{x:0,y:0,w:0,h:0}, labelMode:'lettersRows', zoom:1, bright:1, contrast:1, saturate:1, bandTop:36, bandLeft:48 }
 };
 
 /* ========================= DOM & events ========================= */
 const setupCard = $('#setupCard'), entryCard = $('#entryCard'), summaryCard = $('#summaryCard');
 const jobName = $('#jobName'), jobDate = $('#jobDate'), jobLocation = $('#jobLocation'), targetDensity = $('#targetDensity'), targetMoist = $('#targetMoist');
-const gpsStatus = $('#gpsStatus');
 const testNumber = $('#testNumber'), testLocation = $('#testLocation'), wetDensity = $('#wetDensity'), moisture = $('#moisture'), densityPct = $('#densityPct');
-const summaryJobName = $('#summaryJobName'), summaryTarget = $('#summaryTarget'), summaryJobDate = $('#summaryJobDate'), summaryJobLocation = $('#summaryJobLocation'), summaryMileage = $('#summaryMileage'), summarySubtitle = $('#summarySubtitle'), testsTbody = $('#testsTbody'), generatedAt = $('#generatedAt');
-const statusBanner = $('#statusBanner');
-const lsStatus = $('#lsStatus'), netStatus = $('#netStatus'), methodEl = $('#method');
-const exportMenu = $('#exportMenu');
+const testsTbody = $('#testsTbody'); const summaryJobName = $('#summaryJobName'); const summaryTarget = $('#summaryTarget'); const summaryJobDate = $('#summaryJobDate'); const summaryJobLocation = $('#summaryJobLocation'); const summaryMileage = $('#summaryMileage'); const summarySubtitle = $('#summarySubtitle'); const generatedAt = $('#generatedAt'); const statusBanner = $('#statusBanner'); const lsStatus=$('#lsStatus');
+
+const picker = $('#testPicker'), btnPrev=$('#btnPrev'), btnNext=$('#btnNext'), btnNew=$('#btnNew'), editHint=$('#editModeHint'), btnUpdate=$('#btnUpdate');
 
 $('#btnStart').addEventListener('click', startLogging);
 $('#btnLoad').addEventListener('click', loadLast);
@@ -353,128 +344,117 @@ $('#btnReset').addEventListener('click', resetAll);
 $('#btnUseGPS').addEventListener('click', useCurrentLocation);
 
 $('#btnSaveNext').addEventListener('click', onSaveNext);
+btnUpdate.addEventListener('click', onUpdateCurrent);
 $('#btnClearForm').addEventListener('click', () => clearEntry(false));
 $('#btnFinish').addEventListener('click', showSummary);
 $('#btnBackToEntry').addEventListener('click', () => { summaryCard.classList.add('hidden'); entryCard.classList.remove('hidden'); testLocation.focus(); });
 
-$('#btnExport').addEventListener('click', ()=> exportMenu.classList.toggle('hidden'));
-exportMenu.addEventListener('click', e=>{
-  const act = e.target && e.target.dataset ? e.target.dataset.act : undefined;
-  if(!act) return;
-  exportMenu.classList.add('hidden');
-  if (act==='png') exportPNG();
-  if (act==='pdf') exportPDF();
-  if (act==='csv') exportCSV();
-  if (act==='svd') exportSVD();
-  if (act==='photo') exportAnnotatedPhotoPNG();
-  if (act==='share') copyShareLink();
+$('#btnExport').addEventListener('click', ()=> $('#exportMenu').classList.toggle('hidden'));
+$('#exportMenu').addEventListener('click', e=>{
+  const act = e.target?.dataset?.act; if(!act) return; $('#exportMenu').classList.add('hidden');
+  if (act==='png') exportPNG(); if (act==='pdf') exportPDF(); if (act==='csv') exportCSV(); if (act==='svd') exportSVD(); if (act==='photo') exportAnnotatedPhotoPNG(); if (act==='share') copyShareLink();
 });
-document.addEventListener('click', (e)=>{ if(!exportMenu.contains(e.target) && e.target!==$('#btnExport')) exportMenu.classList.add('hidden'); });
+document.addEventListener('click', (e)=>{ const m=$('#exportMenu'); if(!m.contains(e.target) && e.target!==$('#btnExport')) m.classList.add('hidden'); });
 
 $('#btnScan').addEventListener('click', openScanner);
 $('#btnImportNotes').addEventListener('click', openImportNotes);
 $('#btnPasteText').addEventListener('click', openPasteImport);
 $('#btnPhotoGrid').addEventListener('click', openPhotoGrid);
-
-// Bottom bar wiring
 $('#barSaveNext').addEventListener('click', ()=> $('#btnSaveNext').click());
 $('#barScan').addEventListener('click', ()=> $('#btnScan').click());
 $('#barImport').addEventListener('click', ()=> $('#btnImportNotes').click());
 $('#barPaste').addEventListener('click', ()=> $('#btnPasteText').click());
 $('#barPhoto').addEventListener('click', ()=> $('#btnPhotoGrid').click());
 
+picker.addEventListener('change', ()=> loadTestToForm(picker.selectedIndex));
+btnPrev.addEventListener('click', ()=> { if (state.tests.length) { const i = Math.max(0, (picker.selectedIndex||0)-1); picker.selectedIndex=i; loadTestToForm(i);} });
+btnNext.addEventListener('click', ()=> { if (state.tests.length) { const i = Math.min(state.tests.length-1, (picker.selectedIndex||0)+1); picker.selectedIndex=i; loadTestToForm(i);} });
+btnNew.addEventListener('click', ()=> { clearEntry(true); setEditMode(false); });
+
 [wetDensity, targetDensity].forEach(i => i.addEventListener('input', updatePctField));
 document.addEventListener('keydown', e => {
-  if (!entryCard.classList.contains('hidden') && e.key === 'Enter') { e.preventDefault(); onSaveNext(); }
+  if (!entryCard.classList.contains('hidden') && e.key === 'Enter') { e.preventDefault(); if (btnUpdate.disabled) onSaveNext(); else onUpdateCurrent(); }
 });
 
 jobDate.value = todayISO();
 if (location.protocol === 'https:') $('#httpsHint').classList.add('hidden');
 restoreFromURL();
 updateProgress();
+refreshPicker();
 
-/* ========================= Core ========================= */
+/* ========================= Core (create/update) ========================= */
 function startLogging(){
-  const name = jobName.value.trim();
-  const date = jobDate.value || todayISO();
-  const loc  = jobLocation.value.trim();
-  const tD   = toNumber(targetDensity.value);
-  const tM   = toNumber(targetMoist.value);
-
-  if (!name) return fieldError(jobName, 'Please enter a Job Name.');
-  if (!loc)  return fieldError(jobLocation, 'Please enter a Job Location.');
-
+  const name = jobName.value.trim(), date = jobDate.value || todayISO(), loc  = jobLocation.value.trim();
+  const tD = toNumber(targetDensity.value), tM = toNumber(targetMoist.value);
+  if (!name) return fieldError(jobName,'Please enter a Job Name.'); if (!loc) return fieldError(jobLocation,'Please enter a Job Location.');
   Object.assign(state.job, { name, date, location:loc, targetDensity:tD, targetMoist:tM });
-  disableSetup();
-
-  entryCard.classList.remove('hidden');
-  testNumber.value = String(state.tests.length + 1);
-  testLocation.focus();
-  save(); updateProgress();
-
-  computeMileage()
-    .then(mi => { state.job.mileageMi = mi; summaryMileage.textContent = `${mi} mi`; save(); toast(`Mileage computed: ${mi} mi ✔️`, 'ok'); })
-    .catch(() => { methodEl.textContent = 'Fallback (straight-line)'; toast('Routing failed, using straight‑line distance.', 'warn'); });
+  [jobName, jobDate, jobLocation, targetDensity, targetMoist].forEach(i=>i.disabled=true); $('#btnStart').disabled=true; $('#btnUseGPS').disabled=true;
+  entryCard.classList.remove('hidden'); testNumber.value = String(nextLogicalTestNumber()); testLocation.focus(); save(); updateProgress(); computeMileage().catch(()=>{});
 }
-function disableSetup(){ [jobName, jobDate, jobLocation, targetDensity, targetMoist].forEach(i => i.disabled = true); $('#btnStart').disabled = true; $('#btnUseGPS').disabled = true; }
-function fieldError(input, msg){ input.focus(); toast(msg, 'warn'); input.scrollIntoView({behavior:'smooth', block:'center'}); }
-
-async function computeMileage(){
-  netStatus.textContent = 'geocoding…';
-  const [o, d] = await Promise.all([ geocodeCached(ORIGIN_TEXT), state.job.coords ? Promise.resolve(state.job.coords) : geocodeCached(state.job.location) ]);
-  if (!o || !d) throw new Error('Geocoding failed');
-  netStatus.textContent = 'routing…';
-  const url = `${OSRM}${o.lon},${o.lat};${d.lon},${d.lat}?overview=false&alternatives=false&steps=false`;
-  const res = await fetch(url, { headers:{'User-Agent':'RCC-Pro-Logger'} });
-  if (res.ok){ const j = await res.json(); const m = j && j.routes && j.routes[0] ? j.routes[0].distance : undefined; if (typeof m === 'number'){ methodEl.textContent='Routing (OSRM)'; netStatus.textContent='ready'; return miles(m); } }
-  methodEl.textContent='Fallback (straight-line)'; netStatus.textContent='ready';
-  const mi = haversine(o.lat,o.lon,d.lat,d.lon); return +mi.toFixed(2);
-}
-async function geocodeCached(q){ if (geocache[q]) return geocache[q]; const hit = await geocode(q); if (hit){ geocache[q]=hit; localStorage.setItem('rcc_geo_cache', JSON.stringify(geocache)); } return hit; }
-async function geocode(q){ const res = await fetch(NOMINATIM + encodeURIComponent(q), { headers:{'Accept-Language':'en'} }); if (!res.ok) return null; const a = await res.json(); if (!a || !a.length) return null; const g = a[0]; return {lat:+g.lat, lon:+g.lon, label:g.display_name}; }
-async function reverseGeocode(lat,lon){ const res = await fetch(NOMI_REV(lat,lon), { headers:{'Accept-Language':'en'} }); if (!res.ok) return null; const d = await res.json(); return {lat:+lat, lon:+lon, label: d && d.display_name ? d.display_name : (lat.toFixed(6)+', '+lon.toFixed(6)) }; }
-function haversine(lat1, lon1, lat2, lon2){ const toRad=d=>d*Math.PI/180, R=3958.761; const dLat=toRad(lat2-lat1), dLon=toRad(lat2-lon1); const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2; return 2*R*Math.asin(Math.sqrt(a)); }
-
-/* ========================= Entry & %Target ========================= */
+function fieldError(input, msg){ input.focus(); toast(msg,'warn'); input.scrollIntoView({behavior:'smooth', block:'center'}); }
+function nextLogicalTestNumber(){ return state.tests.length ? Math.max(...state.tests.map(t=>t.n))+1 : 1; }
 function updatePctField(){ const wet=toNumber(wetDensity.value), t=toNumber(targetDensity.value); const pct=(wet!=null && t && t>0)? clamp1(wet/t*100): null; densityPct.value = pct==null ? '' : pct; }
 
 function onSaveNext(){
+  const { ok, t } = collectForm(false); if (!ok) return;
+  // auto compute pct
+  const TD = state.job.targetDensity; t.pct = (TD && TD>0) ? clamp1(t.wet/TD*100) : null;
+  // grid mapping
+  if (t.grid) { const rc = coordToRowCol(t.grid); const xy = gridCellCenterPx(rc.row, rc.col, state.photo); if (xy) state.photo.markers.push({ n: t.n, coord:t.grid, x:xy.x, y:xy.y }); }
+  state.tests.push(t); state.tests.sort((a,b)=>a.n-b.n);
+  save(); updateProgress(); refreshPicker(); clearEntry(true); testNumber.value = String(nextLogicalTestNumber()); testLocation.focus();
+}
+function onUpdateCurrent(){
+  const idx = picker.selectedIndex; if (idx<0 || idx>=state.tests.length) return toast('No test selected to update.','warn');
+  const { ok, t } = collectForm(true); if (!ok) return;
+  const TD = state.job.targetDensity; t.pct = (TD && TD>0) ? clamp1(t.wet/TD*100) : null;
+  // Update test
+  const oldN = state.tests[idx].n;
+  state.tests[idx] = t;
+  // Update marker for this n
+  const mark = state.photo.markers.find(m=>m.n===oldN);
+  if (mark){ if (t.grid){ const rc=coordToRowCol(t.grid); const xy=gridCellCenterPx(rc.row, rc.col, state.photo); if (xy){ mark.coord=t.grid; mark.x=xy.x; mark.y=xy.y; } } else { state.photo.markers = state.photo.markers.filter(m=>m!==mark);} }
+  else if (t.grid){ const rc=coordToRowCol(t.grid); const xy=gridCellCenterPx(rc.row, rc.col, state.photo); if (xy) state.photo.markers.push({ n:t.n, coord:t.grid, x:xy.x, y:xy.y }); }
+  state.tests.sort((a,b)=>a.n-b.n); refreshPicker(); picker.value = String(state.tests.findIndex(x=>x.n===t.n)); save(); toast('Test updated ✔️','ok');
+}
+function collectForm(isUpdate){
+  const n = parseInt(testNumber.value,10);
   const loc = testLocation.value.trim();
   const wet = toNumber(wetDensity.value);
   const moi = toNumber(moisture.value);
+  const grid = ($('#gridCoord').value||'').trim().toUpperCase() || null;
+  if (!Number.isFinite(n) || n<=0) return { ok:false, t:null, msg:'Enter a valid Test #'};
+  if (!loc) return { ok:false, t:null, msg:'Enter a Test Location.'};
+  if (wet===null) return { ok:false, t:null, msg:'Enter Wet Density (pcf).'};
+  if (moi===null) return { ok:false, t:null, msg:'Enter Moisture (%).'};
 
-  if (!loc) return toast('Enter a Test Location.', 'warn');
-  if (wet === null) return toast('Enter Wet Density (pcf) as a number.', 'warn');
-  if (moi === null) return toast('Enter Moisture (%) as a number.', 'warn');
-
-  if (wet < 100 || wet > 170) toast('Wet Density seems off for RCC (~120–145 pcf).', 'warn');
-  if (moi < 1 || moi > 20) toast('Moisture seems off (~4–10%).', 'warn');
-
-  // Grid coordinate
-  const coordRaw = ($('#gridCoord')?.value || '').trim();
-  let grid = null, marker = null;
-  if (coordRaw){
-    const rc = coordToRowCol(coordRaw);
-    if (!rc) return toast('Grid Coord must look like A3 or B12.', 'warn');
-    const p = state.photo;
-    if (!p || !p.rows || !p.cols || !p.annotatedBase) return toast('You set a coordinate but no site photo grid is saved. Add a Site Photo + Grid first.', 'warn');
-    if (!isCoordInBounds(rc.row, rc.col, p.rows, p.cols)) return toast(`Grid Coord ${coordRaw.toUpperCase()} out of bounds (A..${rowNumberToLetters(p.rows)} by 1..${p.cols}).`, 'warn');
-    const xy = gridCellCenterPx(rc.row, rc.col, p);
-    if (!xy) return toast('Could not map coordinate on photo.', 'err');
-    grid = coordRaw.toUpperCase();
-    marker = { coord:grid, x:xy.x, y:xy.y };
+  // Validate grid if provided
+  if (grid){
+    const rc = coordToRowCol(grid); if (!rc) return { ok:false, t:null, msg:'Grid must look like A3 or 12B (depending on mode).'};
+    if (!state.photo.annotatedBase) return { ok:false, t:null, msg:'Add a Site Photo + Grid first if using Grid Coord.'};
+    if (!isCoordInBounds(rc.row, rc.col, state.photo)) return { ok:false, t:null, msg:`Grid ${grid} out of bounds.`};
   }
 
-  const t = state.job.targetDensity; const pct = (t && t>0) ? clamp1(wet/t*100) : null;
-  const n = state.tests.length + 1; state.tests.push({ n, loc, wet, moist:moi, pct, grid });
+  // Handle renumber conflicts if creating
+  if (!isUpdate){
+    const conflict = state.tests.some(t=>t.n===n);
+    if (conflict){
+      // shift up chain
+      const need = n;
+      state.tests.forEach(t=>{ if (t.n>=need) t.n+=1; });
+      toast(`Conflict on #${need} — shifted subsequent test numbers up.`, 'warn');
+    }
+  }
 
-  if (marker && state.photo){ marker.n = n; state.photo.markers.push(marker); }
-
-  save(); updateProgress(); clearEntry(true); testNumber.value = String(state.tests.length + 1); testLocation.focus();
+  return { ok:true, t:{ n, loc, wet, moist:moi, pct:null, grid } };
 }
-function clearEntry(keep){ if(!keep) testNumber.value = String(state.tests.length + 1); testLocation.value=''; wetDensity.value=''; moisture.value=''; densityPct.value=''; $('#gridCoord').value=''; }
+function setEditMode(editing){
+  btnUpdate.disabled = !editing;
+  $('#btnSaveNext').disabled = editing;
+  editHint.textContent = editing ? 'Editing current test' : 'Adding new test';
+}
 
-/* ========================= Summary ========================= */
+/* ========================= Summary & inline editing ========================= */
 function showSummary(){
   summaryCard.classList.remove('hidden'); entryCard.classList.add('hidden');
   banner('ok', `Ready — ${state.tests.length} test${state.tests.length===1?'':'s'} logged.`);
@@ -489,19 +469,68 @@ function showSummary(){
 
   testsTbody.innerHTML = '';
   const mi = state.job.mileageMi ?? '—';
-  for (const t of state.tests){
-    const tdLoc = t.loc ? escapeHTML(t.loc) : `<span class="miss">missing</span>`;
-    const tdWet = (t.wet!=null) ? t.wet : `<span class="miss">missing</span>`;
-    const tdMoi = (t.moist!=null) ? t.moist : `<span class="miss">missing</span>`;
-    const tdPct = (t.pct!=null) ? (Number.isFinite(t.pct) ? t.pct.toFixed(1) : t.pct) + '%' : `<span class="miss">—</span>`;
-    const tdGrid = t.grid ? escapeHTML(t.grid) : '—';
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${t.n}</td><td class="${t.loc?'':'misscell'}">${tdLoc}</td><td class="${t.wet!=null?'':'misscell'}">${tdWet}</td><td class="${t.moist!=null?'':'misscell'}">${tdMoi}</td><td class="${t.pct!=null?'':'misscell'}">${tdPct}</td><td>${tdGrid}</td><td>${mi}</td>`;
+  state.tests.sort((a,b)=>a.n-b.n).forEach((t,idx)=>{
+    const tr = document.createElement('tr'); tr.dataset.index=idx;
+    tr.innerHTML = `
+      <td>${t.n}</td>
+      <td contenteditable="true" data-key="loc">${escapeHTML(t.loc||'')}</td>
+      <td contenteditable="true" data-key="wet">${t.wet ?? ''}</td>
+      <td contenteditable="true" data-key="moist">${t.moist ?? ''}</td>
+      <td>${t.pct!=null ? (Number.isFinite(t.pct)?t.pct.toFixed(1):t.pct)+'%' : '—'}</td>
+      <td contenteditable="true" data-key="grid">${t.grid || ''}</td>
+      <td>${mi}</td>`;
     testsTbody.appendChild(tr);
-  }
+  });
+
+  // Attach inline save handlers
+  testsTbody.querySelectorAll('td[contenteditable="true"]').forEach(td=>{
+    td.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); td.blur(); } });
+    td.addEventListener('blur', ()=> inlineUpdate(td));
+  });
 
   renderPhotoWithMarkersToCanvas();
 }
+function inlineUpdate(td){
+  const idx = parseInt(td.parentElement.dataset.index,10);
+  const key = td.dataset.key;
+  const val = td.textContent.trim();
+  const t = state.tests[idx];
+
+  if (key==='loc'){ t.loc = val; }
+  if (key==='wet'){
+    const n = toNumber(val); if (n==null) { td.textContent = t.wet ?? ''; return toast('Wet Density must be a number','warn'); }
+    t.wet = n;
+  }
+  if (key==='moist'){
+    const n = toNumber(val); if (n==null) { td.textContent = t.moist ?? ''; return toast('Moisture must be a number','warn'); }
+    t.moist = n;
+  }
+  if (key==='grid'){
+    const grid = val ? val.toUpperCase() : '';
+    if (grid){
+      if (!state.photo.annotatedBase) { td.textContent = t.grid || ''; return toast('Add a Site Photo + Grid first','warn'); }
+      const rc = coordToRowCol(grid);
+      if (!rc || !isCoordInBounds(rc.row, rc.col, state.photo)) { td.textContent = t.grid || ''; return toast('Grid coord out of bounds','warn'); }
+      t.grid = grid;
+      // update/add marker
+      let mk = state.photo.markers.find(m=>m.n===t.n);
+      const xy = gridCellCenterPx(rc.row, rc.col, state.photo);
+      if (mk) { mk.coord=grid; mk.x=xy.x; mk.y=xy.y; }
+      else { state.photo.markers.push({ n:t.n, coord:grid, x:xy.x, y:xy.y }); }
+    } else {
+      // cleared
+      t.grid = null;
+      state.photo.markers = state.photo.markers.filter(m=>m.n!==t.n);
+    }
+  }
+  // recompute pct
+  const TD = state.job.targetDensity; t.pct = (TD && TD>0 && t.wet!=null) ? clamp1(t.wet/TD*100) : null;
+
+  save();
+  showSummary(); // re-render table + photo for fresh pct/markers
+  toast('Updated ✔️','ok');
+}
+
 function banner(kind, msg){
   statusBanner.classList.remove('hidden','ok','err');
   statusBanner.classList.add(kind==='ok'?'ok':'err', 'banner');
@@ -509,22 +538,44 @@ function banner(kind, msg){
 }
 function escapeHTML(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
 
-/* ========================= Save/Share ========================= */
+/* ========================= Picker/Load into form ========================= */
+function refreshPicker(){
+  picker.innerHTML='';
+  if (!state.tests.length){ picker.disabled=true; setEditMode(false); editHint.textContent='Adding new test'; return; }
+  picker.disabled=false;
+  state.tests.sort((a,b)=>a.n-b.n).forEach((t,i)=>{
+    const opt = document.createElement('option'); opt.value=i; opt.textContent=`#${t.n} — ${t.loc?.slice(0,40) || '—'}`; picker.appendChild(opt);
+  });
+}
+function loadTestToForm(i){
+  if (i<0 || i>=state.tests.length) return;
+  const t = state.tests.sort((a,b)=>a.n-b.n)[i];
+  testNumber.value = t.n; testLocation.value = t.loc || ''; wetDensity.value = t.wet ?? ''; moisture.value = t.moist ?? '';
+  $('#gridCoord').value = t.grid || '';
+  const TD = state.job.targetDensity; densityPct.value = (TD && TD>0 && t.wet!=null) ? clamp1(t.wet/TD*100) : '';
+  testLocation.focus(); setEditMode(true);
+}
+
+/* ========================= Save/Share/Progress ========================= */
 function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); lsStatus.textContent='saved'; } catch{ lsStatus.textContent='error'; } }
 function loadLast(){
   try{
-    const raw = localStorage.getItem(LS_KEY); if (!raw) return toast('No saved session found.', 'warn');
+    const raw = localStorage.getItem(LS_KEY); if (!raw) return toast('No saved session found.','warn');
     const data = JSON.parse(raw); if (!data || !data.job) return;
     Object.assign(state, data);
     jobName.value = state.job.name; jobDate.value = state.job.date; jobLocation.value = state.job.location;
     targetDensity.value = state.job.targetDensity ?? ''; targetMoist.value = state.job.targetMoist ?? '';
-    disableSetup(); entryCard.classList.remove('hidden'); testNumber.value = String(state.tests.length + 1); testLocation.focus();
-    renderPhotoWithMarkersToCanvas();
-    updateProgress();
-    toast('Session loaded ✔️','ok');
-  }catch{ toast('Failed to load session.', 'err'); }
+    [jobName, jobDate, jobLocation, targetDensity, targetMoist].forEach(i=>i.disabled=true); $('#btnStart').disabled=true; $('#btnUseGPS').disabled=true;
+    entryCard.classList.remove('hidden'); testNumber.value = String(nextLogicalTestNumber()); testLocation.focus();
+    renderPhotoWithMarkersToCanvas(); updateProgress(); refreshPicker(); toast('Session loaded ✔️','ok');
+  }catch{ toast('Failed to load session.','err'); }
 }
 function resetAll(){ if (!confirm('Clear all data and restart?')) return; localStorage.removeItem(LS_KEY); location.href = location.pathname; }
+function updateProgress(){
+  const n = state.tests.length; $('#testsCount').textContent = n; $('#progFill').style.width = Math.min(100,(n/10)*100) + '%'; $('#resumeBadge').classList.toggle('hidden', n===0);
+}
+$('#resumeBadge').addEventListener('click', ()=>{ entryCard.classList.remove('hidden'); summaryCard.classList.add('hidden'); toast('Resumed session','ok'); });
+
 async function copyShareLink(){
   const payload = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
   const url = `${location.origin}${location.pathname}#${payload}`;
@@ -539,13 +590,14 @@ function restoreFromURL(){
       Object.assign(state, data);
       jobName.value = state.job.name; jobDate.value = state.job.date; jobLocation.value = state.job.location;
       targetDensity.value = state.job.targetDensity ?? ''; targetMoist.value = state.job.targetMoist ?? '';
-      disableSetup(); entryCard.classList.remove('hidden'); testNumber.value = String(state.tests.length + 1);
-      showSummary(); updateProgress(); toast('Loaded from shared link ✔️','ok');
+      [jobName, jobDate, jobLocation, targetDensity, targetMoist].forEach(i=>i.disabled=true); $('#btnStart').disabled=true; $('#btnUseGPS').disabled=true;
+      entryCard.classList.remove('hidden'); testNumber.value = String(nextLogicalTestNumber());
+      showSummary(); updateProgress(); refreshPicker(); toast('Loaded from shared link ✔️','ok');
     }
-  }catch{ /* ignore malformed hash */ }
+  }catch{}
 }
 
-/* ========================= Export handlers ========================= */
+/* ========================= Exports ========================= */
 async function ensureSummaryRendered(){ if (summaryCard.classList.contains('hidden')) showSummary(); await new Promise(r=>setTimeout(r,50)); }
 async function exportPNG(){ await ensureSummaryRendered(); const c = await html2canvas($('#exportArea'), { backgroundColor:'#091126', scale:2 }); download(c.toDataURL('image/png'), `${slug(state.job.name)}-${state.job.date}-RCC.png`); }
 async function exportPDF(){
@@ -556,7 +608,7 @@ async function exportPDF(){
   pdf.addImage(img, 'PNG', 24, 24, imgW, imgH); pdf.save(`${slug(state.job.name)}-${state.job.date}-RCC.pdf`);
 }
 function exportCSV(){
-  if (!state.tests.length) return toast('No tests to export.', 'warn');
+  if (!state.tests.length) return toast('No tests to export.','warn');
   const mi = state.job.mileageMi ?? '';
   const rows = [
     ['Job Name', state.job.name], ['Job Date', state.job.date], ['Job Location', state.job.location],
@@ -568,7 +620,7 @@ function exportCSV(){
   download('data:text/csv;charset=utf-8,' + encodeURIComponent(csv), `${slug(state.job.name)}-${state.job.date}-RCC.csv`);
 }
 function exportSVD(){
-  if (!state.tests.length) return toast('No tests to export.', 'warn');
+  if (!state.tests.length) return toast('No tests to export.','warn');
   const mi = state.job.mileageMi ?? '';
   const header = [
     '# SVD 1.2',
@@ -581,41 +633,42 @@ function exportSVD(){
   download('data:text/plain;charset=utf-8,' + encodeURIComponent(header+'\n'+lines.join('\n')+'\n'), `${slug(state.job.name)}-${state.job.date}-RCC.svd`);
 }
 async function exportAnnotatedPhotoPNG(){
-  const p = state.photo; if (!p || !p.annotatedBase) return toast('No annotated photo to export yet.', 'warn');
-  const tmp = document.createElement('canvas'); tmp.width = p.width; tmp.height = p.height;
-  const ctx = tmp.getContext('2d');
-  const base = await loadImage(p.annotatedBase);
-  ctx.drawImage(base, 0, 0);
-  drawMarkersOnCtx(ctx, p);
-  download(tmp.toDataURL('image/png'), `${slug(state.job.name)}-${state.job.date}-RCC-photo.png`);
+  const p = state.photo; if (!p || !p.annotatedBase) return toast('No annotated photo to export yet.','warn');
+  const tmp = document.createElement('canvas'); tmp.width = p.width + p.bandLeft; tmp.height = p.height + p.bandTop;
+  const ctx = tmp.getContext('2d'); const base = await loadImage(p.annotatedBase);
+  ctx.drawImage(base, 0, 0); drawMarkersOnCtx(ctx, p); download(tmp.toDataURL('image/png'), `${slug(state.job.name)}-${state.job.date}-RCC-photo.png`);
 }
 
-/* ========================= GPS ========================= */
+/* ========================= GPS / routing helpers ========================= */
 async function useCurrentLocation(){
-  if (!('geolocation' in navigator)){ gpsStatus.textContent='Geolocation not supported.'; return toast('Geolocation unavailable','err'); }
-  gpsStatus.textContent='Requesting location…'; $('#btnUseGPS').disabled = true;
+  if (!('geolocation' in navigator)) return toast('Geolocation unavailable','err');
+  $('#btnUseGPS').disabled = true;
   try{
     const pos = await new Promise((resolve,reject)=> navigator.geolocation.getCurrentPosition(resolve,reject,{ enableHighAccuracy:true, timeout:15000, maximumAge:0 }));
     const { latitude:lat, longitude:lon } = pos.coords;
-    gpsStatus.textContent = `GPS: ${lat.toFixed(5)}, ${lon.toFixed(5)} — reverse geocoding…`;
-    const rev = await reverseGeocode(lat,lon);
-    if (rev){ jobLocation.value = rev.label; state.job.coords = {lat:rev.lat, lon:rev.lon, label:rev.label}; gpsStatus.textContent='Location set from GPS ✔️'; toast('Job location filled from current GPS','ok'); save(); }
-    else { gpsStatus.textContent='Could not find address for GPS.'; toast('Reverse geocoding failed','warn'); }
-  }catch{ gpsStatus.textContent='Location permission denied or timed out.'; toast('Location permission needed for GPS','warn'); }
-  finally{ $('#btnUseGPS').disabled = false; }
+    const rev = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`, { headers:{'Accept-Language':'en'} }).then(r=>r.json());
+    const label = rev?.display_name || `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+    jobLocation.value = label; state.job.coords = {lat,lon,label}; toast('Job location filled from current GPS','ok'); save();
+  }catch{ toast('Location permission needed or timed out','warn'); }
+  $('#btnUseGPS').disabled = false;
 }
+async function geocode(q){ const res = await fetch(NOMINATIM + encodeURIComponent(q), { headers:{'Accept-Language':'en'} }); if (!res.ok) return null; const a = await res.json(); if (!a?.length) return null; const g = a[0]; return {lat:+g.lat, lon:+g.lon, label:g.display_name}; }
+async function computeMileage(){
+  try{
+    const o = await geocode(ORIGIN_TEXT), d = state.job.coords ? state.job.coords : await geocode(state.job.location);
+    if (!o || !d) throw 0;
+    const u = `${OSRM}${o.lon},${o.lat};${d.lon},${d.lat}?overview=false`; const j = await fetch(u).then(r=>r.json()); const dist = j?.routes?.[0]?.distance;
+    const mi = dist ? +(dist/1609.344).toFixed(2) : +(haversine(o.lat,o.lon,d.lat,d.lon)).toFixed(2);
+    state.job.mileageMi = mi; summaryMileage.textContent = `${mi} mi`; save(); toast(`Mileage computed: ${mi} mi ✔️`,'ok');
+  }catch{ toast('Routing failed, will show straight‑line if possible','warn'); }
+}
+function haversine(lat1, lon1, lat2, lon2){ const toRad=d=>d*Math.PI/180, R=3958.761; const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1); const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2; return 2*R*Math.asin(Math.sqrt(a)); }
 
-/* ========================= OCR: Gauge Scanner ========================= */
+/* ========================= OCR Gauge (unchanged core) ========================= */
 let scanModal=null, scanStream=null;
-function openScanner(){
-  if (!scanModal) buildScannerModal();
-  $('#scanStatus').textContent = 'Initializing camera…';
-  scanModal.classList.remove('hidden');
-  startCamera();
-}
+function openScanner(){ if (!scanModal) buildScannerModal(); $('#scanStatus').textContent='Initializing camera…'; scanModal.classList.remove('hidden'); startCamera(); }
 function buildScannerModal(){
-  scanModal = document.createElement('div');
-  scanModal.className='modal hidden';
+  scanModal = document.createElement('div'); scanModal.className='modal hidden';
   scanModal.innerHTML = `
     <div class="sheet">
       <header class="inline" style="justify-content:space-between">
@@ -640,366 +693,81 @@ function buildScannerModal(){
       </div>
     </div>`;
   document.body.appendChild(scanModal);
-  $('#btnCloseScan').addEventListener('click', closeScanner);
+  $('#btnCloseScan').addEventListener('click', ()=>{ scanModal.classList.add('hidden'); stopCamera(); });
   $('#btnCapture').addEventListener('click', onCaptureAndRead);
-  $('#btnFill').addEventListener('click', fillFromOCR);
+  $('#btnFill').addEventListener('click', ()=>{ const wd=scanModal.dataset.lastWd, m=scanModal.dataset.lastMoist; if (wd) wetDensity.value=wd; if(m) moisture.value=m; updatePctField(); toast('Filled from OCR ✔️','ok'); scanModal.classList.add('hidden'); stopCamera(); });
   $('#fileInput').addEventListener('change', onPickImage);
 }
-function closeScanner(){ scanModal.classList.add('hidden'); stopCamera(); }
-async function startCamera(){
-  try{
-    scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal:'environment' } }, audio:false });
-    $('#video').srcObject = scanStream; await $('#video').play();
-    $('#scanStatus').textContent = 'Camera ready. Capture when text is sharp.';
-  }catch(e){ console.error(e); $('#scanStatus').textContent = 'Camera blocked/unavailable. Upload a photo instead.'; }
-}
+async function startCamera(){ try{ scanStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ideal:'environment'} }, audio:false }); $('#video').srcObject=scanStream; await $('#video').play(); $('#scanStatus').textContent='Camera ready. Capture when sharp.'; }catch{ $('#scanStatus').textContent='Camera blocked. Upload a photo instead.'; } }
 function stopCamera(){ if (scanStream){ for (const t of scanStream.getTracks()) t.stop(); } const v=$('#video'); if (v) v.srcObject=null; }
+async function onCaptureAndRead(){ const v=$('#video'); if (!v.videoWidth) return $('#scanStatus').textContent='Camera not ready.'; const W=1000, H=Math.round(v.videoHeight*(W/v.videoWidth)); const c=$('#frameCanvas'); c.width=W; c.height=H; const ctx=c.getContext('2d'); ctx.drawImage(v,0,0,W,H); preprocess(ctx,W,H); $('#scanStatus').textContent='Reading…'; const {text,wd,moist}=await ocrGauge(c); showOcrResult(text,wd,moist); }
+async function onPickImage(ev){ const f=ev.target.files?.[0]; if(!f) return; const img=new Image(); img.onload=async()=>{ const maxW=1600, sc=Math.min(1, maxW/img.width); const c=$('#frameCanvas'); c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc); const ctx=c.getContext('2d'); ctx.drawImage(img,0,0,c.width,c.height); preprocess(ctx,c.width,c.height); $('#scanStatus').textContent='Reading image…'; const {text,wd,moist}=await ocrGauge(c); showOcrResult(text,wd,moist); }; img.src=URL.createObjectURL(f); }
+function showOcrResult(text, wd, moist){ $('#ocrOut').textContent=text.trim()||'(no text)'; if (wd!=null || moist!=null){ $('#scanStatus').textContent=`Found: WD=${wd??'—'} pcf, %Moist=${moist??'—'} %`; scanModal.dataset.lastWd=wd??''; scanModal.dataset.lastMoist=moist??''; $('#btnFill').disabled=false; banner('ok','Gauge scan successful.'); } else { $('#scanStatus').textContent='Couldn’t find WD/%Moist.'; $('#btnFill').disabled=true; banner('err','Gauge scan did not detect values.'); } }
+function preprocess(ctx,w,h){ const img=ctx.getImageData(0,0,w,h), d=img.data; const contrast=1.25, bright=10; for(let i=0;i<d.length;i+=4){ const r=d[i],g=d[i+1],b=d[i+2]; let y=(r*0.299+g*0.587+b*0.114); y=(y-128)*contrast+128+bright; y=Math.max(0,Math.min(255,y)); d[i]=d[i+1]=d[i+2]=y; } ctx.putImageData(img,0,0); }
+async function ocrGauge(canvas){ const out={text:'',wd:null,moist:null}; try{ const res=await Tesseract.recognize(canvas,'eng'); const text=res?.data?.text?.replace(/\r/g,'')||''; out.text=text; const wdMatch=text.match(/\b(1\d{2}|[2-9]\d{2})(?:\.\d)?\b/); const moistMatch=text.match(/\b(\d{1,2})(?:\.\d)?\b/); out.wd=wdMatch?parseFloat(wdMatch[0]):null; out.moist=moistMatch?parseFloat(moistMatch[0]):null; if (out.wd!=null && (out.wd<100 || out.wd>200)) out.wd=null; if (out.moist!=null && (out.moist<0 || out.moist>40)) out.moist=null; }catch{} return out; }
 
-async function onCaptureAndRead(){
-  const v = $('#video');
-  if (!v.videoWidth) return $('#scanStatus').textContent = 'Camera not ready.';
-  const W = 1000, H = Math.round(v.videoHeight * (W / v.videoWidth));
-  const c = $('#frameCanvas'); c.width=W; c.height=H;
-  const ctx = c.getContext('2d'); ctx.drawImage(v, 0, 0, W, H);
-  preprocess(ctx, W, H);
-  $('#scanStatus').textContent = 'Reading…';
-  const { text, wd, moist } = await ocrGauge(c);
-  showOcrResult(text, wd, moist);
-}
-async function onPickImage(ev){
-  const file = ev.target.files && ev.target.files[0] ? ev.target.files[0] : null; if (!file) return;
-  const img = new Image();
-  img.onload = async ()=>{
-    const maxW = 1600, scale = Math.min(1, maxW / img.width);
-    const c = $('#frameCanvas'); c.width = Math.round(img.width*scale); c.height = Math.round(img.height*scale);
-    const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, c.width, c.height);
-    preprocess(ctx, c.width, c.height);
-    $('#scanStatus').textContent = 'Reading image…';
-    const { text, wd, moist } = await ocrGauge(c);
-    showOcrResult(text, wd, moist);
-  };
-  img.onerror = ()=> $('#scanStatus').textContent = 'Could not load image.';
-  img.src = URL.createObjectURL(file);
-}
-function showOcrResult(text, wd, moist){
-  $('#ocrOut').textContent = text.trim() || '(no text recognized)';
-  if (wd!=null || moist!=null){
-    $('#scanStatus').textContent = `Found: WD=${wd ?? '—'} pcf, %Moist=${moist ?? '—'} %`;
-    scanModal.dataset.lastWd = wd ?? '';
-    scanModal.dataset.lastMoist = moist ?? '';
-    $('#btnFill').disabled = false;
-    banner('ok', 'Gauge scan successful.');
-  } else {
-    $('#scanStatus').textContent = 'Couldn’t find WD/%Moist. Try closer, sharper image, or upload a photo.';
-    $('#btnFill').disabled = true;
-    banner('err', 'Gauge scan did not detect values.');
-  }
-}
-function preprocess(ctx,w,h){
-  const img = ctx.getImageData(0,0,w,h), d=img.data;
-  const contrast=1.25, bright=10;
-  for(let i=0;i<d.length;i+=4){ const r=d[i],g=d[i+1],b=d[i+2]; let y=(r*0.299+g*0.587+b*0.114); y=(y-128)*contrast+128+bright; y=y<0?0:y>255?255:y; d[i]=d[i+1]=d[i+2]=y; }
-  ctx.putImageData(img,0,0);
-}
-async function ocrGauge(canvas){
-  const out = { text:'', wd:null, moist:null };
-  try{
-    const res = await Tesseract.recognize(canvas, 'eng', { logger: m=>{} });
-    const text = (res && res.data && res.data.text ? res.data.text : '').replace(/\r/g,'');
-    out.text = text;
-    const wdMatch = text.match(/\b(1\d{2}|[2-9]\d{2})(?:\.\d)?\b/);
-    const moistMatch = text.match(/\b(\d{1,2})(?:\.\d)?\b/);
-    out.wd = wdMatch ? parseFloat(wdMatch[0]) : null;
-    out.moist = moistMatch ? parseFloat(moistMatch[0]) : null;
-    if (out.wd!=null && (out.wd<100 || out.wd>200)) out.wd=null;
-    if (out.moist!=null && (out.moist<0 || out.moist>40)) out.moist=null;
-  }catch(e){ console.error(e); }
-  return out;
-}
-function fillFromOCR(){
-  const wd = scanModal.dataset.lastWd, m = scanModal.dataset.lastMoist;
-  if (wd) wetDensity.value = wd;
-  if (m)  moisture.value = m;
-  updatePctField();
-  toast(`Filled ${wd? 'WD':''}${wd&&m?', ':''}${m? '%Moist':''} from OCR ✔️`, 'ok');
-  closeScanner();
-}
-
-/* ========================= NOTES IMPORT (image) + PASTE TEXT ========================= */
-let importModal=null, parsedBlocks=[];
-let diffModal=null, lastPlan=null;
-
+/* ========================= Notes Import & Paste (unchanged parsing) ========================= */
+let importModal=null, parsedBlocks=[], diffModal=null, lastPlan=null, pasteModal=null;
 function openImportNotes(){ if(!importModal) buildImportModal(); importModal.classList.remove('hidden'); }
 function buildImportModal(){
-  importModal = document.createElement('div'); importModal.className='modal hidden';
-  importModal.innerHTML = `
-    <div class="sheet">
-      <header class="inline" style="justify-content:space-between">
-        <h2>Import Notes Screenshot</h2>
-        <div class="inline">
-          <input type="file" id="notesFile" accept="image/*" class="btn secondary" style="padding:8px 10px; width:auto">
-          <button class="btn secondary" id="btnCloseImport" style="width:auto">Close</button>
-        </div>
-      </header>
-      <div class="row" style="grid-template-columns:1fr">
-        <div class="help">Tests start with a number (e.g., <span class="kbd">1.</span>, <span class="kbd">2)</span>, <span class="kbd">3:</span>). First WD (100–250) and first Moist (0–40) after that (any order). Rest of the line(s) is location.</div>
-        <canvas id="notesCanvas" height="360" class="hidden"></canvas>
-        <pre id="notesOut" class="muted" style="white-space:pre-wrap"></pre>
-        <div class="inline" style="gap:8px">
-          <button class="btn primary" id="btnReview" disabled>Review Changes…</button>
-        </div>
-      </div>
-    </div>`;
+  importModal=document.createElement('div'); importModal.className='modal hidden';
+  importModal.innerHTML=`<div class="sheet"><header class="inline" style="justify-content:space-between"><h2>Import Notes Screenshot</h2><div class="inline"><input type="file" id="notesFile" accept="image/*" class="btn secondary" style="padding:8px 10px; width:auto"><button class="btn secondary" id="btnCloseImport" style="width:auto">Close</button></div></header><div class="row" style="grid-template-columns:1fr"><div class="help">Tests start with a number (1., 2), 3:). First WD (100–250) and first Moist (0–40) after that (any order). Rest is location.</div><canvas id="notesCanvas" height="360" class="hidden"></canvas><pre id="notesOut" class="muted" style="white-space:pre-wrap"></pre><div class="inline" style="gap:8px"><button class="btn primary" id="btnReview" disabled>Review Changes…</button></div></div></div>`;
   document.body.appendChild(importModal);
   $('#btnCloseImport').addEventListener('click', ()=>importModal.classList.add('hidden'));
   $('#notesFile').addEventListener('change', onNotesPick);
   $('#btnReview').addEventListener('click', openDiffPreview);
 }
-async function onNotesPick(ev){
-  const file = ev.target.files && ev.target.files[0] ? ev.target.files[0] : null; if (!file) return;
-  const img = new Image();
-  img.onload = async ()=>{
-    const maxW = 1900, scale = Math.min(1, maxW / img.width);
-    const c = $('#notesCanvas'); c.width = Math.round(img.width*scale); c.height = Math.round(img.height*scale);
-    const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, c.width, c.height);
-    preprocess(ctx, c.width, c.height);
-    let text=''; try{ const res = await Tesseract.recognize(c, 'eng', { logger: m=>{} }); text = (res && res.data && res.data.text ? res.data.text : '').replace(/\r/g,''); } catch(e){ console.error(e); }
-    parsedBlocks = parseNotesBlocks(text);
-    const preview = parsedBlocks.length
-      ? parsedBlocks.map(o => `#${o.n} | WD:${o.wet ?? '—'} | %Moist:${o.moist ?? '—'} | Loc: ${o.loc || '(none)'}`).join('\n')
-      : '(No valid tests found. Make sure tests start with "1." / "2." etc.)';
-    $('#notesOut').textContent = preview;
-    $('#btnReview').disabled = !parsedBlocks.length;
-    if (parsedBlocks.length) toast(`Detected ${parsedBlocks.length} test block(s) ✔️`, 'ok'); else toast('No numbered tests detected', 'warn');
-  };
-  img.onerror = ()=> { $('#notesOut').textContent = 'Could not load image.'; };
-  img.src = URL.createObjectURL(file);
-}
-
-/* PASTE TEXT */
-let pasteModal=null;
+async function onNotesPick(ev){ const f=ev.target.files?.[0]; if(!f) return; const img=new Image(); img.onload=async()=>{ const maxW=1900, sc=Math.min(1, maxW/img.width); const c=$('#notesCanvas'); c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc); const ctx=c.getContext('2d'); ctx.drawImage(img,0,0,c.width,c.height); preprocess(ctx,c.width,c.height); let text=''; try{ const res=await Tesseract.recognize(c,'eng'); text=res?.data?.text?.replace(/\r/g,'')||''; }catch{} parsedBlocks = parseNotesBlocks(text); const preview = parsedBlocks.length ? parsedBlocks.map(o=>`#${o.n} | WD:${o.wet??'—'} | %Moist:${o.moist??'—'} | Loc: ${o.loc||'(none)'}`).join('\n') : '(No valid tests found.)'; $('#notesOut').textContent=preview; $('#btnReview').disabled=!parsedBlocks.length; if(parsedBlocks.length) toast(`Detected ${parsedBlocks.length} test(s) ✔️`,'ok'); else toast('No numbered tests detected','warn'); }; img.src=URL.createObjectURL(f); }
 function openPasteImport(){ if(!pasteModal) buildPasteModal(); pasteModal.classList.remove('hidden'); $('#pasteArea').focus(); }
-function buildPasteModal(){
-  pasteModal = document.createElement('div'); pasteModal.className='modal hidden';
-  pasteModal.innerHTML = `
-    <div class="sheet">
-      <header class="inline" style="justify-content:space-between">
-        <h2>Paste Text</h2>
-        <div class="inline"><button class="btn secondary" id="btnClosePaste" style="width:auto">Close</button></div>
-      </header>
-      <div class="row" style="grid-template-columns:1fr">
-        <textarea id="pasteArea" placeholder="Paste raw text here — one test per line or paragraph.&#10;Example:&#10;1. 148.9 8.9 North lane 50ft E of west end&#10;2) 147.6 8.5 Lane 2 @ 200ft E"></textarea>
-        <div class="inline" style="gap:8px">
-          <button class="btn primary" id="btnAnalyzePaste">Analyze</button>
-          <button class="btn secondary" id="btnReviewPaste" disabled>Review Changes…</button>
-        </div>
-        <pre id="pasteOut" class="muted" style="white-space:pre-wrap"></pre>
-      </div>
-    </div>`;
-  document.body.appendChild(pasteModal);
-  $('#btnClosePaste').addEventListener('click', ()=>pasteModal.classList.add('hidden'));
-  $('#btnAnalyzePaste').addEventListener('click', ()=>{
-    const text = $('#pasteArea').value || '';
-    parsedBlocks = parseNotesBlocks(text);
-    const preview = parsedBlocks.length
-      ? parsedBlocks.map(o => `#${o.n} | WD:${o.wet ?? '—'} | %Moist:${o.moist ?? '—'} | Loc: ${o.loc || '(none)'}`).join('\n')
-      : '(No valid tests found. Make sure tests start with "1." / "2." etc.)';
-    $('#pasteOut').textContent = preview;
-    $('#btnReviewPaste').disabled = !parsedBlocks.length;
-    if (parsedBlocks.length) toast(`Detected ${parsedBlocks.length} test block(s) from pasted text ✔️`, 'ok'); else toast('No numbered tests detected in pasted text', 'warn');
-  });
-  $('#btnReviewPaste').addEventListener('click', openDiffPreview);
-}
-
-/* Robust splitter for notes/paste */
+function buildPasteModal(){ pasteModal=document.createElement('div'); pasteModal.className='modal hidden'; pasteModal.innerHTML=`<div class="sheet"><header class="inline" style="justify-content:space-between"><h2>Paste Text</h2><div class="inline"><button class="btn secondary" id="btnClosePaste" style="width:auto">Close</button></div></header><div class="row" style="grid-template-columns:1fr"><textarea id="pasteArea" placeholder="Paste raw text here — one test per line or paragraph.&#10;Example:&#10;1. 148.9 8.9 North lane 50ft E&#10;2) 147.6 8.5 Lane 2 @ 200ft E"></textarea><div class="inline" style="gap:8px"><button class="btn primary" id="btnAnalyzePaste">Analyze</button><button class="btn secondary" id="btnReviewPaste" disabled>Review Changes…</button></div><pre id="pasteOut" class="muted" style="white-space:pre-wrap"></pre></div></div>`; document.body.appendChild(pasteModal); $('#btnClosePaste').addEventListener('click', ()=>pasteModal.classList.add('hidden')); $('#btnAnalyzePaste').addEventListener('click', ()=>{ const text=$('#pasteArea').value||''; parsedBlocks=parseNotesBlocks(text); const preview=parsedBlocks.length?parsedBlocks.map(o=>`#${o.n} | WD:${o.wet??'—'} | %Moist:${o.moist??'—'} | Loc: ${o.loc||'(none)'}`).join('\n'):'(No valid tests found.)'; $('#pasteOut').textContent=preview; $('#btnReviewPaste').disabled=!parsedBlocks.length; if(parsedBlocks.length) toast(`Detected ${parsedBlocks.length} test(s) ✔️`,'ok'); else toast('No numbered tests detected','warn'); }); $('#btnReviewPaste').addEventListener('click', openDiffPreview); }
 function parseNotesBlocks(text){
-  const s = String(text || '').replace(/\r/g,'');
-  const startReG = /(^|\n)\s*(\d{1,3})\s*(?:[.) :-])?\s+(?=\d)/g;
-  const starts = [];
-  let m;
-  while ((m = startReG.exec(s)) !== null){
-    const idx = m.index + (m[1] ? m[1].length : 0);
-    const n = parseInt(m[2],10);
-    starts.push({ idx, n });
-  }
+  const s = String(text||'').replace(/\r/g,''); const startReG=/(^|\n)\s*(\d{1,3})\s*(?:[.) :-])?\s+(?=\d)/g; const starts=[]; let m; while((m=startReG.exec(s))!==null){ const idx = m.index + (m[1]?m[1].length:0); starts.push({ idx, n:parseInt(m[2],10)}); }
   if (!starts.length) return [];
-  const blocks = [];
-  for (let i = 0; i < starts.length; i++){
-    const a = starts[i].idx;
-    const b = (i+1 < starts.length) ? starts[i+1].idx : s.length;
-    const chunk = s.slice(a, b).trim();
-    const parsed = parseOneBlockSlice(chunk, starts[i].n);
-    if (parsed) blocks.push(parsed);
-  }
-  return blocks;
+  const blocks=[]; for(let i=0;i<starts.length;i++){ const a=starts[i].idx, b=(i+1<starts.length)?starts[i+1].idx:s.length; const chunk=s.slice(a,b).trim(); const parsed=parseOneBlockSlice(chunk,starts[i].n); if(parsed) blocks.push(parsed); } return blocks;
 }
-function parseOneBlockSlice(slice, testNum){
-  const m = slice.match(/^\s*(\d{1,3})\s*(?:[.) :-])?\s+([\s\S]*)$/);
-  if (!m) return null;
-  var rest = m[2].replace(/\s+/g,' ').trim();
-
-  // allow integers or one decimal
-  const numRe = /\b\d{1,3}(?:\.\d)?\b/g;
-  const tokens = [];
-  let k;
-  while ((k = numRe.exec(rest)) !== null){
-    tokens.push({ val: parseFloat(k[0]), start: k.index, end: k.index + k[0].length });
-  }
-  if (tokens.length < 2) return null;
-
-  const isWD    = v => v >= 100 && v <= 250;
-  const isMoist = v => v >= 0   && v <= 40;
-  const limit = Math.min(8, tokens.length);
-
-  let iHit = -1, jHit = -1, wd = null, moist = null;
-
-  outer:
-  for (let i = 0; i < limit; i++){
-    for (let j = i+1; j < limit; j++){
-      const a = tokens[i].val, b = tokens[j].val;
-      if ((isWD(a) && isMoist(b)) || (isMoist(a) && isWD(b))){
-        iHit = i; jHit = j;
-        wd    = isWD(a) ? a : b;
-        moist = isMoist(a) ? a : b;
-        break outer;
-      }
-    }
-  }
-  if (iHit === -1) return null;
-
-  const after = tokens[jHit].end;
-  const loc = rest.slice(after).replace(/^[^\w(]+/, '').trim() || null;
-
-  const t = state.job.targetDensity;
-  const pct = (t && t>0) ? Math.round((wd/t*100)*10)/10 : null;
-
-  return { n: testNum, loc, wet: wd, moist, pct };
+function parseOneBlockSlice(slice,testNum){
+  const m=slice.match(/^\s*(\d{1,3})\s*(?:[.) :-])?\s+([\s\S]*)$/); if(!m) return null; let rest=m[2].replace(/\s+/g,' ').trim();
+  const numRe=/\b\d{1,3}(?:\.\d)?\b/g; const tokens=[]; let k; while((k=numRe.exec(rest))!==null) tokens.push({ val:parseFloat(k[0]), start:k.index, end:k.index+k[0].length });
+  if (tokens.length<2) return null;
+  const isWD=v=>v>=100&&v<=250, isMoist=v=>v>=0&&v<=40; let iHit=-1,jHit=-1,wd=null,moist=null; outer: for(let i=0;i<Math.min(8,tokens.length);i++){ for(let j=i+1;j<Math.min(8,tokens.length);j++){ const a=tokens[i].val,b=tokens[j].val; if((isWD(a)&&isMoist(b))||(isMoist(a)&&isWD(b))){ iHit=i;jHit=j; wd=isWD(a)?a:b; moist=isMoist(a)?a:b; break outer; } } }
+  if (iHit===-1) return null; const after=tokens[jHit].end; const loc = rest.slice(after).replace(/^[^\w(]+/,'').trim()||null; const t=state.job.targetDensity; const pct=(t&&t>0)?Math.round((wd/t*100)*10)/10:null; return { n:testNum, loc, wet:wd, moist:moist, pct };
 }
-
-/* ---------- Diff preview + renumber planning ---------- */
-let diffModalBuilt=false;
 function openDiffPreview(){
   if (!parsedBlocks.length) return;
-  if (!diffModalBuilt) buildDiffModal();
-
+  if (!diffModal) buildDiffModal();
   lastPlan = planRenumberAndAssignments(parsedBlocks, state.tests);
-
   const moved = lastPlan.existingMoves.filter(x => x.from !== x.to);
-  const inserted = lastPlan.assignments;
-
-  $('#diffSummary').textContent =
-    `Will insert ${inserted.length} test${inserted.length===1?'':'s'}`
-    + (moved.length ? ` and renumber ${moved.length} existing.` : '.');
-
-  const insList = $('#diffInserts'); insList.innerHTML='';
-  inserted.forEach(a=>{
-    const li = document.createElement('li');
-    li.textContent = `#${a.desired} → #${a.assigned}  •  WD ${a.block.wet}  •  %Moist ${a.block.moist}  •  ${a.block.loc || '(no location)'}`;
-    li.classList.add('diff-ins');
-    insList.appendChild(li);
-  });
-
-  const mvList = $('#diffMoves'); mvList.innerHTML='';
-  if (moved.length){
-    moved.sort((a,b)=> a.from - b.from).forEach(m=>{
-      const li = document.createElement('li');
-      li.textContent = `Test #${m.from} → #${m.to}`;
-      li.classList.add('diff-move');
-      mvList.appendChild(li);
-    });
-    $('#movesWrap').classList.remove('hidden');
-  } else {
-    $('#movesWrap').classList.add('hidden');
-  }
-
+  $('#diffSummary').textContent = `Will insert ${lastPlan.assignments.length} test(s)` + (moved.length?` and renumber ${moved.length} existing.`:'.');
+  const insList=$('#diffInserts'); insList.innerHTML=''; lastPlan.assignments.forEach(a=>{ const li=document.createElement('li'); li.textContent=`#${a.desired} → #${a.assigned} • WD ${a.block.wet} • %Moist ${a.block.moist} • ${a.block.loc||'(no location)'}`; li.classList.add('diff-ins'); insList.appendChild(li); });
+  const mvList=$('#diffMoves'); mvList.innerHTML=''; if (moved.length){ moved.sort((a,b)=>a.from-b.from).forEach(m=>{ const li=document.createElement('li'); li.textContent=`Test #${m.from} → #${m.to}`; li.classList.add('diff-move'); mvList.appendChild(li); }); $('#movesWrap').classList.remove('hidden'); } else { $('#movesWrap').classList.add('hidden'); }
   diffModal.classList.remove('hidden');
 }
 function buildDiffModal(){
-  diffModal = document.createElement('div'); diffModal.className='modal hidden';
-  diffModal.innerHTML = `
-    <div class="sheet">
-      <header class="inline" style="justify-content:space-between">
-        <h2>Review Changes</h2>
-        <div class="inline">
-          <button class="btn secondary" id="btnCancelDiff" style="width:auto">Cancel</button>
-          <button class="btn primary" id="btnApplyDiff" style="width:auto">Confirm & Apply</button>
-        </div>
-      </header>
-      <div class="banner" id="diffSummary">—</div>
-      <div class="divider"></div>
-      <h3 style="margin:10px 0 6px">New Tests to Insert</h3>
-      <ul id="diffInserts" style="margin:0 0 8px 18px; padding:0"></ul>
-      <div id="movesWrap">
-        <h3 style="margin:12px 0 6px">Existing Tests to Renumber</h3>
-        <ul id="diffMoves" style="margin:0 0 8px 18px; padding:0"></ul>
-      </div>
-    </div>`;
+  diffModal=document.createElement('div'); diffModal.className='modal hidden';
+  diffModal.innerHTML=`<div class="sheet"><header class="inline" style="justify-content:space-between"><h2>Review Changes</h2><div class="inline"><button class="btn secondary" id="btnCancelDiff" style="width:auto">Cancel</button><button class="btn primary" id="btnApplyDiff" style="width:auto">Confirm & Apply</button></div></header><div class="banner" id="diffSummary">—</div><div class="divider"></div><h3 style="margin:10px 0 6px">New Tests to Insert</h3><ul id="diffInserts" style="margin:0 0 8px 18px; padding:0"></ul><div id="movesWrap"><h3 style="margin:12px 0 6px">Existing Tests to Renumber</h3><ul id="diffMoves" style="margin:0 0 8px 18px; padding:0"></ul></div></div>`;
   document.body.appendChild(diffModal);
   $('#btnCancelDiff').addEventListener('click', ()=> diffModal.classList.add('hidden'));
   $('#btnApplyDiff').addEventListener('click', applyDiffPlan);
-  diffModalBuilt=true;
 }
-
-function planRenumberAndAssignments(blocks, existingTests){
-  const currNums = new Set(existingTests.map(t=>t.n));
-  const originals = existingTests.map(t=>t.n).sort((a,b)=>a-b);
-  const currMap = new Map(originals.map(n => [n, n])); // original -> current
-
-  const sortedBlocks = [...blocks].sort((a,b)=> a.n - b.n);
-  const assignments = []; // {desired, assigned, block}
-
-  for (const b of sortedBlocks){
-    let target = b.n;
-    while (currNums.has(target)){
-      const newSet = new Set();
-      for (const n of currNums){ newSet.add(n >= target ? n+1 : n); }
-      currNums.clear(); newSet.forEach(x=>currNums.add(x));
-      for (const [orig, cur] of currMap.entries()){
-        if (cur >= target) currMap.set(orig, cur+1);
-      }
-      target += 1;
-    }
-    currNums.add(target);
-    assignments.push({ desired: b.n, assigned: target, block: b });
-  }
-
-  const existingMoves = Array.from(currMap.entries()).map(([from,to]) => ({from,to}));
+function planRenumberAndAssignments(blocks, existing){
+  const currNums=new Set(existing.map(t=>t.n)); const originals=existing.map(t=>t.n).sort((a,b)=>a-b); const currMap=new Map(originals.map(n=>[n,n]));
+  const sorted=[...blocks].sort((a,b)=>a.n-b.n); const assignments=[];
+  for (const b of sorted){ let target=b.n; while(currNums.has(target)){ const newSet=new Set(); for(const n of currNums){ newSet.add(n>=target?n+1:n); } currNums.clear(); newSet.forEach(x=>currNums.add(x)); for(const [orig,cur] of currMap.entries()){ if(cur>=target) currMap.set(orig,cur+1); } target+=1; } currNums.add(target); assignments.push({ desired:b.n, assigned:target, block:b }); }
+  const existingMoves = Array.from(currMap.entries()).map(([from,to])=>({from,to}));
   return { assignments, existingMoves };
 }
-
 function applyDiffPlan(){
-  if (!lastPlan) return;
-
-  const moveMap = new Map(lastPlan.existingMoves.map(m => [m.from, m.to]));
-  for (const t of state.tests){
-    const to = moveMap.get(t.n);
-    if (to != null) t.n = to;
-  }
-
-  for (const a of lastPlan.assignments){
-    const b = a.block;
-    state.tests.push({ n: a.assigned, loc: b.loc, wet: b.wet, moist: b.moist, pct: b.pct, grid: null });
-  }
-
-  state.tests.sort((x,y)=> x.n - y.n);
-
-  save();
-  diffModal.classList.add('hidden');
-  if (importModal) importModal.classList.add('hidden');
-  if (pasteModal)  pasteModal.classList.add('hidden');
-  testNumber.value = String(state.tests.length + 1);
-
-  const moved = lastPlan.existingMoves.filter(x => x.from !== x.to).length;
-  const msg = `Added ${lastPlan.assignments.length} test${lastPlan.assignments.length===1?'':'s'}`
-            + (moved ? ` • Renumbered ${moved} existing` : '') + ' ✔️';
-  banner('ok', msg); toast(msg, 'ok'); updateProgress();
+  const moveMap=new Map(lastPlan.existingMoves.map(m=>[m.from,m.to]));
+  state.tests.forEach(t=>{ const to=moveMap.get(t.n); if (to!=null) t.n=to; });
+  lastPlan.assignments.forEach(a=>{ const b=a.block; state.tests.push({ n:a.assigned, loc:b.loc, wet:b.wet, moist:b.moist, pct:b.pct, grid:null }); });
+  state.tests.sort((x,y)=>x.n-y.n); save(); diffModal.classList.add('hidden'); if(importModal) importModal.classList.add('hidden'); if(pasteModal) pasteModal.classList.add('hidden'); testNumber.value=String(nextLogicalTestNumber()); refreshPicker(); banner('ok','Inserted tests & renumbered as needed.'); updateProgress();
 }
 
-/* ========================= Site Photo + Grid ========================= */
-let photoModal = null;
-function openPhotoGrid(){ if (!photoModal) buildPhotoModal(); photoModal.classList.remove('hidden'); }
+/* ========================= Site Photo + Grid (ROI + Filters + Orientation) ========================= */
+let photoModal=null, editingROI=false, roiDrag=null;
+function openPhotoGrid(){ if(!photoModal) buildPhotoModal(); photoModal.classList.remove('hidden'); refreshGridPreview(); }
 function buildPhotoModal(){
-  photoModal = document.createElement('div'); photoModal.className='modal hidden';
+  photoModal=document.createElement('div'); photoModal.className='modal hidden';
   photoModal.innerHTML = `
     <div class="sheet">
       <header class="inline" style="justify-content:space-between">
@@ -1011,41 +779,47 @@ function buildPhotoModal(){
       </header>
 
       <div class="row">
-        <div class="input-wrap">
-          <label for="gridRows">Rows (letters)</label>
-          <input id="gridRows" type="number" min="1" max="52" value="${state.photo.rows}">
-        </div>
-        <div class="input-wrap">
-          <label for="gridCols">Cols (numbers)</label>
-          <input id="gridCols" type="number" min="1" max="200" value="${state.photo.cols}">
-        </div>
+        <div class="input-wrap"><label for="gridRows">Rows (letters/numbers)</label><input id="gridRows" type="number" min="1" max="52" value="10"></div>
+        <div class="input-wrap"><label for="gridCols">Cols (numbers/letters)</label><input id="gridCols" type="number" min="1" max="200" value="10"></div>
       </div>
 
       <div class="row">
-        <div class="input-wrap">
-          <label for="gridColor">Line Color</label>
-          <input id="gridColor" type="color" value="${state.photo.line}">
+        <div class="input-wrap"><label for="labelMode">Label Orientation</label>
+          <select id="labelMode">
+            <option value="lettersRows">Letters = Rows / Numbers = Cols</option>
+            <option value="lettersCols">Letters = Cols / Numbers = Rows</option>
+          </select>
         </div>
-        <div class="input-wrap">
-          <label for="gridAlpha">Line Opacity</label>
-          <input id="gridAlpha" type="range" min="0.1" max="1" step="0.05" value="${state.photo.alpha}">
-        </div>
+        <div class="input-wrap"><label for="gridColor">Line Color</label><input id="gridColor" type="color" value="#22c55e"></div>
       </div>
 
       <div class="row">
-        <div class="input-wrap">
-          <label for="gridLW">Line Width</label>
-          <input id="gridLW" type="number" min="1" max="10" value="${state.photo.lw}">
-        </div>
-        <div class="inline">
-          <label class="muted"><input type="checkbox" id="gridLabels" ${state.photo.labels ? 'checked' : ''}> Show Labels</label>
-        </div>
+        <div class="input-wrap"><label for="gridAlpha">Line Opacity</label><input id="gridAlpha" type="range" min="0.1" max="1" step="0.05" value="0.8"></div>
+        <div class="input-wrap"><label for="gridLW">Line Width</label><input id="gridLW" type="number" min="1" max="10" value="2"></div>
+      </div>
+
+      <div class="row">
+        <div class="input-wrap"><label for="zoom">Preview Zoom</label><input id="zoom" type="range" min="0.3" max="3" step="0.05" value="1"></div>
+        <div class="input-wrap"><label for="bright">Brightness</label><input id="bright" type="range" min="0.3" max="2" step="0.05" value="1"></div>
+      </div>
+      <div class="row">
+        <div class="input-wrap"><label for="contrast">Contrast</label><input id="contrast" type="range" min="0.3" max="2" step="0.05" value="1"></div>
+        <div class="input-wrap"><label for="saturate">Saturation</label><input id="saturate" type="range" min="0" max="2" step="0.05" value="1"></div>
+      </div>
+
+      <div class="inline" style="gap:8px; margin:6px 0">
+        <label class="muted"><input type="checkbox" id="gridLabels" checked> Show Labels</label>
+        <button class="btn secondary" id="btnEditArea">Draw/Edit Grid Area</button>
+        <button class="btn secondary" id="btnClearArea">Reset Area</button>
       </div>
 
       <div class="scan-grid">
-        <div><canvas id="photoCanvasEdit" height="360"></canvas></div>
+        <div style="position:relative">
+          <canvas id="photoCanvasEdit" height="360"></canvas>
+          <div id="roiHint" class="muted" style="position:absolute;left:8px;top:8px;background:#0008;padding:4px 8px;border-radius:8px">Drag rectangle to set grid area</div>
+        </div>
         <div>
-          <div class="help">Upload a site photo, adjust grid settings, then <strong>Save to Summary</strong>. Rows are labeled A, B, C…; columns are 1…N.</div>
+          <div class="help">Adjust area, orientation, and visibility. <strong>Save to Summary</strong> to render a high‑res annotated photo (with shaded label bands on top/left).</div>
           <div class="inline" style="gap:8px; margin-top:8px">
             <button class="btn primary" id="btnSaveGrid">Save to Summary</button>
             <button class="btn secondary" id="btnResetMarkers">Clear Markers</button>
@@ -1057,222 +831,235 @@ function buildPhotoModal(){
   document.body.appendChild(photoModal);
   $('#btnClosePhoto').addEventListener('click', ()=> photoModal.classList.add('hidden'));
   $('#photoPick').addEventListener('change', onPickSitePhoto);
-  $('#gridRows').addEventListener('input', refreshGridPreview);
-  $('#gridCols').addEventListener('input', refreshGridPreview);
-  $('#gridColor').addEventListener('input', refreshGridPreview);
-  $('#gridAlpha').addEventListener('input', refreshGridPreview);
-  $('#gridLW').addEventListener('input', refreshGridPreview);
-  $('#gridLabels').addEventListener('change', refreshGridPreview);
+  ['gridRows','gridCols','gridColor','gridAlpha','gridLW','gridLabels','labelMode','zoom','bright','contrast','saturate'].forEach(id=> $('#'+id).addEventListener('input', refreshGridPreview));
   $('#btnSaveGrid').addEventListener('click', saveGridToState);
   $('#btnResetMarkers').addEventListener('click', ()=>{ state.photo.markers=[]; renderPhotoWithMarkersToCanvas(); toast('Cleared all markers ✔️','ok'); });
-  refreshGridPreview();
+  $('#btnEditArea').addEventListener('click', ()=>{ editingROI=!editingROI; $('#btnEditArea').textContent = editingROI?'Finish Area':'Draw/Edit Grid Area'; refreshGridPreview(); });
+  $('#btnClearArea').addEventListener('click', ()=>{ const p=state.photo; p.roi={x:0,y:0,w:0,h:0}; refreshGridPreview(); });
+  const editCv = $('#photoCanvasEdit'); editCv.addEventListener('mousedown', roiMouseDown); window.addEventListener('mousemove', roiMouseMove); window.addEventListener('mouseup', roiMouseUp);
 }
 
 async function onPickSitePhoto(ev){
-  const file = ev.target.files && ev.target.files[0] ? ev.target.files[0] : null; if (!file) return;
+  const file = ev.target.files?.[0]; if(!file) return;
   const img = await loadImage(URL.createObjectURL(file));
-  state.photo.original = await drawImageToDataURL(img);
-  state.photo.width = img.naturalWidth; state.photo.height = img.naturalHeight;
-  toast('Photo loaded ✔️','ok');
-  refreshGridPreview();
+  const p = state.photo;
+  p.original = await drawImageToDataURL(img); p.width = img.naturalWidth; p.height = img.naturalHeight;
+  if (!p.roi.w || !p.roi.h){ p.roi = { x: Math.round(p.width*0.1), y: Math.round(p.height*0.1), w: Math.round(p.width*0.8), h: Math.round(p.height*0.8) }; }
+  toast('Photo loaded ✔️','ok'); refreshGridPreview();
 }
 
 function refreshGridPreview(){
-  const c = $('#photoCanvasEdit'); if (!c) return;
-  const ctx = c.getContext('2d');
   const p = state.photo;
+  const c = $('#photoCanvasEdit'); if(!c) return; const ctx = c.getContext('2d');
 
-  p.rows = Math.max(1, Math.min(52, parseInt($('#gridRows').value || p.rows,10)));
-  p.cols = Math.max(1, Math.min(200, parseInt($('#gridCols').value || p.cols,10)));
+  // read controls
+  p.rows = clampInt($('#gridRows').value,1,52,p.rows);
+  p.cols = clampInt($('#gridCols').value,1,200,p.cols);
   p.line = $('#gridColor').value || p.line;
   p.alpha = +($('#gridAlpha').value || p.alpha);
-  p.lw = Math.max(1, Math.min(10, parseInt($('#gridLW').value || p.lw,10)));
+  p.lw = clampInt($('#gridLW').value,1,10,p.lw);
   p.labels = $('#gridLabels').checked;
+  p.labelMode = $('#labelMode').value;
+  p.zoom = +($('#zoom').value || p.zoom);
+  p.bright = +($('#bright').value || p.bright);
+  p.contrast = +($('#contrast').value || p.contrast);
+  p.saturate = +($('#saturate').value || p.saturate);
 
   ctx.clearRect(0,0,c.width,c.height);
-  if (!p.original){ $('#photoNote').textContent = 'Pick a photo to begin.'; return; }
+  if (!p.original){ $('#photoNote').textContent='Pick a photo to begin.'; return; }
 
   const img = new Image(); img.onload = ()=>{
-    const maxW = 1000; const scale = Math.min(1, maxW / img.width);
-    c.width = Math.round(img.width*scale); c.height = Math.round(img.height*scale);
+    // fit to preview with zoom
+    const maxW = 1000; const sc = Math.min(1, maxW/img.width) * p.zoom;
+    c.width = Math.round(img.width*sc); c.height = Math.round(img.height*sc);
     ctx.clearRect(0,0,c.width,c.height);
+    ctx.filter = `brightness(${p.bright}) contrast(${p.contrast}) saturate(${p.saturate})`;
     ctx.drawImage(img, 0, 0, c.width, c.height);
-    drawGridOnCtx(ctx, c.width, c.height, p);
-    $('#photoNote').textContent = `Preview • ${p.rows} rows (A..${rowNumberToLetters(p.rows)}), ${p.cols} cols (1..${p.cols})`;
+    ctx.filter = 'none';
+
+    // draw ROI rectangle
+    const rx = (p.roi.x||0)*sc, ry=(p.roi.y||0)*sc, rw=(p.roi.w||img.width)*sc, rh=(p.roi.h||img.height)*sc;
+    ctx.save();
+    ctx.fillStyle = '#0006';
+    // outside shade
+    ctx.beginPath(); ctx.rect(0,0,c.width,c.height); ctx.rect(rx,ry,rw,rh); ctx.fill('evenodd');
+    ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 2; ctx.strokeRect(rx,ry,rw,rh);
+
+    if (editingROI){
+      $('#roiHint').style.display='block';
+      // handles
+      drawHandle(ctx, rx,ry); drawHandle(ctx, rx+rw,ry); drawHandle(ctx, rx,ry+rh); drawHandle(ctx, rx+rw,ry+rh);
+    } else {
+      $('#roiHint').style.display='none';
+      // draw grid preview inside ROI
+      drawGridOnCtx(ctx, c.width, c.height, p, sc, true);
+    }
+    ctx.restore();
+
+    $('#photoNote').textContent = `Preview • ${p.rows}×${p.cols} • ROI ${p.roi.w}×${p.roi.h}px • Labels: ${p.labelMode==='lettersRows'?'Rows=Letters':'Cols=Letters'}`;
   };
   img.src = p.original;
 }
+function clampInt(v,min,max,fallback){ const n=parseInt(v,10); return Number.isFinite(n) ? Math.max(min, Math.min(max,n)) : fallback; }
+function drawHandle(ctx,x,y){ ctx.beginPath(); ctx.arc(x,y,6,0,Math.PI*2); ctx.fillStyle='#60a5fa'; ctx.fill(); ctx.strokeStyle='#1e3a8a'; ctx.stroke(); }
 
+function roiMouseDown(e){
+  if (!editingROI) return;
+  const c = $('#photoCanvasEdit'); const rect = c.getBoundingClientRect(); const x = e.clientX-rect.left, y = e.clientY-rect.top;
+  roiDrag = { startX:x, startY:y, active:true };
+}
+function roiMouseMove(e){
+  if (!editingROI || !roiDrag?.active) return;
+  const p = state.photo; const c=$('#photoCanvasEdit'), rect=c.getBoundingClientRect(); const x=e.clientX-rect.left, y=e.clientY-rect.top;
+  const sc = c.width / (p.width * p.zoom); // actually sc we used in draw: sc = (min(1,maxW/img.width)*zoom). Recover approx:
+  const scale = (p.width>0) ? (c.width / (p.width*p.zoom)) : 1;
+  const rx1 = Math.min(roiDrag.startX, x), ry1 = Math.min(roiDrag.startY, y);
+  const rx2 = Math.max(roiDrag.startX, x), ry2 = Math.max(roiDrag.startY, y);
+  p.roi.x = Math.round(rx1/scale); p.roi.y = Math.round(ry1/scale); p.roi.w = Math.round((rx2-rx1)/scale); p.roi.h = Math.round((ry2-ry1)/scale);
+  refreshGridPreview();
+}
+function roiMouseUp(){ if (roiDrag){ roiDrag.active=false; roiDrag=null; } }
+
+/* Save grid (render full‑res, with label bands & shaded headers) */
 async function saveGridToState(){
-  const p = state.photo;
-  if (!p.original) return toast('Pick a photo first.', 'warn');
+  const p = state.photo; if (!p.original) return toast('Pick a photo first.','warn');
+  if (!p.roi.w || !p.roi.h) { p.roi = { x:0, y:0, w:p.width, h:p.height }; }
+
   const base = await loadImage(p.original);
-  const c = document.createElement('canvas'); c.width = base.naturalWidth; c.height = base.naturalHeight;
-  const ctx = c.getContext('2d'); ctx.drawImage(base, 0, 0);
-  drawGridOnCtx(ctx, c.width, c.height, p);
+  const bandTop = p.bandTop, bandLeft = p.bandLeft;
+
+  const outW = p.width + bandLeft, outH = p.height + bandTop;
+  const c = document.createElement('canvas'); c.width = outW; c.height = outH;
+  const ctx = c.getContext('2d');
+
+  // background
+  ctx.fillStyle = '#050816'; ctx.fillRect(0,0,outW,outH);
+
+  // draw photo with filters
+  ctx.filter = `brightness(${p.bright}) contrast(${p.contrast}) saturate(${p.saturate})`;
+  ctx.drawImage(base, bandLeft, bandTop);
+  ctx.filter = 'none';
+
+  // shaded bands for labels
+  ctx.fillStyle = '#0b132a'; ctx.fillRect(0,0,outW,bandTop); ctx.fillRect(0,0,bandLeft,outH);
+  ctx.strokeStyle = '#1c2b50'; ctx.strokeRect(0,0,outW,bandTop); ctx.strokeRect(0,0,bandLeft,outH);
+
+  // draw grid inside ROI (offset by bands)
+  drawGridOnCtx(ctx, outW, outH, p, 1, false, bandLeft, bandTop);
+
   p.annotatedBase = c.toDataURL('image/png');
-  p.width = c.width; p.height = c.height;
-  save();
-  renderPhotoWithMarkersToCanvas();
-  toast('Saved annotated photo ✔️ (markers will show in Summary)', 'ok');
+  save(); renderPhotoWithMarkersToCanvas(); toast('Saved annotated photo ✔️','ok');
 }
 
-function drawGridOnCtx(ctx, w, h, p){
+/* Draw grid helper (preview/full) */
+function drawGridOnCtx(ctx, cw, ch, p, previewScale=1, isPreview=false, bandLeft=0, bandTop=0){
+  // ROI in output coords
+  const rx = (p.roi.x||0)*previewScale + (isPreview?0:bandLeft);
+  const ry = (p.roi.y||0)*previewScale + (isPreview?0:bandTop);
+  const rw = (p.roi.w||p.width)*previewScale;
+  const rh = (p.roi.h||p.height)*previewScale;
+
   ctx.save();
   ctx.globalAlpha = p.alpha;
-  ctx.strokeStyle = p.line;
-  ctx.lineWidth = p.lw;
+  ctx.strokeStyle = p.line; ctx.lineWidth = p.lw;
 
-  const cellW = w / p.cols;
-  const cellH = h / p.rows;
+  const cellW = rw / p.cols, cellH = rh / p.rows;
 
+  // headers shading over label bands (top of ROI & left of ROI)
+  ctx.fillStyle = 'rgba(11,19,42,0.85)';
+  // top header cells
+  ctx.fillRect(rx, ry- (isPreview?0:0) - 0, rw, 24);
+  // left header cells
+  ctx.fillRect(rx- (isPreview?0:0) - 0, ry, 24, rh);
+
+  // grid lines
   for (let x=0; x<=p.cols; x++){
-    const px = Math.round(x*cellW)+0.5;
-    ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, h); ctx.stroke();
-    if (p.labels && x>0 && x<=p.cols){
-      ctx.fillStyle = '#0b132a'; ctx.fillRect(px-cellW+2, 2, cellW-4, 24);
-      ctx.fillStyle = '#e7ecf5'; ctx.font = '14px ui-monospace,Menlo,monospace'; ctx.textAlign='center'; ctx.textBaseline='top';
-      ctx.fillText(String(x), px - cellW/2, 4);
-    }
+    const px = Math.round(rx + x*cellW)+0.5; ctx.beginPath(); ctx.moveTo(px, ry); ctx.lineTo(px, ry+rh); ctx.stroke();
   }
   for (let y=0; y<=p.rows; y++){
-    const py = Math.round(y*cellH)+0.5;
-    ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(w, py); ctx.stroke();
-    if (p.labels && y>0 && y<=p.rows){
-      ctx.fillStyle = '#0b132a'; ctx.fillRect(2, py-cellH+2, 24, cellH-4);
-      ctx.fillStyle = '#e7ecf5'; ctx.font = '14px ui-monospace,Menlo,monospace'; ctx.textAlign='left'; ctx.textBaseline='middle';
-      ctx.fillText(rowNumberToLetters(y), 6, py - cellH/2);
+    const py = Math.round(ry + y*cellH)+0.5; ctx.beginPath(); ctx.moveTo(rx, py); ctx.lineTo(rx+rw, py); ctx.stroke();
+  }
+
+  // labels (bold)
+  if (p.labels){
+    ctx.fillStyle = '#e7ecf5';
+    ctx.font = '700 14px ui-monospace, Menlo, monospace';
+    ctx.textAlign = 'center'; ctx.textBaseline='top';
+
+    // determine which axis uses letters
+    const lettersRows = (p.labelMode === 'lettersRows');
+
+    // column labels along the top of ROI
+    for (let x=1; x<=p.cols; x++){
+      const label = lettersRows ? String(x) : rowNumberToLetters(x);
+      const px = rx + (x-0.5)*cellW; ctx.fillText(label, px, ry-20);
+    }
+    // row labels along the left of ROI
+    ctx.textAlign='left'; ctx.textBaseline='middle';
+    for (let y=1; y<=p.rows; y++){
+      const label = lettersRows ? rowNumberToLetters(y) : String(y);
+      const py = ry + (y-0.5)*cellH; ctx.fillText(label, rx-20, py);
     }
   }
   ctx.restore();
 }
 
+/* ========================= Render photo with markers (summary) ========================= */
 function renderPhotoWithMarkersToCanvas() {
-  const p = state.photo;
-  const wrap = document.getElementById('photoWrap');
-  const cv = document.getElementById('photoCanvas');
-  if (!wrap || !cv) return;
-  if (!p || !p.annotatedBase || !p.width || !p.height) {
-    wrap.classList.add('hidden'); return;
-  }
+  const p = state.photo, wrap = $('#photoWrap'), cv = $('#photoCanvas');
+  if (!wrap || !cv) return; if (!p?.annotatedBase) { wrap.classList.add('hidden'); return; }
   wrap.classList.remove('hidden');
-
-  cv.width = p.width; cv.height = p.height;
+  cv.width = (p.width + p.bandLeft); cv.height = (p.height + p.bandTop);
   const ctx = cv.getContext('2d');
-
-  const base = new Image();
-  base.onload = ()=>{
-    ctx.clearRect(0,0,cv.width,cv.height);
-    ctx.drawImage(base, 0, 0, cv.width, cv.height);
-    drawMarkersOnCtx(ctx, p);
-  };
-  base.src = p.annotatedBase;
+  const base = new Image(); base.onload = ()=>{ ctx.clearRect(0,0,cv.width,cv.height); ctx.drawImage(base, 0, 0, cv.width, cv.height); drawMarkersOnCtx(ctx, p); }; base.src = p.annotatedBase;
 }
-
 function drawMarkersOnCtx(ctx, p){
   const pins = p.markers || [];
   ctx.save();
-  ctx.font = Math.max(14, Math.round(p.width * 0.02)) + 'px ui-monospace, Menlo, monospace';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-
+  ctx.font = Math.max(14, Math.round((p.width+p.bandLeft) * 0.02)) + 'px ui-monospace, Menlo, monospace';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   pins.forEach(pin => {
-    const x = pin.x, y = pin.y;
-    const r = Math.max(8, Math.round(p.width * 0.008));
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI*2);
-    ctx.fillStyle = '#0b132a';
-    ctx.fill();
-    ctx.lineWidth = Math.max(2, Math.round(p.width * 0.003));
-    ctx.strokeStyle = '#22c55e';
-    ctx.stroke();
-
-    const label = String(pin.n);
-    const padX = 6, padY = 3;
-    const metrics = ctx.measureText(label);
-    const lw = metrics.width + padX*2;
-    const lh = parseInt(ctx.font,10) + padY*2;
-    const lx = x; const ly = y - r - lh*0.9;
-
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    roundRect(ctx, lx - lw/2, ly - lh/2, lw, lh, 6); ctx.fill();
-
-    ctx.fillStyle = '#e7ecf5';
-    ctx.fillText(label, lx, ly);
+    const x = pin.x + p.bandLeft, y = pin.y + p.bandTop;
+    const r = Math.max(8, Math.round((p.width+p.bandLeft) * 0.008));
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fillStyle = '#0b132a'; ctx.fill();
+    ctx.lineWidth = Math.max(2, Math.round((p.width+p.bandLeft) * 0.003)); ctx.strokeStyle = '#22c55e'; ctx.stroke();
+    const label = String(pin.n); const padX=6,padY=3; const metrics = ctx.measureText(label); const lw=metrics.width+padX*2; const lh=parseInt(ctx.font,10)+padY*2; const lx=x, ly=y-r-lh*0.9;
+    ctx.fillStyle = 'rgba(0,0,0,0.6)'; roundRect(ctx, lx-lw/2, ly-lh/2, lw, lh, 6); ctx.fill();
+    ctx.fillStyle = '#e7ecf5'; ctx.fillText(label, lx, ly);
   });
-
   ctx.restore();
 }
 
-/* ========================= Progress ========================= */
-function updateProgress(){
-  const n = state.tests.length;
-  $('#testsCount').textContent = n;
-  const pct = Math.min(100, (n/10)*100); // soft goal: 10 tests
-  $('#progFill').style.width = pct + '%';
-  $('#resumeBadge').classList.toggle('hidden', n===0);
+/* ========================= Coord ↔ grid helpers ========================= */
+function rowNumberToLetters(num){ let s=''; while(num>0){ const rem=(num-1)%26; s=String.fromCharCode(65+rem)+s; num=Math.floor((num-1)/26);} return s; }
+function coordToRowCol(coord){
+  const s=String(coord||'').trim().toUpperCase();
+  // We accept either Letters+Number or Number+Letters to respect labelMode
+  const m1=s.match(/^([A-Z]{1,2})(\d{1,3})$/); // e.g., A12
+  const m2=s.match(/^(\d{1,3})([A-Z]{1,2})$/); // e.g., 12A
+  if (m1){ return { row: lettersToNum(m1[1]), col: parseInt(m1[2],10) }; }
+  if (m2){ return { row: lettersToNum(m2[2]), col: parseInt(m2[1],10) }; }
+  return null;
 }
-$('#resumeBadge').addEventListener('click', ()=>{
-  entryCard.classList.remove('hidden');
-  summaryCard.classList.add('hidden');
-  toast('Resumed session','ok');
-});
+function lettersToNum(letters){ let n=0; for(let i=0;i<letters.length;i++){ n = n*26 + (letters.charCodeAt(i)-64); } return n; }
+function isCoordInBounds(rowCol, colMaybe, pMaybe){
+  if (typeof rowCol==='object'){ const {row,col}=rowCol; return isCoordInBounds(row,col, pMaybe); }
+  const row=rowCol, col=colMaybe, p=pMaybe||state.photo;
+  return (row>=1 && row<=p.rows && col>=1 && col<=p.cols);
+}
+function gridCellCenterPx(row, col, p){
+  if (!p?.width || !p?.height) return null;
+  const rx = p.roi?.x ?? 0, ry = p.roi?.y ?? 0, rw = p.roi?.w || p.width, rh = p.roi?.h || p.height;
+  const cellW = rw / p.cols, cellH = rh / p.rows;
+  return { x: Math.round((col-0.5)*cellW + rx), y: Math.round((row-0.5)*cellH + ry) };
+}
 
-/* ========================= Helpers & Toast & Grid Utils ========================= */
-function roundRect(ctx, x, y, w, h, r) {
-  const rr = Math.min(r, w/2, h/2);
-  ctx.beginPath();
-  ctx.moveTo(x+rr, y);
-  ctx.arcTo(x+w, y, x+w, y+h, rr);
-  ctx.arcTo(x+w, y+h, x, y+h, rr);
-  ctx.arcTo(x, y+h, x, y, rr);
-  ctx.arcTo(x, y, x+w, y, rr);
-  ctx.closePath();
-}
-function rowNumberToLetters(num) {
-  let s = '';
-  while (num > 0) {
-    const rem = (num - 1) % 26;
-    s = String.fromCharCode(65 + rem) + s;
-    num = Math.floor((num - 1) / 26);
-  }
-  return s;
-}
-function coordToRowCol(coord) {
-  if (!coord) return null;
-  const m = String(coord).trim().match(/^([A-Za-z]{1,2})(\d{1,3})$/);
-  if (!m) return null;
-  const letters = m[1].toUpperCase(); const colNum = parseInt(m[2], 10);
-  let rowNum = 0; for (let i = 0; i < letters.length; i++) { rowNum = rowNum * 26 + (letters.charCodeAt(i) - 64); }
-  return { row: rowNum, col: colNum };
-}
-function isCoordInBounds(row, col, rows, cols) { return row >= 1 && row <= rows && col >= 1 && col <= cols; }
-function gridCellCenterPx(row, col, p) {
-  if (!p || !p.width || !p.height || !p.rows || !p.cols) return null;
-  const cellW = p.width / p.cols; const cellH = p.height / p.rows;
-  return { x: (col - 0.5) * cellW, y: (row - 0.5) * cellH };
-}
+/* ========================= Misc helpers ========================= */
+function roundRect(ctx,x,y,w,h,r){ const rr=Math.min(r,w/2,h/2); ctx.beginPath(); ctx.moveTo(x+rr,y); ctx.arcTo(x+w,y,x+w,y+h,rr); ctx.arcTo(x+w,y+h,x,y+h,rr); ctx.arcTo(x,y+h,x,y,rr); ctx.arcTo(x,y,x+w,y,rr); ctx.closePath(); }
 async function loadImage(src){ return await new Promise((res,rej)=>{ const img=new Image(); img.crossOrigin='anonymous'; img.onload=()=>res(img); img.onerror=rej; img.src=src; }); }
 async function drawImageToDataURL(img){ const c=document.createElement('canvas'); c.width=img.naturalWidth; c.height=img.naturalHeight; const ctx=c.getContext('2d'); ctx.drawImage(img,0,0); return c.toDataURL('image/png'); }
-function slug(s=''){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
 function download(href, filename){ const a=document.createElement('a'); a.href=href; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); }
-
-let toastTimer=null;
-function toast(msg, type='ok'){
-  clearTimeout(toastTimer);
-  let bar = document.getElementById('toast');
-  if (!bar){
-    bar = document.createElement('div'); bar.id='toast'; document.body.appendChild(bar);
-    Object.assign(bar.style, { position:'fixed', left:'50%', bottom:'22px', transform:'translateX(-50%)',
-      padding:'12px 14px', borderRadius:'12px', border:'1px solid #203050', background:'#0b1227',
-      color:'#e5e7eb', fontSize:'14px', zIndex:9999, boxShadow:'0 10px 30px #0007', transition:'opacity .2s' });
-  }
-  const color = type==='ok'? '#22c55e' : type==='warn'? '#f59e0b' : '#ef4444';
-  bar.style.borderColor = color + '88';
-  bar.innerHTML = `<span style="color:${color}; font-weight:800; margin-right:8px">•</span>${msg}`;
-  bar.style.opacity='1';
-  toastTimer = setTimeout(()=> bar.style.opacity='0', 2600);
-}
+let toastTimer=null; function toast(msg, type='ok'){ clearTimeout(toastTimer); let bar=document.getElementById('toast'); if(!bar){ bar=document.createElement('div'); bar.id='toast'; document.body.appendChild(bar); Object.assign(bar.style,{ position:'fixed', left:'50%', bottom:'22px', transform:'translateX(-50%)', padding:'12px 14px', borderRadius:'12px', border:'1px solid #203050', background:'#0b1227', color:'#e5e7eb', fontSize:'14px', zIndex:9999, boxShadow:'0 10px 30px #0007', transition:'opacity .2s' }); } const color=type==='ok'? '#22c55e': type==='warn'? '#f59e0b': '#ef4444'; bar.style.borderColor=color+'88'; bar.innerHTML=`<span style="color:${color}; font-weight:800; margin-right:8px">•</span>${msg}`; bar.style.opacity='1'; toastTimer=setTimeout(()=>bar.style.opacity='0',2600); }
 </script>
 </body>
 </html>
