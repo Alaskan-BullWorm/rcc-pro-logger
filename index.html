@@ -43,7 +43,7 @@
   .btn.primary{background:linear-gradient(180deg,#22c55e,#16a34a); color:#03140b; border-color:#0b3b22}
   .btn.secondary{background:#0c1224}
   .btn.warning{background:linear-gradient(180deg,#f59e0b,#d97706); color:#1a1203; border-color:#6b3f03}
-  main{max-width:1100px; margin:18px auto 60px; padding:0 14px}
+  main{max-width:1100px; margin:18px auto 80px; padding:0 14px}
   .grid{display:grid; gap:18px; grid-template-columns:1.3fr .7fr}
   .card{
     background:linear-gradient(180deg,#0c1328 0%, #0a1022 100%); border:1px solid var(--line);
@@ -75,13 +75,37 @@
   .hidden{display:none !important}
   .miss{color:#f59e0b; font-style:italic}
   .misscell{background:#2c1706}
-  .export-bar .btn{padding:10px 10px}
   .badge{font-size:11px; padding:4px 8px; border:1px solid #253055; border-radius:8px; color:#9fb0d4; background:#09122a}
   video{width:100%; border:1px solid #1f294a; border-radius:10px; background:#000}
   canvas{max-width:100%; background:#050816; border:1px dashed #233057; border-radius:8px}
   .modal{position:fixed; inset:0; background:#0009; display:flex; align-items:flex-end; justify-content:center; z-index:50}
   .sheet{width:min(920px, 96vw); max-height:90vh; overflow:auto; background:#0a0f20; border:1px solid #1c2540; border-radius:16px 16px 0 0; padding:14px}
   .scan-grid{display:grid; grid-template-columns:1.2fr .8fr; gap:12px}
+  /* Export split menu */
+  .menu{position:relative}
+  .menu-pop{position:absolute; right:0; top:110%; background:#0c1224; border:1px solid #223055; border-radius:10px; padding:6px; display:grid; gap:4px; z-index:20}
+  .menu-pop button{background:#0d1426; color:#e7ecf5; border:1px solid #223055; padding:10px 12px; text-align:left; border-radius:8px; min-width:180px}
+  /* Bottom action bar (thumb zone) */
+  #actionBar{
+    position:fixed; left:0; right:0; bottom:0; z-index:40; display:flex; gap:8px;
+    padding:10px 12px calc(12px + env(safe-area-inset-bottom));
+    backdrop-filter:saturate(140%) blur(8px);
+    background:#060b18d9; border-top:1px solid #1a2746;
+  }
+  .bar-btn{
+    flex:1; min-height:52px; font-weight:800; border-radius:12px;
+    border:1px solid #243255; background:#0f172a; color:#e7ecf5;
+  }
+  .bar-btn.primary{ background:linear-gradient(180deg,#22c55e,#16a34a); color:#07130b; border-color:#0b3b22 }
+  @media (min-width:860px){ #actionBar{position:sticky; bottom:auto; padding:0; background:transparent; border:0} main{margin-bottom:60px} }
+  /* Progress bar */
+  #sessionProgress{margin:10px 0}
+  #progTrack{height:8px; border-radius:999px; background:#111a34; margin-top:8px; overflow:hidden}
+  #progFill{height:100%; width:0%; background:linear-gradient(90deg,#22c55e,#60a5fa); transition:width .35s ease}
+  #resumeBadge{cursor:pointer}
+  /* Diff preview colors */
+  .diff-ins{color:#b9f2ce}
+  .diff-move{color:#fcd98d}
   @media (max-width: 960px){ .grid{grid-template-columns:1fr} .scan-grid{grid-template-columns:1fr} }
   @media (max-width: 600px){ input{padding:16px 14px; font-size:17px} .unit{right:12px} }
 </style>
@@ -142,6 +166,15 @@
     </div>
   </section>
 
+  <!-- SESSION PROGRESS (goal gradient + resume) -->
+  <section id="sessionProgress" class="banner">
+    <div class="inline" style="justify-content:space-between; width:100%">
+      <div><strong id="testsCount">0</strong> tests logged today</div>
+      <div id="resumeBadge" class="pill hidden">Unfinished session — Resume?</div>
+    </div>
+    <div id="progTrack"><div id="progFill"></div></div>
+  </section>
+
   <div class="grid">
     <!-- ENTRY -->
     <section id="entryCard" class="card hidden">
@@ -165,7 +198,7 @@
         </div>
       </div>
 
-      <div class="help">OCR tuned for numbers like <span class="kbd">WD: 149.0</span> <em>or</em> <span class="kbd">WD: 149</span>, and <span class="kbd">Moist: 11.2</span> <em>or</em> <span class="kbd">11</span>.</div>
+      <div class="help">OCR accepts integers or 1‑decimal: <span class="kbd">WD: 149</span> or <span class="kbd">149.0</span>; <span class="kbd">Moist: 11</span> or <span class="kbd">11.2</span>.</div>
 
       <div class="inline" style="gap:10px; margin-top:10px">
         <button class="btn primary" id="btnSaveNext">Save & Next Test</button>
@@ -188,12 +221,16 @@
           <span class="badge">Location: <strong id="summaryJobLocation">—</strong></span>
           <span class="badge">Mileage: <strong id="summaryMileage">— mi</strong></span>
         </div>
-        <div class="inline export-bar" style="gap:8px">
-          <button class="btn secondary" id="btnPNG">PNG</button>
-          <button class="btn secondary" id="btnPDF">PDF</button>
-          <button class="btn secondary" id="btnDownloadCSV">CSV</button>
-          <button class="btn secondary" id="btnDownloadSVD">SVD</button>
-          <button class="btn secondary" id="btnCopyLink">Share Link</button>
+        <!-- Export split-button -->
+        <div class="menu">
+          <button class="btn secondary" id="btnExport">Export ▾</button>
+          <div id="exportMenu" class="menu-pop hidden">
+            <button data-act="png">PNG</button>
+            <button data-act="pdf">PDF</button>
+            <button data-act="csv">CSV</button>
+            <button data-act="svd">SVD</button>
+            <button data-act="share">Copy Share Link</button>
+          </div>
         </div>
       </div>
 
@@ -224,6 +261,13 @@
   </div>
 </main>
 
+<!-- Bottom Action Bar (thumb zone / Fitts) -->
+<nav id="actionBar" aria-label="primary actions">
+  <button class="bar-btn primary" id="barSaveNext">Save & Next</button>
+  <button class="bar-btn" id="barScan">Scan</button>
+  <button class="bar-btn" id="barImport">Import Notes</button>
+</nav>
+
 <!-- libs -->
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js" crossorigin="anonymous"></script>
@@ -238,7 +282,7 @@ const miles = meters => +(meters / 1609.344).toFixed(2);
 const clamp1 = v => Math.round(v*10)/10;
 const toNumber = v => { const n = Number(String(v).trim()); return Number.isFinite(n) ? n : null; };
 
-const LS_KEY = 'rcc_pro_logger_v3';
+const LS_KEY = 'rcc_pro_logger_v4';
 const ORIGIN_TEXT = 'Geotechnical Consultants Inc., Westerville, Ohio';
 const NOMINATIM = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=';
 const NOMI_REV  = (lat,lon) => `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
@@ -252,14 +296,13 @@ const state = {
 
 /* ========================= DOM & events ========================= */
 const setupCard = $('#setupCard'), entryCard = $('#entryCard'), summaryCard = $('#summaryCard');
-
 const jobName = $('#jobName'), jobDate = $('#jobDate'), jobLocation = $('#jobLocation'), targetDensity = $('#targetDensity'), targetMoist = $('#targetMoist');
 const gpsStatus = $('#gpsStatus');
 const testNumber = $('#testNumber'), testLocation = $('#testLocation'), wetDensity = $('#wetDensity'), moisture = $('#moisture'), densityPct = $('#densityPct');
-
 const summaryJobName = $('#summaryJobName'), summaryTarget = $('#summaryTarget'), summaryJobDate = $('#summaryJobDate'), summaryJobLocation = $('#summaryJobLocation'), summaryMileage = $('#summaryMileage'), summarySubtitle = $('#summarySubtitle'), testsTbody = $('#testsTbody'), generatedAt = $('#generatedAt');
 const statusBanner = $('#statusBanner');
 const lsStatus = $('#lsStatus'), netStatus = $('#netStatus'), methodEl = $('#method');
+const exportMenu = $('#exportMenu');
 
 $('#btnStart').addEventListener('click', startLogging);
 $('#btnLoad').addEventListener('click', loadLast);
@@ -272,14 +315,26 @@ $('#btnClearForm').addEventListener('click', () => clearEntry(false));
 $('#btnFinish').addEventListener('click', showSummary);
 $('#btnBackToEntry').addEventListener('click', () => { summaryCard.classList.add('hidden'); entryCard.classList.remove('hidden'); testLocation.focus(); });
 
-$('#btnPNG').addEventListener('click', exportPNG);
-$('#btnPDF').addEventListener('click', exportPDF);
-$('#btnDownloadCSV').addEventListener('click', exportCSV);
-$('#btnDownloadSVD').addEventListener('click', exportSVD);
-$('#btnCopyLink').addEventListener('click', copyShareLink);
+$('#btnExport').addEventListener('click', ()=> exportMenu.classList.toggle('hidden'));
+exportMenu.addEventListener('click', e=>{
+  const act = e.target?.dataset?.act;
+  if(!act) return;
+  exportMenu.classList.add('hidden');
+  if (act==='png') exportPNG();
+  if (act==='pdf') exportPDF();
+  if (act==='csv') exportCSV();
+  if (act==='svd') exportSVD();
+  if (act==='share') copyShareLink();
+});
+document.addEventListener('click', (e)=>{ if(!exportMenu.contains(e.target) && e.target!==$('#btnExport')) exportMenu.classList.add('hidden'); });
 
 $('#btnScan').addEventListener('click', openScanner);
 $('#btnImportNotes').addEventListener('click', openImportNotes);
+
+// Bottom bar wiring (no duplicate logic)
+$('#barSaveNext').addEventListener('click', ()=> $('#btnSaveNext').click());
+$('#barScan').addEventListener('click', ()=> $('#btnScan').click());
+$('#barImport').addEventListener('click', ()=> $('#btnImportNotes').click());
 
 [wetDensity, targetDensity].forEach(i => i.addEventListener('input', updatePctField));
 document.addEventListener('keydown', e => {
@@ -289,6 +344,7 @@ document.addEventListener('keydown', e => {
 jobDate.value = todayISO();
 if (location.protocol === 'https:') $('#httpsHint').classList.add('hidden');
 restoreFromURL();
+updateProgress(); // initial draw
 
 /* ========================= Core ========================= */
 function startLogging(){
@@ -307,7 +363,7 @@ function startLogging(){
   entryCard.classList.remove('hidden');
   testNumber.value = String(state.tests.length + 1);
   testLocation.focus();
-  save();
+  save(); updateProgress();
 
   computeMileage()
     .then(mi => { state.job.mileageMi = mi; summaryMileage.textContent = `${mi} mi`; save(); toast(`Mileage computed: ${mi} mi ✔️`, 'ok'); })
@@ -333,7 +389,7 @@ async function reverseGeocode(lat,lon){ const res = await fetch(NOMI_REV(lat,lon
 function haversine(lat1, lon1, lat2, lon2){ const toRad=d=>d*Math.PI/180, R=3958.761; const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1); const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2; return 2*R*Math.asin(Math.sqrt(a)); }
 
 /* ========================= Entry & %Target ========================= */
-function updatePctField(){ const wet=toNumber(wetDensity.value), t=toNumber(targetDensity.value); const pct=(wet!=null && t && t>0)? Math.round((wet/t*100)*10)/10: null; densityPct.value = pct==null ? '' : pct; }
+function updatePctField(){ const wet=toNumber(wetDensity.value), t=toNumber(targetDensity.value); const pct=(wet!=null && t && t>0)? clamp1(wet/t*100): null; densityPct.value = pct==null ? '' : pct; }
 
 function onSaveNext(){
   const loc = testLocation.value.trim();
@@ -347,10 +403,10 @@ function onSaveNext(){
   if (wet < 100 || wet > 170) toast('Wet Density seems off for RCC (~120–145 pcf).', 'warn');
   if (moi < 1 || moi > 20) toast('Moisture seems off (~4–10%).', 'warn');
 
-  const t = state.job.targetDensity; const pct = (t && t>0) ? Math.round((wet/t*100)*10)/10 : null;
+  const t = state.job.targetDensity; const pct = (t && t>0) ? clamp1(wet/t*100) : null;
   const n = state.tests.length + 1; state.tests.push({ n, loc, wet, moist:moi, pct });
 
-  save(); clearEntry(true); testNumber.value = String(state.tests.length + 1); testLocation.focus();
+  save(); updateProgress(); clearEntry(true); testNumber.value = String(state.tests.length + 1); testLocation.focus();
 }
 function clearEntry(keep){ if(!keep) testNumber.value = String(state.tests.length + 1); testLocation.value=''; wetDensity.value=''; moisture.value=''; densityPct.value=''; }
 
@@ -396,6 +452,7 @@ function loadLast(){
     jobName.value = state.job.name; jobDate.value = state.job.date; jobLocation.value = state.job.location;
     targetDensity.value = state.job.targetDensity ?? ''; targetMoist.value = state.job.targetMoist ?? '';
     disableSetup(); entryCard.classList.remove('hidden'); testNumber.value = String(state.tests.length + 1); testLocation.focus();
+    updateProgress();
     toast('Session loaded ✔️','ok');
   }catch{ toast('Failed to load session.', 'err'); }
 }
@@ -414,12 +471,12 @@ function restoreFromURL(){
       jobName.value = state.job.name; jobDate.value = state.job.date; jobLocation.value = state.job.location;
       targetDensity.value = state.job.targetDensity ?? ''; targetMoist.value = state.job.targetMoist ?? '';
       disableSetup(); entryCard.classList.remove('hidden'); testNumber.value = String(state.tests.length + 1);
-      showSummary(); toast('Loaded from shared link ✔️','ok');
+      showSummary(); updateProgress(); toast('Loaded from shared link ✔️','ok');
     }
   }catch{}
 }
 
-/* ========================= Exports (unchanged) ========================= */
+/* ========================= Export handlers ========================= */
 async function ensureSummaryRendered(){ if (summaryCard.classList.contains('hidden')) showSummary(); await new Promise(r=>setTimeout(r,50)); }
 async function exportPNG(){ await ensureSummaryRendered(); const c = await html2canvas($('#exportArea'), { backgroundColor:'#091126', scale:2 }); download(c.toDataURL('image/png'), `${slug(state.job.name)}-${state.job.date}-RCC.png`); }
 async function exportPDF(){ await ensureSummaryRendered(); const c = await html2canvas($('#exportArea'), { backgroundColor:'#091126', scale:2 }); const img = c.toDataURL('image/png'); const { jsPDF } = window.jspdf; const pdf = new jsPDF({ unit:'pt', format:'a4' }); const pageW = pdf.internal.pageSize.getWidth(); const imgW = pageW - 48; const ratio = imgW / c.width; const imgH = c.height * ratio; pdf.addImage(img, 'PNG', 24, 24, imgW, imgH); pdf.save(`${slug(state.job.name)}-${state.job.date}-RCC.pdf`); }
@@ -568,7 +625,7 @@ async function ocrGauge(canvas){
     const res = await Tesseract.recognize(canvas, 'eng', { logger: m=>{} });
     const text = (res?.data?.text || '').replace(/\r/g,'');
     out.text = text;
-    // WD: three digits (100-999), optional .digit; Moist: one/two digits, optional .digit
+    // WD: three digits, opt .digit; Moist: one/two digits, opt .digit
     const wdMatch = text.match(/\b(1\d{2}|[2-9]\d{2})(?:\.\d)?\b/);
     const moistMatch = text.match(/\b(\d{1,2})(?:\.\d)?\b/);
     out.wd = wdMatch ? parseFloat(wdMatch[0]) : null;
@@ -680,31 +737,30 @@ function parseOneBlock(block, testNum){
   const w1 = wdRe.exec(rest);
   if (!m1 || !w1) return null;
 
-  // index of ends (relative to rest)
   const moistEnd = m1.index + m1[0].length;
   const wdEnd    = w1.index + w1[0].length;
   const afterIdx = Math.max(moistEnd, wdEnd);
 
-  // everything after second number = location
   const loc = rest.slice(afterIdx).replace(/^[^\w]+/,'').trim() || null;
 
   const wet = parseFloat(w1[1]);
   const moist = parseFloat(m1[1]);
 
-  // sanity limits to avoid picking random numbers
+  // sanity
   if (!(wet>=80 && wet<=250)) return null;
   if (!(moist>=0 && moist<=40)) return null;
 
   const t = state.job.targetDensity;
-  const pct = (t && t>0 && !Number.isNaN(wet)) ? Math.round((wet/t*100)*10)/10 : null;
+  const pct = (t && t>0 && !Number.isNaN(wet)) ? clamp1(wet/t*100) : null;
 
   return { n: testNum, loc, wet, moist, pct };
 }
 
 /* ---------- Diff preview + renumber planning ---------- */
+let diffModalBuilt=false;
 function openDiffPreview(){
   if (!parsedBlocks.length) return;
-  if (!diffModal) buildDiffModal();
+  if (!diffModalBuilt) buildDiffModal();
 
   // Make a plan (simulate renumbering without touching state)
   lastPlan = planRenumberAndAssignments(parsedBlocks, state.tests);
@@ -721,6 +777,7 @@ function openDiffPreview(){
   inserted.forEach(a=>{
     const li = document.createElement('li');
     li.textContent = `#${a.desired} → #${a.assigned}  •  WD ${a.block.wet}  •  %Moist ${a.block.moist}  •  ${a.block.loc || '(no location)'}`;
+    li.classList.add('diff-ins');
     insList.appendChild(li);
   });
 
@@ -729,6 +786,7 @@ function openDiffPreview(){
     moved.sort((a,b)=> a.from - b.from).forEach(m=>{
       const li = document.createElement('li');
       li.textContent = `Test #${m.from} → #${m.to}`;
+      li.classList.add('diff-move');
       mvList.appendChild(li);
     });
     $('#movesWrap').classList.remove('hidden');
@@ -761,44 +819,40 @@ function buildDiffModal(){
   document.body.appendChild(diffModal);
   $('#btnCancelDiff').addEventListener('click', ()=> diffModal.classList.add('hidden'));
   $('#btnApplyDiff').addEventListener('click', applyDiffPlan);
+  diffModalBuilt=true;
 }
 
 /* Build a renumbering plan by simulating "make room" shifts on numbers only. */
 function planRenumberAndAssignments(blocks, existingTests){
-  // clone existing numbers
+  // Current numbers occupied by existing tests
   const currNums = new Set(existingTests.map(t=>t.n));
-  // track current number for each original number
+  // Map original->current (so we can show which existing numbers will move)
   const originals = existingTests.map(t=>t.n).sort((a,b)=>a-b);
   const currMap = new Map(originals.map(n => [n, n])); // original -> current
 
   const sortedBlocks = [...blocks].sort((a,b)=> a.n - b.n);
   const assignments = []; // {desired, assigned, block}
+
   for (const b of sortedBlocks){
-    // make room at b.n by shifting all existing numbers >= n up by 1 until free
     let target = b.n;
+    // While target is taken, shift all current >= target by +1 and try the next slot
     while (currNums.has(target)){
-      // shift all "current" numbers >= target
-      const moved = [];
-      for (const [orig, cur] of currMap.entries()){
-        if (cur >= target){ currMap.set(orig, cur+1); moved.push(orig); }
-      }
-      // update the set from moved list
       const newSet = new Set();
+      // shift occupied set
       for (const n of currNums){ newSet.add(n >= target ? n+1 : n); }
-      currNums.clear();
-      newSet.forEach(x=> currNums.add(x));
+      currNums.clear(); newSet.forEach(x=>currNums.add(x));
+      // shift our mapping of originals
+      for (const [orig, cur] of currMap.entries()){
+        if (cur >= target) currMap.set(orig, cur+1);
+      }
       target += 1;
     }
-    // reserve the slot for the new block
+    // reserve this now-free slot for the new block
     currNums.add(target);
-    assignments.push({ desired:b.n, assigned:target, block:b });
+    assignments.push({ desired: b.n, assigned: target, block: b });
   }
 
-  const existingMoves = [];
-  for (const [orig, cur] of currMap.entries()){
-    existingMoves.push({ from: orig, to: cur });
-  }
-
+  const existingMoves = Array.from(currMap.entries()).map(([from,to]) => ({from,to}));
   return { assignments, existingMoves };
 }
 
@@ -806,7 +860,7 @@ function planRenumberAndAssignments(blocks, existingTests){
 function applyDiffPlan(){
   if (!lastPlan) return;
 
-  // 1) Renumber existing tests
+  // 1) Renumber existing tests according to plan
   const moveMap = new Map(lastPlan.existingMoves.map(m => [m.from, m.to]));
   for (const t of state.tests){
     const to = moveMap.get(t.n);
@@ -830,14 +884,28 @@ function applyDiffPlan(){
   const moved = lastPlan.existingMoves.filter(x => x.from !== x.to).length;
   const msg = `Added ${lastPlan.assignments.length} test${lastPlan.assignments.length===1?'':'s'}`
             + (moved ? ` • Renumbered ${moved} existing` : '') + ' ✔️';
-  banner('ok', msg); toast(msg, 'ok');
+  banner('ok', msg); toast(msg, 'ok'); updateProgress();
 }
 
-/* ========================= Helpers ========================= */
+/* ========================= Progress (Goal Gradient + Zeigarnik) ========================= */
+function updateProgress(){
+  const n = state.tests.length;
+  $('#testsCount').textContent = n;
+  const pct = Math.min(100, (n/10)*100); // 10-test soft goal for today
+  $('#progFill').style.width = pct + '%';
+  // Resume badge if there are tests and we're not currently on entry (optional policy)
+  $('#resumeBadge').classList.toggle('hidden', n===0);
+}
+$('#resumeBadge').addEventListener('click', ()=>{
+  entryCard.classList.remove('hidden');
+  summaryCard.classList.add('hidden');
+  toast('Resumed session','ok');
+});
+
+/* ========================= Helpers & Toast ========================= */
 function slug(s=''){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
 function download(href, filename){ const a=document.createElement('a'); a.href=href; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); }
 
-/* Toast */
 let toastTimer=null;
 function toast(msg, type='ok'){
   clearTimeout(toastTimer);
