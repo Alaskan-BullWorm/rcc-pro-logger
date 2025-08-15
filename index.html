@@ -169,7 +169,7 @@
         <div class="input-wrap"><label for="moisture">Moisture</label><input id="moisture" type="number" step="0.1" inputmode="decimal" placeholder="e.g., 8.9"><span class="unit">%</span></div>
       </div>
 
-      <!-- NEW: Grid coordinate for this test -->
+      <!-- Grid Coord -->
       <div class="row">
         <div class="input-wrap">
           <label for="gridCoord">Grid Coord (optional)</label>
@@ -408,7 +408,7 @@ function onSaveNext(){
   if (wet < 100 || wet > 170) toast('Wet Density seems off for RCC (~120–145 pcf).', 'warn');
   if (moi < 1 || moi > 20) toast('Moisture seems off (~4–10%).', 'warn');
 
-  // NEW: grid coordinate
+  // Grid coordinate
   const coordRaw = ($('#gridCoord')?.value || '').trim();
   let grid = null, marker = null;
   if (coordRaw){
@@ -771,7 +771,9 @@ function buildPasteModal(){
   $('#btnReviewPaste').addEventListener('click', openDiffPreview);
 }
 
-/* Robust splitter: find test starts; tolerant to "1.", "1)", "1:", "1 -" */
+/* Robust splitter for notes/paste: find test starts like "1.", "1)", "1:", "1 -"
+   Then, inside each block, the first pair that matches [WD 100-250] + [Moist 0-40] in any order is used.
+   Remaining text (after the moist match) is the location — tolerant to numbers in location text.*/
 function parseNotesBlocks(text){
   const s = String(text || '').replace(/\r/g,'');
   const startReG = /(^|\n)\s*(\d{1,3})\s*(?:[.) :-])?\s+(?=\d)/g;
@@ -798,6 +800,7 @@ function parseOneBlockSlice(slice, testNum){
   if (!m) return null;
   var rest = m[2].replace(/\s+/g,' ').trim();
 
+  // allow integers or one decimal
   const numRe = /\b\d{1,3}(?:\.\d)?\b/g;
   const tokens = [];
   let k;
@@ -836,7 +839,8 @@ function parseOneBlockSlice(slice, testNum){
 }
 
 /* ---------- Diff preview + renumber planning ---------- */
-let diffModalBuilt=false;
+let diffModal=null, diffModalBuilt=false, lastPlan=null;
+
 function openDiffPreview(){
   if (!parsedBlocks.length) return;
   if (!diffModalBuilt) buildDiffModal();
