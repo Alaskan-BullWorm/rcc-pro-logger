@@ -7,12 +7,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <link rel="preconnect" href="https://unpkg.com" crossorigin>
-
 <style>
   :root{
     --bg:#0b0f1a; --panel:#0d1426; --ink:#e7ecf5; --muted:#9fb1d1;
     --line:#1a2540; --accent:#22c55e; --warn:#f59e0b; --err:#ef4444; --focus:#3b82f6;
-    --chip:#0a1229; --ink-strong:#ffffff; --ok:#16a34a;
+    --chip:#0a1229; --ink-strong:#ffffff;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -22,49 +21,37 @@
     background: radial-gradient(1200px 600px at 10% -10%, #121a34 0%, #0b0f1a 40%, #070a14 100%);
     padding-bottom: env(safe-area-inset-bottom);
   }
-  header{
-    padding:14px 16px;
-    position:sticky; top:0; z-index:10;
-    backdrop-filter:saturate(140%) blur(6px);
-    background:#080d1acc; border-bottom:1px solid var(--line);
-  }
+  header{padding:14px 16px; position:sticky; top:0; z-index:10; backdrop-filter:saturate(140%) blur(6px); background:#080d1acc; border-bottom:1px solid var(--line)}
   .header-wrap{max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px}
   .brand{display:flex; align-items:center; gap:10px}
-  .logo{
-    width:36px; height:36px; border-radius:10px; overflow:hidden; display:grid; place-items:center;
-    background:linear-gradient(135deg,#2dd4bf 0%,#22c55e 35%,#4ade80 70%,#60a5fa 100%);
-    box-shadow: 0 5px 28px #22c55e22;
-  }
+  .logo{width:36px; height:36px; border-radius:10px; overflow:hidden; display:grid; place-items:center; background:linear-gradient(135deg,#2dd4bf 0%,#22c55e 35%,#4ade80 70%,#60a5fa 100%); box-shadow: 0 5px 28px #22c55e22}
   .logo svg{width:22px; height:22px; color:#05140a}
   h1{margin:0; font-size:16px; letter-spacing:.3px}
-  .pill{background:var(--chip); border:1px solid var(--line); padding:6px 10px; border-radius:999px; font-size:12px; color:#cbd5e1}
-  .btn{cursor:pointer; padding:12px 12px; border-radius:12px; border:1px solid #243255; background:#0f172a; color:var(--ink); font-weight:700; letter-spacing:.2px; touch-action:manipulation; transition:transform .05s ease, opacity .2s}
+  .pill{background:var(--chip); border:1px solid #223055; padding:6px 10px; border-radius:999px; font-size:12px; color:#cbd5e1}
+  .btn{cursor:pointer; padding:12px 12px; border-radius:12px; border:1px solid #243255; background:#0f172a; color:var(--ink); font-weight:700; letter-spacing:.2px; transition:transform .05s ease}
   .btn:active{transform:translateY(1px)}
   .btn.primary{background:linear-gradient(180deg,#22c55e,#16a34a); color:#03140b; border-color:#0b3b22}
   .btn.secondary{background:#0c1224}
   .btn.warning{background:linear-gradient(180deg,#f59e0b,#d97706); color:#1a1203; border-color:#6b3f03}
   main{max-width:1100px; margin:18px auto 80px; padding:0 14px}
   .grid{display:grid; gap:18px; grid-template-columns:1.3fr .7fr}
-  .card{
-    background:linear-gradient(180deg,#0c1328 0%, #0a1022 100%); border:1px solid var(--line);
-    border-radius:16px; padding:16px; box-shadow: 0 18px 60px #0007;
-  }
+  .card{background:linear-gradient(180deg,#0c1328 0%, #0a1022 100%); border:1px solid #18254a; border-radius:16px; padding:16px; box-shadow: 0 18px 60px #0007}
   .section-title{margin:0 0 12px; font-size:16px; font-weight:800; color:var(--ink-strong)}
   .row{display:grid; gap:12px; grid-template-columns:repeat(2,minmax(0,1fr)); margin-bottom:10px}
   label{font-size:12px; color:var(--muted); display:block; margin-bottom:6px}
   .input-wrap{position:relative}
-  input{
+  input, textarea{
     width:100%; padding:14px 12px; border-radius:12px; border:1px solid #223055; outline:none;
-    background:#0b132a; color:#e7ecf5; font-size:16px; transition:border .15s ease, box-shadow .15s ease;
+    background:#0b132a; color:var(--ink); font-size:16px;
   }
-  input:focus{border-color:var(--focus); box-shadow:0 0 0 3px #3b82f633}
-  input::placeholder{color:#7383a6}
+  textarea{min-height:180px; resize:vertical}
+  input:focus, textarea:focus{border-color:var(--focus); box-shadow:0 0 0 3px #3b82f633}
+  input::placeholder, textarea::placeholder{color:#7383a6}
   .unit{position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#a9b4cf; font-size:12px; background:#09122a; border:1px solid #1d2a4b; padding:2px 6px; border-radius:8px; pointer-events:none}
   .inline{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
   .muted{color:#9fb1d1; font-size:12px}
   .kbd{font-family:ui-monospace,Menlo,monospace; background:#0c1328; border:1px solid #1d2a4b; padding:2px 6px; border-radius:6px; font-size:12px; color:#cbd5e1}
   .divider{height:1px; background:linear-gradient(90deg,transparent,#1b2746,transparent); margin:12px 0}
-  .help{margin-top:4px; color:#94a3b8; font-size:12px}
   .banner{border:1px solid #1e2b50; background:#0b152f; color:#bcd3ff; padding:10px 12px; border-radius:12px; font-size:13px}
   .banner.ok{border-color:#0a3e25; background:#082317; color:#b9f2ce}
   .banner.err{border-color:#4a1b1b; background:#220b0b; color:#fbcaca}
@@ -81,29 +68,17 @@
   .modal{position:fixed; inset:0; background:#0009; display:flex; align-items:flex-end; justify-content:center; z-index:50}
   .sheet{width:min(920px, 96vw); max-height:90vh; overflow:auto; background:#0a0f20; border:1px solid #1c2540; border-radius:16px 16px 0 0; padding:14px}
   .scan-grid{display:grid; grid-template-columns:1.2fr .8fr; gap:12px}
-  /* Split export menu */
   .menu{position:relative}
   .menu-pop{position:absolute; right:0; top:110%; background:#0c1224; border:1px solid #223055; border-radius:10px; padding:6px; display:grid; gap:4px; z-index:20}
   .menu-pop button{background:#0d1426; color:#e7ecf5; border:1px solid #223055; padding:10px 12px; text-align:left; border-radius:8px; min-width:180px}
-  /* Bottom thumb bar */
-  #actionBar{
-    position:fixed; left:0; right:0; bottom:0; z-index:40; display:flex; gap:8px;
-    padding:10px 12px calc(12px + env(safe-area-inset-bottom));
-    backdrop-filter:saturate(140%) blur(8px);
-    background:#060b18d9; border-top:1px solid #1a2746;
-  }
-  .bar-btn{
-    flex:1; min-height:52px; font-weight:800; border-radius:12px;
-    border:1px solid #243255; background:#0f172a; color:#e7ecf5;
-  }
-  .bar-btn.primary{ background:linear-gradient(180deg,#22c55e,#16a34a); color:#07130b; border-color:#0b3b22 }
+  #actionBar{position:fixed; left:0; right:0; bottom:0; z-index:40; display:flex; gap:8px; padding:10px 12px calc(12px + env(safe-area-inset-bottom)); backdrop-filter:saturate(140%) blur(8px); background:#060b18d9; border-top:1px solid #1a2746}
+  .bar-btn{flex:1; min-height:52px; font-weight:800; border-radius:12px; border:1px solid #243255; background:#0f172a; color:#e7ecf5}
+  .bar-btn.primary{background:linear-gradient(180deg,#22c55e,#16a34a); color:#07130b; border-color:#0b3b22}
   @media (min-width:860px){ #actionBar{position:sticky; bottom:auto; padding:0; background:transparent; border:0} main{margin-bottom:60px} }
-  /* Progress */
   #sessionProgress{margin:10px 0}
   #progTrack{height:8px; border-radius:999px; background:#111a34; margin-top:8px; overflow:hidden}
   #progFill{height:100%; width:0%; background:linear-gradient(90deg,#22c55e,#60a5fa); transition:width .35s ease}
   #resumeBadge{cursor:pointer}
-  /* Diff preview colors */
   .diff-ins{color:#b9f2ce}
   .diff-move{color:#fcd98d}
   @media (max-width: 960px){ .grid{grid-template-columns:1fr} .scan-grid{grid-template-columns:1fr} }
@@ -192,13 +167,14 @@
 
       <div class="row">
         <div class="input-wrap"><label for="densityPct">% of Target (auto)</label><input id="densityPct" type="text" disabled placeholder="—"><span class="unit">%</span></div>
-        <div class="inline" style="align-items:flex-end">
+        <div class="inline" style="align-items:flex-end; gap:8px">
           <button class="btn secondary" id="btnScan">Scan Gauge (OCR)</button>
           <button class="btn secondary" id="btnImportNotes">Import Notes Screenshot</button>
+          <button class="btn secondary" id="btnPasteText">Paste Text</button>
         </div>
       </div>
 
-      <div class="help">OCR accepts integers or 1‑decimal: <span class="kbd">WD: 149</span> or <span class="kbd">149.0</span>; <span class="kbd">Moist: 8</span> or <span class="kbd">8.9</span>.</div>
+      <div class="help">OCR & Paste accept integers or 1‑decimal: <span class="kbd">WD: 149</span> or <span class="kbd">149.0</span>; <span class="kbd">Moist: 8</span> or <span class="kbd">8.9</span>.</div>
 
       <div class="inline" style="gap:10px; margin-top:10px">
         <button class="btn primary" id="btnSaveNext">Save & Next Test</button>
@@ -221,7 +197,6 @@
           <span class="badge">Location: <strong id="summaryJobLocation">—</strong></span>
           <span class="badge">Mileage: <strong id="summaryMileage">— mi</strong></span>
         </div>
-        <!-- Export split-button -->
         <div class="menu">
           <button class="btn secondary" id="btnExport">Export ▾</button>
           <div id="exportMenu" class="menu-pop hidden">
@@ -266,6 +241,7 @@
   <button class="bar-btn primary" id="barSaveNext">Save & Next</button>
   <button class="bar-btn" id="barScan">Scan</button>
   <button class="bar-btn" id="barImport">Import Notes</button>
+  <button class="bar-btn" id="barPaste">Paste Text</button>
 </nav>
 
 <!-- libs -->
@@ -282,7 +258,7 @@ const miles = meters => +(meters / 1609.344).toFixed(2);
 const clamp1 = v => Math.round(v*10)/10;
 const toNumber = v => { const n = Number(String(v).trim()); return Number.isFinite(n) ? n : null; };
 
-const LS_KEY = 'rcc_pro_logger_v4';
+const LS_KEY = 'rcc_pro_logger_v5';
 const ORIGIN_TEXT = 'Geotechnical Consultants Inc., Westerville, Ohio';
 const NOMINATIM = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=';
 const NOMI_REV  = (lat,lon) => `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
@@ -307,7 +283,6 @@ const exportMenu = $('#exportMenu');
 $('#btnStart').addEventListener('click', startLogging);
 $('#btnLoad').addEventListener('click', loadLast);
 $('#btnReset').addEventListener('click', resetAll);
-
 $('#btnUseGPS').addEventListener('click', useCurrentLocation);
 
 $('#btnSaveNext').addEventListener('click', onSaveNext);
@@ -317,7 +292,7 @@ $('#btnBackToEntry').addEventListener('click', () => { summaryCard.classList.add
 
 $('#btnExport').addEventListener('click', ()=> exportMenu.classList.toggle('hidden'));
 exportMenu.addEventListener('click', e=>{
-  const act = e.target && e.target.dataset ? e.target.dataset.act : undefined;
+  const act = e.target?.dataset?.act;
   if(!act) return;
   exportMenu.classList.add('hidden');
   if (act==='png') exportPNG();
@@ -330,11 +305,13 @@ document.addEventListener('click', (e)=>{ if(!exportMenu.contains(e.target) && e
 
 $('#btnScan').addEventListener('click', openScanner);
 $('#btnImportNotes').addEventListener('click', openImportNotes);
+$('#btnPasteText').addEventListener('click', openPasteImport);
 
 // Bottom bar wiring
 $('#barSaveNext').addEventListener('click', ()=> $('#btnSaveNext').click());
 $('#barScan').addEventListener('click', ()=> $('#btnScan').click());
 $('#barImport').addEventListener('click', ()=> $('#btnImportNotes').click());
+$('#barPaste').addEventListener('click', ()=> $('#btnPasteText').click());
 
 [wetDensity, targetDensity].forEach(i => i.addEventListener('input', updatePctField));
 document.addEventListener('keydown', e => {
@@ -379,13 +356,13 @@ async function computeMileage(){
   netStatus.textContent = 'routing…';
   const url = `${OSRM}${o.lon},${o.lat};${d.lon},${d.lat}?overview=false&alternatives=false&steps=false`;
   const res = await fetch(url, { headers:{'User-Agent':'RCC-Pro-Logger'} });
-  if (res.ok){ const j = await res.json(); const m = j && j.routes && j.routes[0] ? j.routes[0].distance : undefined; if (typeof m === 'number'){ methodEl.textContent='Routing (OSRM)'; netStatus.textContent='ready'; return miles(m); } }
+  if (res.ok){ const j = await res.json(); const m = j?.routes?.[0]?.distance; if (typeof m === 'number'){ methodEl.textContent='Routing (OSRM)'; netStatus.textContent='ready'; return miles(m); } }
   methodEl.textContent='Fallback (straight-line)'; netStatus.textContent='ready';
   const mi = haversine(o.lat,o.lon,d.lat,d.lon); return +mi.toFixed(2);
 }
 async function geocodeCached(q){ if (geocache[q]) return geocache[q]; const hit = await geocode(q); if (hit){ geocache[q]=hit; localStorage.setItem('rcc_geo_cache', JSON.stringify(geocache)); } return hit; }
-async function geocode(q){ const res = await fetch(NOMINATIM + encodeURIComponent(q), { headers:{'Accept-Language':'en'} }); if (!res.ok) return null; const a = await res.json(); if (!a || !a.length) return null; const g = a[0]; return {lat:+g.lat, lon:+g.lon, label:g.display_name}; }
-async function reverseGeocode(lat,lon){ const res = await fetch(NOMI_REV(lat,lon), { headers:{'Accept-Language':'en'} }); if (!res.ok) return null; const d = await res.json(); return {lat:+lat, lon:+lon, label: d && d.display_name ? d.display_name : (lat.toFixed(6)+', '+lon.toFixed(6)) }; }
+async function geocode(q){ const res = await fetch(NOMINATIM + encodeURIComponent(q), { headers:{'Accept-Language':'en'} }); if (!res.ok) return null; const a = await res.json(); if (!a?.length) return null; const {lat,lon,display_name} = a[0]; return {lat:+lat, lon:+lon, label:display_name}; }
+async function reverseGeocode(lat,lon){ const res = await fetch(NOMI_REV(lat,lon), { headers:{'Accept-Language':'en'} }); if (!res.ok) return null; const d = await res.json(); return {lat:+lat, lon:+lon, label: d?.display_name || `${lat.toFixed(6)}, ${lon.toFixed(6)}` }; }
 function haversine(lat1, lon1, lat2, lon2){ const toRad=d=>d*Math.PI/180, R=3958.761; const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1); const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2; return 2*R*Math.asin(Math.sqrt(a)); }
 
 /* ========================= Entry & %Target ========================= */
@@ -447,7 +424,7 @@ function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); lsSta
 function loadLast(){
   try{
     const raw = localStorage.getItem(LS_KEY); if (!raw) return toast('No saved session found.', 'warn');
-    const data = JSON.parse(raw); if (!data || !data.job) return;
+    const data = JSON.parse(raw); if (!data?.job) return;
     Object.assign(state, data);
     jobName.value = state.job.name; jobDate.value = state.job.date; jobLocation.value = state.job.location;
     targetDensity.value = state.job.targetDensity ?? ''; targetMoist.value = state.job.targetMoist ?? '';
@@ -466,7 +443,7 @@ function restoreFromURL(){
   const hash = location.hash.slice(1); if (!hash) return;
   try{
     const data = JSON.parse(decodeURIComponent(escape(atob(hash))));
-    if (data && data.job && data.tests){
+    if (data?.job && data?.tests){
       Object.assign(state, data);
       jobName.value = state.job.name; jobDate.value = state.job.date; jobLocation.value = state.job.location;
       targetDensity.value = state.job.targetDensity ?? ''; targetMoist.value = state.job.targetMoist ?? '';
@@ -525,15 +502,9 @@ async function useCurrentLocation(){
 
 /* ========================= OCR: Gauge Scanner ========================= */
 let scanModal=null, scanStream=null;
-function openScanner(){
-  if (!scanModal) buildScannerModal();
-  $('#scanStatus').textContent = 'Initializing camera…';
-  scanModal.classList.remove('hidden');
-  startCamera();
-}
+function openScanner(){ if (!scanModal) buildScannerModal(); $('#scanStatus').textContent = 'Initializing camera…'; scanModal.classList.remove('hidden'); startCamera(); }
 function buildScannerModal(){
-  scanModal = document.createElement('div');
-  scanModal.className='modal hidden';
+  scanModal = document.createElement('div'); scanModal.className='modal hidden';
   scanModal.innerHTML = `
     <div class="sheet">
       <header class="inline" style="justify-content:space-between">
@@ -552,46 +523,41 @@ function buildScannerModal(){
             <button class="btn primary" id="btnCapture">Capture & Read</button>
             <button class="btn secondary" id="btnFill" disabled>Fill Fields</button>
           </div>
-          <div class="help">Accepts integers or 1‑decimal (e.g., <span class="kbd">WD: 149</span> or <span class="kbd">149.0</span>).</div>
+          <div class="help">Accepts integers or 1‑decimal.</div>
           <pre id="ocrOut" class="muted" style="margin-top:8px; white-space:pre-wrap"></pre>
         </div>
       </div>
     </div>`;
   document.body.appendChild(scanModal);
-  $('#btnCloseScan').addEventListener('click', closeScanner);
+  $('#btnCloseScan').addEventListener('click', ()=>{ scanModal.classList.add('hidden'); stopCamera(); });
   $('#btnCapture').addEventListener('click', onCaptureAndRead);
   $('#btnFill').addEventListener('click', fillFromOCR);
   $('#fileInput').addEventListener('change', onPickImage);
 }
-function closeScanner(){ scanModal.classList.add('hidden'); stopCamera(); }
 async function startCamera(){
   try{
     scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal:'environment' } }, audio:false });
     $('#video').srcObject = scanStream; await $('#video').play();
     $('#scanStatus').textContent = 'Camera ready. Capture when text is sharp.';
-  }catch(e){ console.error(e); $('#scanStatus').textContent = 'Camera blocked/unavailable. Upload a photo instead.'; }
+  }catch{ $('#scanStatus').textContent = 'Camera blocked/unavailable. Upload a photo instead.'; }
 }
 function stopCamera(){ if (scanStream){ for (const t of scanStream.getTracks()) t.stop(); } const v=$('#video'); if (v) v.srcObject=null; }
-
 async function onCaptureAndRead(){
-  const v = $('#video');
-  if (!v.videoWidth) return $('#scanStatus').textContent = 'Camera not ready.';
+  const v = $('#video'); if (!v.videoWidth) return $('#scanStatus').textContent = 'Camera not ready.';
   const W = 1000, H = Math.round(v.videoHeight * (W / v.videoWidth));
   const c = $('#frameCanvas'); c.width=W; c.height=H;
-  const ctx = c.getContext('2d'); ctx.drawImage(v, 0, 0, W, H);
-  preprocess(ctx, W, H);
+  const ctx = c.getContext('2d'); ctx.drawImage(v, 0, 0, W, H); preprocess(ctx, W, H);
   $('#scanStatus').textContent = 'Reading…';
   const { text, wd, moist } = await ocrGauge(c);
   showOcrResult(text, wd, moist);
 }
 async function onPickImage(ev){
-  const file = ev.target.files && ev.target.files[0] ? ev.target.files[0] : null; if (!file) return;
+  const file = ev.target.files?.[0]; if (!file) return;
   const img = new Image();
   img.onload = async ()=>{
     const maxW = 1600, scale = Math.min(1, maxW / img.width);
     const c = $('#frameCanvas'); c.width = Math.round(img.width*scale); c.height = Math.round(img.height*scale);
-    const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, c.width, c.height);
-    preprocess(ctx, c.width, c.height);
+    const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, c.width, c.height); preprocess(ctx, c.width, c.height);
     $('#scanStatus').textContent = 'Reading image…';
     const { text, wd, moist } = await ocrGauge(c);
     showOcrResult(text, wd, moist);
@@ -605,17 +571,11 @@ function showOcrResult(text, wd, moist){
     $('#scanStatus').textContent = `Found: WD=${wd ?? '—'} pcf, %Moist=${moist ?? '—'} %`;
     scanModal.dataset.lastWd = wd ?? '';
     scanModal.dataset.lastMoist = moist ?? '';
-    $('#btnFill').disabled = false;
-    banner('ok', 'Gauge scan successful.');
-  } else {
-    $('#scanStatus').textContent = 'Couldn’t find WD/%Moist. Try closer, sharper image, or upload a photo.';
-    $('#btnFill').disabled = true;
-    banner('err', 'Gauge scan did not detect values.');
-  }
+    $('#btnFill').disabled = false; banner('ok', 'Gauge scan successful.');
+  } else { $('#scanStatus').textContent = 'Couldn’t find WD/%Moist.'; $('#btnFill').disabled = true; banner('err', 'Gauge scan did not detect values.'); }
 }
 function preprocess(ctx,w,h){
-  const img = ctx.getImageData(0,0,w,h), d=img.data;
-  const contrast=1.25, bright=10;
+  const img = ctx.getImageData(0,0,w,h), d=img.data; const contrast=1.25, bright=10;
   for(let i=0;i<d.length;i+=4){ const r=d[i],g=d[i+1],b=d[i+2]; let y=(r*0.299+g*0.587+b*0.114); y=(y-128)*contrast+128+bright; y=y<0?0:y>255?255:y; d[i]=d[i+1]=d[i+2]=y; }
   ctx.putImageData(img,0,0);
 }
@@ -623,27 +583,19 @@ async function ocrGauge(canvas){
   const out = { text:'', wd:null, moist:null };
   try{
     const res = await Tesseract.recognize(canvas, 'eng', { logger: m=>{} });
-    const text = (res && res.data && res.data.text ? res.data.text : '').replace(/\r/g,'');
-    out.text = text;
+    const text = (res?.data?.text || '').replace(/\r/g,''); out.text = text;
     const wdMatch = text.match(/\b(1\d{2}|[2-9]\d{2})(?:\.\d)?\b/);
     const moistMatch = text.match(/\b(\d{1,2})(?:\.\d)?\b/);
     out.wd = wdMatch ? parseFloat(wdMatch[0]) : null;
     out.moist = moistMatch ? parseFloat(moistMatch[0]) : null;
     if (out.wd!=null && (out.wd<100 || out.wd>200)) out.wd=null;
     if (out.moist!=null && (out.moist<0 || out.moist>40)) out.moist=null;
-  }catch(e){ console.error(e); }
+  }catch{}
   return out;
 }
-function fillFromOCR(){
-  const wd = scanModal.dataset.lastWd, m = scanModal.dataset.lastMoist;
-  if (wd) wetDensity.value = wd;
-  if (m)  moisture.value = m;
-  updatePctField();
-  toast(`Filled ${wd? 'WD':''}${wd&&m?', ':''}${m? '%Moist':''} from OCR ✔️`, 'ok');
-  closeScanner();
-}
+function fillFromOCR(){ const wd = scanModal.dataset.lastWd, m = scanModal.dataset.lastMoist; if (wd) wetDensity.value = wd; if (m) moisture.value = m; updatePctField(); toast(`Filled ${wd? 'WD':''}${wd&&m?', ':''}${m? '%Moist':''} from OCR ✔️`,'ok'); scanModal.classList.add('hidden'); stopCamera(); }
 
-/* ========================= Notes Import (robust & Safari-safe) ========================= */
+/* ========================= NOTES IMPORT (image) ========================= */
 let importModal=null, parsedBlocks=[];
 let diffModal=null, lastPlan=null;
 
@@ -660,11 +612,7 @@ function buildImportModal(){
         </div>
       </header>
       <div class="row" style="grid-template-columns:1fr">
-        <div class="help">
-          Each test starts with its number (<span class="kbd">1.</span>, <span class="kbd">2)</span>, <span class="kbd">3:</span>, <span class="kbd">4 -</span>).
-          After that we take the <strong>first WD (100–250)</strong> and <strong>first Moist (0–40)</strong> in any order.  
-          Everything after the second number is the <strong>location</strong> (we keep numbers like <em>50ft</em>, lane #).
-        </div>
+        <div class="help">Each test starts with <span class="kbd">1.</span>/<span class="kbd">2)</span>/<span class="kbd">3:</span>/<span class="kbd">4 -</span>. First WD (100–250) and Moist (0–40) in any order. The rest is the location.</div>
         <canvas id="notesCanvas" height="360" class="hidden"></canvas>
         <pre id="notesOut" class="muted" style="white-space:pre-wrap"></pre>
         <div class="inline" style="gap:8px">
@@ -677,16 +625,14 @@ function buildImportModal(){
   $('#notesFile').addEventListener('change', onNotesPick);
   $('#btnReview').addEventListener('click', openDiffPreview);
 }
-
 async function onNotesPick(ev){
-  const file = ev.target.files && ev.target.files[0] ? ev.target.files[0] : null; if (!file) return;
+  const file = ev.target.files?.[0]; if (!file) return;
   const img = new Image();
   img.onload = async ()=>{
     const maxW = 1900, scale = Math.min(1, maxW / img.width);
     const c = $('#notesCanvas'); c.width = Math.round(img.width*scale); c.height = Math.round(img.height*scale);
-    const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, c.width, c.height);
-    preprocess(ctx, c.width, c.height);
-    let text=''; try{ const res = await Tesseract.recognize(c, 'eng', { logger: m=>{} }); text = (res && res.data && res.data.text ? res.data.text : '').replace(/\r/g,''); } catch(e){ console.error(e); }
+    const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, c.width, c.height); preprocess(ctx, c.width, c.height);
+    let text=''; try{ const res = await Tesseract.recognize(c, 'eng', { logger: m=>{} }); text = (res?.data?.text || '').replace(/\r/g,''); } catch{}
     parsedBlocks = parseNotesBlocks(text);
     const preview = parsedBlocks.length
       ? parsedBlocks.map(o => `#${o.n} | WD:${o.wet ?? '—'} | %Moist:${o.moist ?? '—'} | Loc: ${o.loc || '(none)'}`).join('\n')
@@ -699,9 +645,51 @@ async function onNotesPick(ev){
   img.src = URL.createObjectURL(file);
 }
 
-/* Robust splitter: find test starts; tolerant to "1.", "1)", "1:", "1 -" */
+/* ========================= NEW: PASTE TEXT IMPORT ========================= */
+let pasteModal=null;
+function openPasteImport(){ if(!pasteModal) buildPasteModal(); pasteModal.classList.remove('hidden'); $('#pasteArea').focus(); }
+function buildPasteModal(){
+  pasteModal = document.createElement('div'); pasteModal.className='modal hidden';
+  pasteModal.innerHTML = `
+    <div class="sheet">
+      <header class="inline" style="justify-content:space-between">
+        <h2>Paste Text</h2>
+        <div class="inline">
+          <button class="btn secondary" id="btnClosePaste" style="width:auto">Close</button>
+        </div>
+      </header>
+      <div class="row" style="grid-template-columns:1fr">
+        <textarea id="pasteArea" placeholder="Paste raw text here — e.g.:
+1. 148.9 8.9 1st lane (north most lane 50ft east off west end)
+2. 147.6 8.5 Lane 2 (200ft east off west end)
+3. 149.2 9.0 Centerline at 300ft
+..."></textarea>
+        <div class="inline" style="gap:8px">
+          <button class="btn primary" id="btnAnalyzePaste">Analyze</button>
+          <button class="btn secondary" id="btnReviewPaste" disabled>Review Changes…</button>
+        </div>
+        <pre id="pasteOut" class="muted" style="white-space:pre-wrap"></pre>
+      </div>
+    </div>`;
+  document.body.appendChild(pasteModal);
+  $('#btnClosePaste').addEventListener('click', ()=>pasteModal.classList.add('hidden'));
+  $('#btnAnalyzePaste').addEventListener('click', ()=>{
+    const text = $('#pasteArea').value || '';
+    parsedBlocks = parseNotesBlocks(text);
+    const preview = parsedBlocks.length
+      ? parsedBlocks.map(o => `#${o.n} | WD:${o.wet ?? '—'} | %Moist:${o.moist ?? '—'} | Loc: ${o.loc || '(none)'}`).join('\n')
+      : '(No valid tests found. Make sure tests start with "1." / "2." etc.)';
+    $('#pasteOut').textContent = preview;
+    $('#btnReviewPaste').disabled = !parsedBlocks.length;
+    if (parsedBlocks.length) toast(`Detected ${parsedBlocks.length} test block(s) from pasted text ✔️`, 'ok'); else toast('No numbered tests detected in pasted text', 'warn');
+  });
+  $('#btnReviewPaste').addEventListener('click', openDiffPreview);
+}
+
+/* ---------- Parser shared by image & paste ---------- */
 function parseNotesBlocks(text){
   const s = String(text || '').replace(/\r/g,'');
+  // Start-of-line or newline, then test number (1–3 digits), optional [.) :-], at least one space, then a digit
   const startReG = /(^|\n)\s*(\d{1,3})\s*(?:[.) :-])?\s+(?=\d)/g;
   const starts = [];
   let m;
@@ -722,14 +710,12 @@ function parseNotesBlocks(text){
   }
   return blocks;
 }
-
-/* Parse a single test slice; pick earliest valid WD+Moist pair; rest is location */
 function parseOneBlockSlice(slice, testNum){
   const m = slice.match(/^\s*(\d{1,3})\s*(?:[.) :-])?\s+([\s\S]*)$/);
   if (!m) return null;
   var rest = m[2].replace(/\s+/g,' ').trim();
 
-  // Tokenize numbers without matchAll (Safari-safe)
+  // Tokenize numbers (0–999) with optional single decimal, Safari-safe
   const numRe = /\b\d{1,3}(?:\.\d)?\b/g;
   const tokens = [];
   let k;
@@ -738,12 +724,11 @@ function parseOneBlockSlice(slice, testNum){
   }
   if (tokens.length < 2) return null;
 
-  const isWD    = v => v >= 100 && v <= 250; // generous for RCC
+  const isWD    = v => v >= 100 && v <= 250; // pcf
   const isMoist = v => v >= 0   && v <= 40;  // %
   const limit = Math.min(8, tokens.length);
 
   let iHit = -1, jHit = -1, wd = null, moist = null;
-
   outer:
   for (let i = 0; i < limit; i++){
     for (let j = i+1; j < limit; j++){
@@ -758,7 +743,6 @@ function parseOneBlockSlice(slice, testNum){
   }
   if (iHit === -1) return null;
 
-  // Everything after the second matched number is the location
   const after = tokens[jHit].end;
   const loc = rest.slice(after).replace(/^[^\w(]+/, '').trim() || null;
 
@@ -877,7 +861,8 @@ function applyDiffPlan(){
 
   save();
   diffModal.classList.add('hidden');
-  importModal.classList.add('hidden');
+  if (importModal) importModal.classList.add('hidden');
+  if (pasteModal) pasteModal.classList.add('hidden');
   testNumber.value = String(state.tests.length + 1);
 
   const moved = lastPlan.existingMoves.filter(x => x.from !== x.to).length;
@@ -890,7 +875,7 @@ function applyDiffPlan(){
 function updateProgress(){
   const n = state.tests.length;
   $('#testsCount').textContent = n;
-  const pct = Math.min(100, (n/10)*100); // soft goal: 10 tests
+  const pct = Math.min(100, (n/10)*100);
   $('#progFill').style.width = pct + '%';
   $('#resumeBadge').classList.toggle('hidden', n===0);
 }
