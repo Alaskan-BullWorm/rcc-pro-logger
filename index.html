@@ -11,7 +11,7 @@
   :root{
     --bg:#0b0f1a; --panel:#0d1426; --ink:#e7ecf5; --muted:#9fb1d1;
     --line:#1a2540; --accent:#22c55e; --warn:#f59e0b; --err:#ef4444; --focus:#3b82f6;
-    --chip:#0a1229; --ink-strong:#ffffff;
+    --chip:#0a1229; --ink-strong:#ffffff; --ok:#16a34a;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -21,31 +21,35 @@
     background: radial-gradient(1200px 600px at 10% -10%, #121a34 0%, #0b0f1a 40%, #070a14 100%);
     padding-bottom: env(safe-area-inset-bottom);
   }
-  header{padding:14px 16px; position:sticky; top:0; z-index:10; backdrop-filter:saturate(140%) blur(6px); background:#080d1acc; border-bottom:1px solid var(--line)}
+  header{
+    padding:14px 16px; position:sticky; top:0; z-index:10;
+    backdrop-filter:saturate(140%) blur(6px);
+    background:#080d1acc; border-bottom:1px solid var(--line);
+  }
   .header-wrap{max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px}
   .brand{display:flex; align-items:center; gap:10px}
-  .logo{width:36px; height:36px; border-radius:10px; overflow:hidden; display:grid; place-items:center; background:linear-gradient(135deg,#2dd4bf 0%,#22c55e 35%,#4ade80 70%,#60a5fa 100%); box-shadow: 0 5px 28px #22c55e22}
+  .logo{width:36px; height:36px; border-radius:10px; overflow:hidden; display:grid; place-items:center; background:linear-gradient(135deg,#2dd4bf 0%,#22c55e 35%,#4ade80 70%,#60a5fa 100%); box-shadow:0 5px 28px #22c55e22}
   .logo svg{width:22px; height:22px; color:#05140a}
   h1{margin:0; font-size:16px; letter-spacing:.3px}
-  .pill{background:var(--chip); border:1px solid #223055; padding:6px 10px; border-radius:999px; font-size:12px; color:#cbd5e1}
+  .pill{background:var(--chip); border:1px solid var(--line); padding:6px 10px; border-radius:999px; font-size:12px; color:#cbd5e1}
   .btn{cursor:pointer; padding:12px 12px; border-radius:12px; border:1px solid #243255; background:#0f172a; color:var(--ink); font-weight:700; letter-spacing:.2px; transition:transform .05s ease}
   .btn:active{transform:translateY(1px)}
   .btn.primary{background:linear-gradient(180deg,#22c55e,#16a34a); color:#03140b; border-color:#0b3b22}
   .btn.secondary{background:#0c1224}
   .btn.warning{background:linear-gradient(180deg,#f59e0b,#d97706); color:#1a1203; border-color:#6b3f03}
-  main{max-width:1100px; margin:18px auto 80px; padding:0 14px}
+  main{max-width:1100px; margin:18px auto 90px; padding:0 14px}
   .grid{display:grid; gap:18px; grid-template-columns:1.3fr .7fr}
-  .card{background:linear-gradient(180deg,#0c1328 0%, #0a1022 100%); border:1px solid #18254a; border-radius:16px; padding:16px; box-shadow: 0 18px 60px #0007}
+  .card{background:linear-gradient(180deg,#0c1328 0%, #0a1022 100%); border:1px solid var(--line); border-radius:16px; padding:16px; box-shadow:0 18px 60px #0007}
   .section-title{margin:0 0 12px; font-size:16px; font-weight:800; color:var(--ink-strong)}
   .row{display:grid; gap:12px; grid-template-columns:repeat(2,minmax(0,1fr)); margin-bottom:10px}
   label{font-size:12px; color:var(--muted); display:block; margin-bottom:6px}
   .input-wrap{position:relative}
-  input, textarea{
+  input, textarea, select{
     width:100%; padding:14px 12px; border-radius:12px; border:1px solid #223055; outline:none;
-    background:#0b132a; color:var(--ink); font-size:16px;
+    background:#0b132a; color:#e7ecf5; font-size:16px; transition:border .15s ease, box-shadow .15s ease;
   }
   textarea{min-height:180px; resize:vertical}
-  input:focus, textarea:focus{border-color:var(--focus); box-shadow:0 0 0 3px #3b82f633}
+  input:focus, textarea:focus, select:focus{border-color:var(--focus); box-shadow:0 0 0 3px #3b82f633}
   input::placeholder, textarea::placeholder{color:#7383a6}
   .unit{position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#a9b4cf; font-size:12px; background:#09122a; border:1px solid #1d2a4b; padding:2px 6px; border-radius:8px; pointer-events:none}
   .inline{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
@@ -66,7 +70,7 @@
   video{width:100%; border:1px solid #1f294a; border-radius:10px; background:#000}
   canvas{max-width:100%; background:#050816; border:1px dashed #233057; border-radius:8px}
   .modal{position:fixed; inset:0; background:#0009; display:flex; align-items:flex-end; justify-content:center; z-index:50}
-  .sheet{width:min(920px, 96vw); max-height:90vh; overflow:auto; background:#0a0f20; border:1px solid #1c2540; border-radius:16px 16px 0 0; padding:14px}
+  .sheet{width:min(980px, 96vw); max-height:90vh; overflow:auto; background:#0a0f20; border:1px solid #1c2540; border-radius:16px 16px 0 0; padding:14px}
   .scan-grid{display:grid; grid-template-columns:1.2fr .8fr; gap:12px}
   .menu{position:relative}
   .menu-pop{position:absolute; right:0; top:110%; background:#0c1224; border:1px solid #223055; border-radius:10px; padding:6px; display:grid; gap:4px; z-index:20}
@@ -81,7 +85,7 @@
   #resumeBadge{cursor:pointer}
   .diff-ins{color:#b9f2ce}
   .diff-move{color:#fcd98d}
-  @media (max-width: 960px){ .grid{grid-template-columns:1fr} .scan-grid{grid-template-columns:1fr} }
+  @media (max-width: 980px){ .grid{grid-template-columns:1fr} .scan-grid{grid-template-columns:1fr} }
   @media (max-width: 600px){ input{padding:16px 14px; font-size:17px} .unit{right:12px} }
 </style>
 </head>
@@ -165,16 +169,23 @@
         <div class="input-wrap"><label for="moisture">Moisture</label><input id="moisture" type="number" step="0.1" inputmode="decimal" placeholder="e.g., 8.9"><span class="unit">%</span></div>
       </div>
 
+      <!-- NEW: Grid coordinate for this test -->
       <div class="row">
-        <div class="input-wrap"><label for="densityPct">% of Target (auto)</label><input id="densityPct" type="text" disabled placeholder="—"><span class="unit">%</span></div>
+        <div class="input-wrap">
+          <label for="gridCoord">Grid Coord (optional)</label>
+          <input id="gridCoord" type="text" inputmode="latin" placeholder="e.g., A3" maxlength="4">
+          <div class="help">Row letter(s) + column number (e.g., A3, B12). Must fit your site photo grid.</div>
+        </div>
         <div class="inline" style="align-items:flex-end; gap:8px">
           <button class="btn secondary" id="btnScan">Scan Gauge (OCR)</button>
           <button class="btn secondary" id="btnImportNotes">Import Notes Screenshot</button>
           <button class="btn secondary" id="btnPasteText">Paste Text</button>
+          <button class="btn secondary" id="btnPhotoGrid">Site Photo + Grid</button>
         </div>
       </div>
 
-      <div class="help">OCR & Paste accept integers or 1‑decimal: <span class="kbd">WD: 149</span> or <span class="kbd">149.0</span>; <span class="kbd">Moist: 8</span> or <span class="kbd">8.9</span>.</div>
+      <div class="input-wrap"><label for="densityPct">% of Target (auto)</label><input id="densityPct" type="text" disabled placeholder="—"><span class="unit">%</span></div>
+      <div class="help">WD & Moisture accept whole numbers or one decimal. Grid Coord validated against your configured grid.</div>
 
       <div class="inline" style="gap:10px; margin-top:10px">
         <button class="btn primary" id="btnSaveNext">Save & Next Test</button>
@@ -204,21 +215,33 @@
             <button data-act="pdf">PDF</button>
             <button data-act="csv">CSV</button>
             <button data-act="svd">SVD</button>
+            <button data-act="photo">Export Annotated Photo</button>
             <button data-act="share">Copy Share Link</button>
           </div>
         </div>
       </div>
 
+      <!-- EXPORT AREA includes the photo -->
       <div id="exportArea" class="card" style="background:#091126; border-color:#16244a; padding:0">
         <div style="padding:16px 16px 0; border-bottom:1px solid #16244a">
           <h2 style="margin:0 0 6px; font-size:18px">RCC Test Log</h2>
           <div class="muted" id="summarySubtitle"></div>
         </div>
+
+        <!-- Annotated photo (grid + markers) -->
+        <div id="photoWrap" class="card hidden" style="background:#0b1227; border-color:#15254c; padding:12px; margin:12px">
+          <div class="inline" style="justify-content:space-between; align-items:center">
+            <div class="section-title" style="margin:0">Site Photo (Grid + Markers)</div>
+            <span class="muted">Pins = test # at grid cell center</span>
+          </div>
+          <canvas id="photoCanvas" style="width:100%; max-height:60vh"></canvas>
+        </div>
+
         <div style="overflow:auto; max-height:420px">
           <table id="testsTable">
             <thead><tr>
-              <th style="width:70px">#</th><th>Test Location</th><th>Wet Density (pcf)</th>
-              <th>Moisture (%)</th><th>% of Target</th><th style="width:110px">Mileage (mi)</th>
+              <th style="width:60px">#</th><th>Test Location</th><th>Wet Density (pcf)</th>
+              <th>Moisture (%)</th><th>% of Target</th><th style="width:90px">Grid</th><th style="width:110px">Mileage (mi)</th>
             </tr></thead>
             <tbody id="testsTbody"></tbody>
           </table>
@@ -242,6 +265,7 @@
   <button class="bar-btn" id="barScan">Scan</button>
   <button class="bar-btn" id="barImport">Import Notes</button>
   <button class="bar-btn" id="barPaste">Paste Text</button>
+  <button class="bar-btn" id="barPhoto">Site Photo + Grid</button>
 </nav>
 
 <!-- libs -->
@@ -258,7 +282,7 @@ const miles = meters => +(meters / 1609.344).toFixed(2);
 const clamp1 = v => Math.round(v*10)/10;
 const toNumber = v => { const n = Number(String(v).trim()); return Number.isFinite(n) ? n : null; };
 
-const LS_KEY = 'rcc_pro_logger_v5';
+const LS_KEY = 'rcc_pro_logger_v6';
 const ORIGIN_TEXT = 'Geotechnical Consultants Inc., Westerville, Ohio';
 const NOMINATIM = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=';
 const NOMI_REV  = (lat,lon) => `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
@@ -267,7 +291,8 @@ const geocache = JSON.parse(localStorage.getItem('rcc_geo_cache') || '{}');
 
 const state = {
   job: { name:'', date: todayISO(), location:'', targetDensity:null, targetMoist:null, mileageMi:null, origin: ORIGIN_TEXT, coords:null },
-  tests: [] // {n, loc, wet, moist, pct}
+  tests: [], // {n, loc, wet, moist, pct, grid}
+  photo: { original:null, annotatedBase:null, width:null, height:null, rows:10, cols:10, line:'#22c55e', alpha:0.8, lw:2, labels:true, markers:[] }
 };
 
 /* ========================= DOM & events ========================= */
@@ -292,13 +317,14 @@ $('#btnBackToEntry').addEventListener('click', () => { summaryCard.classList.add
 
 $('#btnExport').addEventListener('click', ()=> exportMenu.classList.toggle('hidden'));
 exportMenu.addEventListener('click', e=>{
-  const act = e.target?.dataset?.act;
+  const act = e.target && e.target.dataset ? e.target.dataset.act : undefined;
   if(!act) return;
   exportMenu.classList.add('hidden');
   if (act==='png') exportPNG();
   if (act==='pdf') exportPDF();
   if (act==='csv') exportCSV();
   if (act==='svd') exportSVD();
+  if (act==='photo') exportAnnotatedPhotoPNG();
   if (act==='share') copyShareLink();
 });
 document.addEventListener('click', (e)=>{ if(!exportMenu.contains(e.target) && e.target!==$('#btnExport')) exportMenu.classList.add('hidden'); });
@@ -306,12 +332,14 @@ document.addEventListener('click', (e)=>{ if(!exportMenu.contains(e.target) && e
 $('#btnScan').addEventListener('click', openScanner);
 $('#btnImportNotes').addEventListener('click', openImportNotes);
 $('#btnPasteText').addEventListener('click', openPasteImport);
+$('#btnPhotoGrid').addEventListener('click', openPhotoGrid);
 
 // Bottom bar wiring
 $('#barSaveNext').addEventListener('click', ()=> $('#btnSaveNext').click());
 $('#barScan').addEventListener('click', ()=> $('#btnScan').click());
 $('#barImport').addEventListener('click', ()=> $('#btnImportNotes').click());
 $('#barPaste').addEventListener('click', ()=> $('#btnPasteText').click());
+$('#barPhoto').addEventListener('click', ()=> $('#btnPhotoGrid').click());
 
 [wetDensity, targetDensity].forEach(i => i.addEventListener('input', updatePctField));
 document.addEventListener('keydown', e => {
@@ -356,13 +384,13 @@ async function computeMileage(){
   netStatus.textContent = 'routing…';
   const url = `${OSRM}${o.lon},${o.lat};${d.lon},${d.lat}?overview=false&alternatives=false&steps=false`;
   const res = await fetch(url, { headers:{'User-Agent':'RCC-Pro-Logger'} });
-  if (res.ok){ const j = await res.json(); const m = j?.routes?.[0]?.distance; if (typeof m === 'number'){ methodEl.textContent='Routing (OSRM)'; netStatus.textContent='ready'; return miles(m); } }
+  if (res.ok){ const j = await res.json(); const m = j && j.routes && j.routes[0] ? j.routes[0].distance : undefined; if (typeof m === 'number'){ methodEl.textContent='Routing (OSRM)'; netStatus.textContent='ready'; return miles(m); } }
   methodEl.textContent='Fallback (straight-line)'; netStatus.textContent='ready';
   const mi = haversine(o.lat,o.lon,d.lat,d.lon); return +mi.toFixed(2);
 }
 async function geocodeCached(q){ if (geocache[q]) return geocache[q]; const hit = await geocode(q); if (hit){ geocache[q]=hit; localStorage.setItem('rcc_geo_cache', JSON.stringify(geocache)); } return hit; }
-async function geocode(q){ const res = await fetch(NOMINATIM + encodeURIComponent(q), { headers:{'Accept-Language':'en'} }); if (!res.ok) return null; const a = await res.json(); if (!a?.length) return null; const {lat,lon,display_name} = a[0]; return {lat:+lat, lon:+lon, label:display_name}; }
-async function reverseGeocode(lat,lon){ const res = await fetch(NOMI_REV(lat,lon), { headers:{'Accept-Language':'en'} }); if (!res.ok) return null; const d = await res.json(); return {lat:+lat, lon:+lon, label: d?.display_name || `${lat.toFixed(6)}, ${lon.toFixed(6)}` }; }
+async function geocode(q){ const res = await fetch(NOMINATIM + encodeURIComponent(q), { headers:{'Accept-Language':'en'} }); if (!res.ok) return null; const a = await res.json(); if (!a || !a.length) return null; const g = a[0]; return {lat:+g.lat, lon:+g.lon, label:g.display_name}; }
+async function reverseGeocode(lat,lon){ const res = await fetch(NOMI_REV(lat,lon), { headers:{'Accept-Language':'en'} }); if (!res.ok) return null; const d = await res.json(); return {lat:+lat, lon:+lon, label: d && d.display_name ? d.display_name : (lat.toFixed(6)+', '+lon.toFixed(6)) }; }
 function haversine(lat1, lon1, lat2, lon2){ const toRad=d=>d*Math.PI/180, R=3958.761; const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1); const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2; return 2*R*Math.asin(Math.sqrt(a)); }
 
 /* ========================= Entry & %Target ========================= */
@@ -380,12 +408,29 @@ function onSaveNext(){
   if (wet < 100 || wet > 170) toast('Wet Density seems off for RCC (~120–145 pcf).', 'warn');
   if (moi < 1 || moi > 20) toast('Moisture seems off (~4–10%).', 'warn');
 
+  // NEW: grid coordinate
+  const coordRaw = ($('#gridCoord')?.value || '').trim();
+  let grid = null, marker = null;
+  if (coordRaw){
+    const rc = coordToRowCol(coordRaw);
+    if (!rc) return toast('Grid Coord must look like A3 or B12.', 'warn');
+    const p = state.photo;
+    if (!p || !p.rows || !p.cols || !p.annotatedBase) return toast('You set a coordinate but no site photo grid is saved. Add a Site Photo + Grid first.', 'warn');
+    if (!isCoordInBounds(rc.row, rc.col, p.rows, p.cols)) return toast(`Grid Coord ${coordRaw.toUpperCase()} out of bounds (A..${rowNumberToLetters(p.rows)} by 1..${p.cols}).`, 'warn');
+    const xy = gridCellCenterPx(rc.row, rc.col, p);
+    if (!xy) return toast('Could not map coordinate on photo.', 'err');
+    grid = coordRaw.toUpperCase();
+    marker = { coord:grid, x:xy.x, y:xy.y };
+  }
+
   const t = state.job.targetDensity; const pct = (t && t>0) ? clamp1(wet/t*100) : null;
-  const n = state.tests.length + 1; state.tests.push({ n, loc, wet, moist:moi, pct });
+  const n = state.tests.length + 1; state.tests.push({ n, loc, wet, moist:moi, pct, grid });
+
+  if (marker && state.photo){ marker.n = n; state.photo.markers.push(marker); }
 
   save(); updateProgress(); clearEntry(true); testNumber.value = String(state.tests.length + 1); testLocation.focus();
 }
-function clearEntry(keep){ if(!keep) testNumber.value = String(state.tests.length + 1); testLocation.value=''; wetDensity.value=''; moisture.value=''; densityPct.value=''; }
+function clearEntry(keep){ if(!keep) testNumber.value = String(state.tests.length + 1); testLocation.value=''; wetDensity.value=''; moisture.value=''; densityPct.value=''; $('#gridCoord').value=''; }
 
 /* ========================= Summary ========================= */
 function showSummary(){
@@ -407,10 +452,13 @@ function showSummary(){
     const tdWet = (t.wet!=null) ? t.wet : `<span class="miss">missing</span>`;
     const tdMoi = (t.moist!=null) ? t.moist : `<span class="miss">missing</span>`;
     const tdPct = (t.pct!=null) ? (Number.isFinite(t.pct) ? t.pct.toFixed(1) : t.pct) + '%' : `<span class="miss">—</span>`;
+    const tdGrid = t.grid ? escapeHTML(t.grid) : '—';
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${t.n}</td><td class="${t.loc?'':'misscell'}">${tdLoc}</td><td class="${t.wet!=null?'':'misscell'}">${tdWet}</td><td class="${t.moist!=null?'':'misscell'}">${tdMoi}</td><td class="${t.pct!=null?'':'misscell'}">${tdPct}</td><td>${mi}</td>`;
+    tr.innerHTML = `<td>${t.n}</td><td class="${t.loc?'':'misscell'}">${tdLoc}</td><td class="${t.wet!=null?'':'misscell'}">${tdWet}</td><td class="${t.moist!=null?'':'misscell'}">${tdMoi}</td><td class="${t.pct!=null?'':'misscell'}">${tdPct}</td><td>${tdGrid}</td><td>${mi}</td>`;
     testsTbody.appendChild(tr);
   }
+
+  renderPhotoWithMarkersToCanvas();
 }
 function banner(kind, msg){
   statusBanner.classList.remove('hidden','ok','err');
@@ -424,11 +472,12 @@ function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); lsSta
 function loadLast(){
   try{
     const raw = localStorage.getItem(LS_KEY); if (!raw) return toast('No saved session found.', 'warn');
-    const data = JSON.parse(raw); if (!data?.job) return;
+    const data = JSON.parse(raw); if (!data || !data.job) return;
     Object.assign(state, data);
     jobName.value = state.job.name; jobDate.value = state.job.date; jobLocation.value = state.job.location;
     targetDensity.value = state.job.targetDensity ?? ''; targetMoist.value = state.job.targetMoist ?? '';
     disableSetup(); entryCard.classList.remove('hidden'); testNumber.value = String(state.tests.length + 1); testLocation.focus();
+    renderPhotoWithMarkersToCanvas();
     updateProgress();
     toast('Session loaded ✔️','ok');
   }catch{ toast('Failed to load session.', 'err'); }
@@ -443,7 +492,7 @@ function restoreFromURL(){
   const hash = location.hash.slice(1); if (!hash) return;
   try{
     const data = JSON.parse(decodeURIComponent(escape(atob(hash))));
-    if (data?.job && data?.tests){
+    if (data && data.job && data.tests){
       Object.assign(state, data);
       jobName.value = state.job.name; jobDate.value = state.job.date; jobLocation.value = state.job.location;
       targetDensity.value = state.job.targetDensity ?? ''; targetMoist.value = state.job.targetMoist ?? '';
@@ -456,16 +505,22 @@ function restoreFromURL(){
 /* ========================= Export handlers ========================= */
 async function ensureSummaryRendered(){ if (summaryCard.classList.contains('hidden')) showSummary(); await new Promise(r=>setTimeout(r,50)); }
 async function exportPNG(){ await ensureSummaryRendered(); const c = await html2canvas($('#exportArea'), { backgroundColor:'#091126', scale:2 }); download(c.toDataURL('image/png'), `${slug(state.job.name)}-${state.job.date}-RCC.png`); }
-async function exportPDF(){ await ensureSummaryRendered(); const c = await html2canvas($('#exportArea'), { backgroundColor:'#091126', scale:2 }); const img = c.toDataURL('image/png'); const { jsPDF } = window.jspdf; const pdf = new jsPDF({ unit:'pt', format:'a4' }); const pageW = pdf.internal.pageSize.getWidth(); const imgW = pageW - 48; const ratio = imgW / c.width; const imgH = c.height * ratio; pdf.addImage(img, 'PNG', 24, 24, imgW, imgH); pdf.save(`${slug(state.job.name)}-${state.job.date}-RCC.pdf`); }
+async function exportPDF(){
+  await ensureSummaryRendered();
+  const c = await html2canvas($('#exportArea'), { backgroundColor:'#091126', scale:2 });
+  const img = c.toDataURL('image/png'); const { jsPDF } = window.jspdf; const pdf = new jsPDF({ unit:'pt', format:'a4' });
+  const pageW = pdf.internal.pageSize.getWidth(); const imgW = pageW - 48; const ratio = imgW / c.width; const imgH = c.height * ratio;
+  pdf.addImage(img, 'PNG', 24, 24, imgW, imgH); pdf.save(`${slug(state.job.name)}-${state.job.date}-RCC.pdf`);
+}
 function exportCSV(){
   if (!state.tests.length) return toast('No tests to export.', 'warn');
   const mi = state.job.mileageMi ?? '';
   const rows = [
     ['Job Name', state.job.name], ['Job Date', state.job.date], ['Job Location', state.job.location],
     ['Target Density (pcf)', state.job.targetDensity ?? ''], ['Target Moisture (%)', state.job.targetMoist ?? ''], ['Mileage (mi)', mi], [],
-    ['#','Test Location','Wet Density (pcf)','Moisture (%)','% of Target','Mileage (mi)']
+    ['#','Test Location','Wet Density (pcf)','Moisture (%)','% of Target','Grid Coord','Mileage (mi)']
   ];
-  for (const t of state.tests){ rows.push([t.n, t.loc ?? '', t.wet ?? '', t.moist ?? '', t.pct!=null ? t.pct : '', mi]); }
+  for (const t of state.tests){ rows.push([t.n, t.loc ?? '', t.wet ?? '', t.moist ?? '', t.pct!=null ? t.pct : '', t.grid ?? '', mi]); }
   const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
   download('data:text/csv;charset=utf-8,' + encodeURIComponent(csv), `${slug(state.job.name)}-${state.job.date}-RCC.csv`);
 }
@@ -473,14 +528,24 @@ function exportSVD(){
   if (!state.tests.length) return toast('No tests to export.', 'warn');
   const mi = state.job.mileageMi ?? '';
   const header = [
-    '# SVD 1.1',
+    '# SVD 1.2',
     `JobName|${state.job.name}`, `JobDate|${state.job.date}`, `JobLocation|${state.job.location}`,
     `TargetDensity_pcf|${state.job.targetDensity ?? ''}`, `TargetMoist_pct|${state.job.targetMoist ?? ''}`,
     `Mileage_mi|${mi}`,
-    '# Columns: Test#,TestLocation,WetDensity_pcf,Moisture_pct,PercentOfTarget,Mileage_mi'
+    '# Columns: Test#,TestLocation,WetDensity_pcf,Moisture_pct,PercentOfTarget,GridCoord,Mileage_mi'
   ].join('\n');
-  const lines = state.tests.map(t => [t.n, t.loc ?? '', t.wet ?? '', t.moist ?? '', t.pct!=null ? t.pct : '', mi].map(x=>String(x).replace(/\|/g,'/')).join('|'));
+  const lines = state.tests.map(t => [t.n, t.loc ?? '', t.wet ?? '', t.moist ?? '', t.pct!=null ? t.pct : '', t.grid ?? '', mi].map(x=>String(x).replace(/\|/g,'/')).join('|'));
   download('data:text/plain;charset=utf-8,' + encodeURIComponent(header+'\n'+lines.join('\n')+'\n'), `${slug(state.job.name)}-${state.job.date}-RCC.svd`);
+}
+async function exportAnnotatedPhotoPNG(){
+  const p = state.photo; if (!p || !p.annotatedBase) return toast('No annotated photo to export yet.', 'warn');
+  // Ensure current markers are drawn to a fresh canvas, then export
+  const tmp = document.createElement('canvas'); tmp.width = p.width; tmp.height = p.height;
+  const ctx = tmp.getContext('2d');
+  const base = await loadImage(p.annotatedBase);
+  ctx.drawImage(base, 0, 0);
+  drawMarkersOnCtx(ctx, p);
+  download(tmp.toDataURL('image/png'), `${slug(state.job.name)}-${state.job.date}-RCC-photo.png`);
 }
 function slug(s=''){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
 function download(href, filename){ const a=document.createElement('a'); a.href=href; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); }
@@ -502,9 +567,15 @@ async function useCurrentLocation(){
 
 /* ========================= OCR: Gauge Scanner ========================= */
 let scanModal=null, scanStream=null;
-function openScanner(){ if (!scanModal) buildScannerModal(); $('#scanStatus').textContent = 'Initializing camera…'; scanModal.classList.remove('hidden'); startCamera(); }
+function openScanner(){
+  if (!scanModal) buildScannerModal();
+  $('#scanStatus').textContent = 'Initializing camera…';
+  scanModal.classList.remove('hidden');
+  startCamera();
+}
 function buildScannerModal(){
-  scanModal = document.createElement('div'); scanModal.className='modal hidden';
+  scanModal = document.createElement('div');
+  scanModal.className='modal hidden';
   scanModal.innerHTML = `
     <div class="sheet">
       <header class="inline" style="justify-content:space-between">
@@ -523,41 +594,46 @@ function buildScannerModal(){
             <button class="btn primary" id="btnCapture">Capture & Read</button>
             <button class="btn secondary" id="btnFill" disabled>Fill Fields</button>
           </div>
-          <div class="help">Accepts integers or 1‑decimal.</div>
+          <div class="help">Accepts integers or 1‑decimal (e.g., 149 / 149.0).</div>
           <pre id="ocrOut" class="muted" style="margin-top:8px; white-space:pre-wrap"></pre>
         </div>
       </div>
     </div>`;
   document.body.appendChild(scanModal);
-  $('#btnCloseScan').addEventListener('click', ()=>{ scanModal.classList.add('hidden'); stopCamera(); });
+  $('#btnCloseScan').addEventListener('click', closeScanner);
   $('#btnCapture').addEventListener('click', onCaptureAndRead);
   $('#btnFill').addEventListener('click', fillFromOCR);
   $('#fileInput').addEventListener('change', onPickImage);
 }
+function closeScanner(){ scanModal.classList.add('hidden'); stopCamera(); }
 async function startCamera(){
   try{
     scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal:'environment' } }, audio:false });
     $('#video').srcObject = scanStream; await $('#video').play();
     $('#scanStatus').textContent = 'Camera ready. Capture when text is sharp.';
-  }catch{ $('#scanStatus').textContent = 'Camera blocked/unavailable. Upload a photo instead.'; }
+  }catch(e){ console.error(e); $('#scanStatus').textContent = 'Camera blocked/unavailable. Upload a photo instead.'; }
 }
 function stopCamera(){ if (scanStream){ for (const t of scanStream.getTracks()) t.stop(); } const v=$('#video'); if (v) v.srcObject=null; }
+
 async function onCaptureAndRead(){
-  const v = $('#video'); if (!v.videoWidth) return $('#scanStatus').textContent = 'Camera not ready.';
+  const v = $('#video');
+  if (!v.videoWidth) return $('#scanStatus').textContent = 'Camera not ready.';
   const W = 1000, H = Math.round(v.videoHeight * (W / v.videoWidth));
   const c = $('#frameCanvas'); c.width=W; c.height=H;
-  const ctx = c.getContext('2d'); ctx.drawImage(v, 0, 0, W, H); preprocess(ctx, W, H);
+  const ctx = c.getContext('2d'); ctx.drawImage(v, 0, 0, W, H);
+  preprocess(ctx, W, H);
   $('#scanStatus').textContent = 'Reading…';
   const { text, wd, moist } = await ocrGauge(c);
   showOcrResult(text, wd, moist);
 }
 async function onPickImage(ev){
-  const file = ev.target.files?.[0]; if (!file) return;
+  const file = ev.target.files && ev.target.files[0] ? ev.target.files[0] : null; if (!file) return;
   const img = new Image();
   img.onload = async ()=>{
     const maxW = 1600, scale = Math.min(1, maxW / img.width);
     const c = $('#frameCanvas'); c.width = Math.round(img.width*scale); c.height = Math.round(img.height*scale);
-    const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, c.width, c.height); preprocess(ctx, c.width, c.height);
+    const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, c.width, c.height);
+    preprocess(ctx, c.width, c.height);
     $('#scanStatus').textContent = 'Reading image…';
     const { text, wd, moist } = await ocrGauge(c);
     showOcrResult(text, wd, moist);
@@ -571,11 +647,17 @@ function showOcrResult(text, wd, moist){
     $('#scanStatus').textContent = `Found: WD=${wd ?? '—'} pcf, %Moist=${moist ?? '—'} %`;
     scanModal.dataset.lastWd = wd ?? '';
     scanModal.dataset.lastMoist = moist ?? '';
-    $('#btnFill').disabled = false; banner('ok', 'Gauge scan successful.');
-  } else { $('#scanStatus').textContent = 'Couldn’t find WD/%Moist.'; $('#btnFill').disabled = true; banner('err', 'Gauge scan did not detect values.'); }
+    $('#btnFill').disabled = false;
+    banner('ok', 'Gauge scan successful.');
+  } else {
+    $('#scanStatus').textContent = 'Couldn’t find WD/%Moist. Try closer, sharper image, or upload a photo.';
+    $('#btnFill').disabled = true;
+    banner('err', 'Gauge scan did not detect values.');
+  }
 }
 function preprocess(ctx,w,h){
-  const img = ctx.getImageData(0,0,w,h), d=img.data; const contrast=1.25, bright=10;
+  const img = ctx.getImageData(0,0,w,h), d=img.data;
+  const contrast=1.25, bright=10;
   for(let i=0;i<d.length;i+=4){ const r=d[i],g=d[i+1],b=d[i+2]; let y=(r*0.299+g*0.587+b*0.114); y=(y-128)*contrast+128+bright; y=y<0?0:y>255?255:y; d[i]=d[i+1]=d[i+2]=y; }
   ctx.putImageData(img,0,0);
 }
@@ -583,19 +665,27 @@ async function ocrGauge(canvas){
   const out = { text:'', wd:null, moist:null };
   try{
     const res = await Tesseract.recognize(canvas, 'eng', { logger: m=>{} });
-    const text = (res?.data?.text || '').replace(/\r/g,''); out.text = text;
+    const text = (res && res.data && res.data.text ? res.data.text : '').replace(/\r/g,'');
+    out.text = text;
     const wdMatch = text.match(/\b(1\d{2}|[2-9]\d{2})(?:\.\d)?\b/);
     const moistMatch = text.match(/\b(\d{1,2})(?:\.\d)?\b/);
     out.wd = wdMatch ? parseFloat(wdMatch[0]) : null;
     out.moist = moistMatch ? parseFloat(moistMatch[0]) : null;
     if (out.wd!=null && (out.wd<100 || out.wd>200)) out.wd=null;
     if (out.moist!=null && (out.moist<0 || out.moist>40)) out.moist=null;
-  }catch{}
+  }catch(e){ console.error(e); }
   return out;
 }
-function fillFromOCR(){ const wd = scanModal.dataset.lastWd, m = scanModal.dataset.lastMoist; if (wd) wetDensity.value = wd; if (m) moisture.value = m; updatePctField(); toast(`Filled ${wd? 'WD':''}${wd&&m?', ':''}${m? '%Moist':''} from OCR ✔️`,'ok'); scanModal.classList.add('hidden'); stopCamera(); }
+function fillFromOCR(){
+  const wd = scanModal.dataset.lastWd, m = scanModal.dataset.lastMoist;
+  if (wd) wetDensity.value = wd;
+  if (m)  moisture.value = m;
+  updatePctField();
+  toast(`Filled ${wd? 'WD':''}${wd&&m?', ':''}${m? '%Moist':''} from OCR ✔️`, 'ok');
+  closeScanner();
+}
 
-/* ========================= NOTES IMPORT (image) ========================= */
+/* ========================= NOTES IMPORT (image) + PASTE TEXT ========================= */
 let importModal=null, parsedBlocks=[];
 let diffModal=null, lastPlan=null;
 
@@ -612,7 +702,7 @@ function buildImportModal(){
         </div>
       </header>
       <div class="row" style="grid-template-columns:1fr">
-        <div class="help">Each test starts with <span class="kbd">1.</span>/<span class="kbd">2)</span>/<span class="kbd">3:</span>/<span class="kbd">4 -</span>. First WD (100–250) and Moist (0–40) in any order. The rest is the location.</div>
+        <div class="help">Tests start with a number (e.g., <span class="kbd">1.</span>, <span class="kbd">2)</span>, <span class="kbd">3:</span>). First WD (100–250) and first Moist (0–40) after that (any order). Rest of the line(s) is location.</div>
         <canvas id="notesCanvas" height="360" class="hidden"></canvas>
         <pre id="notesOut" class="muted" style="white-space:pre-wrap"></pre>
         <div class="inline" style="gap:8px">
@@ -626,13 +716,14 @@ function buildImportModal(){
   $('#btnReview').addEventListener('click', openDiffPreview);
 }
 async function onNotesPick(ev){
-  const file = ev.target.files?.[0]; if (!file) return;
+  const file = ev.target.files && ev.target.files[0] ? ev.target.files[0] : null; if (!file) return;
   const img = new Image();
   img.onload = async ()=>{
     const maxW = 1900, scale = Math.min(1, maxW / img.width);
     const c = $('#notesCanvas'); c.width = Math.round(img.width*scale); c.height = Math.round(img.height*scale);
-    const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, c.width, c.height); preprocess(ctx, c.width, c.height);
-    let text=''; try{ const res = await Tesseract.recognize(c, 'eng', { logger: m=>{} }); text = (res?.data?.text || '').replace(/\r/g,''); } catch{}
+    const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, c.width, c.height);
+    preprocess(ctx, c.width, c.height);
+    let text=''; try{ const res = await Tesseract.recognize(c, 'eng', { logger: m=>{} }); text = (res && res.data && res.data.text ? res.data.text : '').replace(/\r/g,''); } catch(e){ console.error(e); }
     parsedBlocks = parseNotesBlocks(text);
     const preview = parsedBlocks.length
       ? parsedBlocks.map(o => `#${o.n} | WD:${o.wet ?? '—'} | %Moist:${o.moist ?? '—'} | Loc: ${o.loc || '(none)'}`).join('\n')
@@ -645,7 +736,7 @@ async function onNotesPick(ev){
   img.src = URL.createObjectURL(file);
 }
 
-/* ========================= NEW: PASTE TEXT IMPORT ========================= */
+/* PASTE TEXT */
 let pasteModal=null;
 function openPasteImport(){ if(!pasteModal) buildPasteModal(); pasteModal.classList.remove('hidden'); $('#pasteArea').focus(); }
 function buildPasteModal(){
@@ -654,16 +745,10 @@ function buildPasteModal(){
     <div class="sheet">
       <header class="inline" style="justify-content:space-between">
         <h2>Paste Text</h2>
-        <div class="inline">
-          <button class="btn secondary" id="btnClosePaste" style="width:auto">Close</button>
-        </div>
+        <div class="inline"><button class="btn secondary" id="btnClosePaste" style="width:auto">Close</button></div>
       </header>
       <div class="row" style="grid-template-columns:1fr">
-        <textarea id="pasteArea" placeholder="Paste raw text here — e.g.:
-1. 148.9 8.9 1st lane (north most lane 50ft east off west end)
-2. 147.6 8.5 Lane 2 (200ft east off west end)
-3. 149.2 9.0 Centerline at 300ft
-..."></textarea>
+        <textarea id="pasteArea" placeholder="Paste raw text here — one test per line or paragraph.&#10;Example:&#10;1. 148.9 8.9 North lane 50ft E of west end&#10;2) 147.6 8.5 Lane 2 @ 200ft E"></textarea>
         <div class="inline" style="gap:8px">
           <button class="btn primary" id="btnAnalyzePaste">Analyze</button>
           <button class="btn secondary" id="btnReviewPaste" disabled>Review Changes…</button>
@@ -686,10 +771,9 @@ function buildPasteModal(){
   $('#btnReviewPaste').addEventListener('click', openDiffPreview);
 }
 
-/* ---------- Parser shared by image & paste ---------- */
+/* Robust splitter: find test starts; tolerant to "1.", "1)", "1:", "1 -" */
 function parseNotesBlocks(text){
   const s = String(text || '').replace(/\r/g,'');
-  // Start-of-line or newline, then test number (1–3 digits), optional [.) :-], at least one space, then a digit
   const startReG = /(^|\n)\s*(\d{1,3})\s*(?:[.) :-])?\s+(?=\d)/g;
   const starts = [];
   let m;
@@ -699,7 +783,6 @@ function parseNotesBlocks(text){
     starts.push({ idx, n });
   }
   if (!starts.length) return [];
-
   const blocks = [];
   for (let i = 0; i < starts.length; i++){
     const a = starts[i].idx;
@@ -715,7 +798,6 @@ function parseOneBlockSlice(slice, testNum){
   if (!m) return null;
   var rest = m[2].replace(/\s+/g,' ').trim();
 
-  // Tokenize numbers (0–999) with optional single decimal, Safari-safe
   const numRe = /\b\d{1,3}(?:\.\d)?\b/g;
   const tokens = [];
   let k;
@@ -724,11 +806,12 @@ function parseOneBlockSlice(slice, testNum){
   }
   if (tokens.length < 2) return null;
 
-  const isWD    = v => v >= 100 && v <= 250; // pcf
-  const isMoist = v => v >= 0   && v <= 40;  // %
+  const isWD    = v => v >= 100 && v <= 250;
+  const isMoist = v => v >= 0   && v <= 40;
   const limit = Math.min(8, tokens.length);
 
   let iHit = -1, jHit = -1, wd = null, moist = null;
+
   outer:
   for (let i = 0; i < limit; i++){
     for (let j = i+1; j < limit; j++){
@@ -854,7 +937,7 @@ function applyDiffPlan(){
 
   for (const a of lastPlan.assignments){
     const b = a.block;
-    state.tests.push({ n: a.assigned, loc: b.loc, wet: b.wet, moist: b.moist, pct: b.pct });
+    state.tests.push({ n: a.assigned, loc: b.loc, wet: b.wet, moist: b.moist, pct: b.pct, grid: null });
   }
 
   state.tests.sort((x,y)=> x.n - y.n);
@@ -862,7 +945,7 @@ function applyDiffPlan(){
   save();
   diffModal.classList.add('hidden');
   if (importModal) importModal.classList.add('hidden');
-  if (pasteModal) pasteModal.classList.add('hidden');
+  if (pasteModal)  pasteModal.classList.add('hidden');
   testNumber.value = String(state.tests.length + 1);
 
   const moved = lastPlan.existingMoves.filter(x => x.from !== x.to).length;
@@ -871,11 +954,226 @@ function applyDiffPlan(){
   banner('ok', msg); toast(msg, 'ok'); updateProgress();
 }
 
+/* ========================= Site Photo + Grid ========================= */
+let photoModal = null;
+function openPhotoGrid(){ if (!photoModal) buildPhotoModal(); photoModal.classList.remove('hidden'); }
+function buildPhotoModal(){
+  photoModal = document.createElement('div'); photoModal.className='modal hidden';
+  photoModal.innerHTML = `
+    <div class="sheet">
+      <header class="inline" style="justify-content:space-between">
+        <h2>Site Photo + Grid</h2>
+        <div class="inline">
+          <input type="file" id="photoPick" accept="image/*" class="btn secondary" style="padding:8px 10px; width:auto">
+          <button class="btn secondary" id="btnClosePhoto" style="width:auto">Close</button>
+        </div>
+      </header>
+
+      <div class="row">
+        <div class="input-wrap">
+          <label for="gridRows">Rows (letters)</label>
+          <input id="gridRows" type="number" min="1" max="52" value="${state.photo.rows}">
+        </div>
+        <div class="input-wrap">
+          <label for="gridCols">Cols (numbers)</label>
+          <input id="gridCols" type="number" min="1" max="200" value="${state.photo.cols}">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="input-wrap">
+          <label for="gridColor">Line Color</label>
+          <input id="gridColor" type="color" value="${state.photo.line}">
+        </div>
+        <div class="input-wrap">
+          <label for="gridAlpha">Line Opacity</label>
+          <input id="gridAlpha" type="range" min="0.1" max="1" step="0.05" value="${state.photo.alpha}">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="input-wrap">
+          <label for="gridLW">Line Width</label>
+          <input id="gridLW" type="number" min="1" max="10" value="${state.photo.lw}">
+        </div>
+        <div class="inline">
+          <label class="muted"><input type="checkbox" id="gridLabels" ${state.photo.labels ? 'checked' : ''}> Show Labels</label>
+        </div>
+      </div>
+
+      <div class="scan-grid">
+        <div><canvas id="photoCanvasEdit" height="360"></canvas></div>
+        <div>
+          <div class="help">Upload a site photo, adjust grid settings, then <strong>Save to Summary</strong>. Rows are labeled A, B, C…; columns are 1…N.</div>
+          <div class="inline" style="gap:8px; margin-top:8px">
+            <button class="btn primary" id="btnSaveGrid">Save to Summary</button>
+            <button class="btn secondary" id="btnResetMarkers">Clear Markers</button>
+          </div>
+          <div id="photoNote" class="muted" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(photoModal);
+  $('#btnClosePhoto').addEventListener('click', ()=> photoModal.classList.add('hidden'));
+  $('#photoPick').addEventListener('change', onPickSitePhoto);
+  $('#gridRows').addEventListener('input', refreshGridPreview);
+  $('#gridCols').addEventListener('input', refreshGridPreview);
+  $('#gridColor').addEventListener('input', refreshGridPreview);
+  $('#gridAlpha').addEventListener('input', refreshGridPreview);
+  $('#gridLW').addEventListener('input', refreshGridPreview);
+  $('#gridLabels').addEventListener('change', refreshGridPreview);
+  $('#btnSaveGrid').addEventListener('click', saveGridToState);
+  $('#btnResetMarkers').addEventListener('click', ()=>{ state.photo.markers=[]; renderPhotoWithMarkersToCanvas(); toast('Cleared all markers ✔️','ok'); });
+  refreshGridPreview();
+}
+
+async function onPickSitePhoto(ev){
+  const file = ev.target.files && ev.target.files[0] ? ev.target.files[0] : null; if (!file) return;
+  const img = await loadImage(URL.createObjectURL(file));
+  state.photo.original = await drawImageToDataURL(img); // normalized
+  state.photo.width = img.naturalWidth; state.photo.height = img.naturalHeight;
+  toast('Photo loaded ✔️','ok');
+  refreshGridPreview();
+}
+
+function refreshGridPreview(){
+  const c = $('#photoCanvasEdit'); if (!c) return;
+  const ctx = c.getContext('2d');
+  const p = state.photo;
+
+  // read controls
+  p.rows = Math.max(1, Math.min(52, parseInt($('#gridRows').value || p.rows,10)));
+  p.cols = Math.max(1, Math.min(200, parseInt($('#gridCols').value || p.cols,10)));
+  p.line = $('#gridColor').value || p.line;
+  p.alpha = +($('#gridAlpha').value || p.alpha);
+  p.lw = Math.max(1, Math.min(10, parseInt($('#gridLW').value || p.lw,10)));
+  p.labels = $('#gridLabels').checked;
+
+  // draw preview
+  ctx.clearRect(0,0,c.width,c.height);
+  if (!p.original){ $('#photoNote').textContent = 'Pick a photo to begin.'; return; }
+
+  const img = new Image(); img.onload = ()=>{
+    // fit image into preview canvas (maintain aspect)
+    const maxW = 1000; const scale = Math.min(1, maxW / img.width);
+    c.width = Math.round(img.width*scale); c.height = Math.round(img.height*scale);
+    ctx.clearRect(0,0,c.width,c.height);
+    ctx.drawImage(img, 0, 0, c.width, c.height);
+    drawGridOnCtx(ctx, c.width, c.height, p);
+    $('#photoNote').textContent = `Preview • ${p.rows} rows (A..${rowNumberToLetters(p.rows)}), ${p.cols} cols (1..${p.cols})`;
+  };
+  img.src = p.original;
+}
+
+async function saveGridToState(){
+  const p = state.photo;
+  if (!p.original) return toast('Pick a photo first.', 'warn');
+  // Create a full-resolution composite with grid only
+  const base = await loadImage(p.original);
+  const c = document.createElement('canvas'); c.width = base.naturalWidth; c.height = base.naturalHeight;
+  const ctx = c.getContext('2d'); ctx.drawImage(base, 0, 0);
+  drawGridOnCtx(ctx, c.width, c.height, p);
+  p.annotatedBase = c.toDataURL('image/png');
+  p.width = c.width; p.height = c.height;
+  save();
+  renderPhotoWithMarkersToCanvas();
+  toast('Saved annotated photo ✔️ (markers will show in Summary)', 'ok');
+}
+
+function drawGridOnCtx(ctx, w, h, p){
+  ctx.save();
+  ctx.globalAlpha = p.alpha;
+  ctx.strokeStyle = p.line;
+  ctx.lineWidth = p.lw;
+
+  const cellW = w / p.cols;
+  const cellH = h / p.rows;
+
+  // vertical lines + column labels
+  for (let x=0; x<=p.cols; x++){
+    const px = Math.round(x*cellW)+0.5;
+    ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, h); ctx.stroke();
+    if (p.labels && x>0 && x<=p.cols){
+      ctx.fillStyle = '#0b132a'; ctx.fillRect(px-cellW+2, 2, cellW-4, 24);
+      ctx.fillStyle = '#e7ecf5'; ctx.font = '14px ui-monospace,Menlo,monospace'; ctx.textAlign='center'; ctx.textBaseline='top';
+      ctx.fillText(String(x), px - cellW/2, 4);
+    }
+  }
+  // horizontal lines + row labels
+  for (let y=0; y<=p.rows; y++){
+    const py = Math.round(y*cellH)+0.5;
+    ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(w, py); ctx.stroke();
+    if (p.labels && y>0 && y<=p.rows){
+      ctx.fillStyle = '#0b132a'; ctx.fillRect(2, py-cellH+2, 24, cellH-4);
+      ctx.fillStyle = '#e7ecf5'; ctx.font = '14px ui-monospace,Menlo,monospace'; ctx.textAlign='left'; ctx.textBaseline='middle';
+      ctx.fillText(rowNumberToLetters(y), 6, py - cellH/2);
+    }
+  }
+  ctx.restore();
+}
+
+function renderPhotoWithMarkersToCanvas() {
+  const p = state.photo;
+  const wrap = document.getElementById('photoWrap');
+  const cv = document.getElementById('photoCanvas');
+  if (!wrap || !cv) return;
+  if (!p || !p.annotatedBase || !p.width || !p.height) {
+    wrap.classList.add('hidden'); return;
+  }
+  wrap.classList.remove('hidden');
+
+  cv.width = p.width; cv.height = p.height;
+  const ctx = cv.getContext('2d');
+
+  const base = new Image();
+  base.onload = ()=>{
+    ctx.clearRect(0,0,cv.width,cv.height);
+    ctx.drawImage(base, 0, 0, cv.width, cv.height);
+    drawMarkersOnCtx(ctx, p);
+  };
+  base.src = p.annotatedBase;
+}
+
+function drawMarkersOnCtx(ctx, p){
+  const pins = p.markers || [];
+  ctx.save();
+  ctx.font = Math.max(14, Math.round(p.width * 0.02)) + 'px ui-monospace, Menlo, monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  pins.forEach(pin => {
+    const x = pin.x, y = pin.y;
+    const r = Math.max(8, Math.round(p.width * 0.008));
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI*2);
+    ctx.fillStyle = '#0b132a';
+    ctx.fill();
+    ctx.lineWidth = Math.max(2, Math.round(p.width * 0.003));
+    ctx.strokeStyle = '#22c55e';
+    ctx.stroke();
+
+    const label = String(pin.n);
+    const padX = 6, padY = 3;
+    const metrics = ctx.measureText(label);
+    const lw = metrics.width + padX*2;
+    const lh = parseInt(ctx.font,10) + padY*2;
+    const lx = x; const ly = y - r - lh*0.9;
+
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    roundRect(ctx, lx - lw/2, ly - lh/2, lw, lh, 6); ctx.fill();
+
+    ctx.fillStyle = '#e7ecf5';
+    ctx.fillText(label, lx, ly);
+  });
+
+  ctx.restore();
+}
+
 /* ========================= Progress ========================= */
 function updateProgress(){
   const n = state.tests.length;
   $('#testsCount').textContent = n;
-  const pct = Math.min(100, (n/10)*100);
+  const pct = Math.min(100, (n/10)*100); // soft goal: 10 tests
   $('#progFill').style.width = pct + '%';
   $('#resumeBadge').classList.toggle('hidden', n===0);
 }
@@ -885,7 +1183,42 @@ $('#resumeBadge').addEventListener('click', ()=>{
   toast('Resumed session','ok');
 });
 
-/* ========================= Helpers & Toast ========================= */
+/* ========================= Helpers & Toast & Grid Utils ========================= */
+function roundRect(ctx, x, y, w, h, r) {
+  const rr = Math.min(r, w/2, h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+rr, y);
+  ctx.arcTo(x+w, y, x+w, y+h, rr);
+  ctx.arcTo(x+w, y+h, x, y+h, rr);
+  ctx.arcTo(x, y+h, x, y, rr);
+  ctx.arcTo(x, y, x+w, y, rr);
+  ctx.closePath();
+}
+function rowNumberToLetters(num) {
+  let s = '';
+  while (num > 0) {
+    const rem = (num - 1) % 26;
+    s = String.fromCharCode(65 + rem) + s;
+    num = Math.floor((num - 1) / 26);
+  }
+  return s;
+}
+function coordToRowCol(coord) {
+  if (!coord) return null;
+  const m = String(coord).trim().match(/^([A-Za-z]{1,2})(\d{1,3})$/);
+  if (!m) return null;
+  const letters = m[1].toUpperCase(); const colNum = parseInt(m[2], 10);
+  let rowNum = 0; for (let i = 0; i < letters.length; i++) { rowNum = rowNum * 26 + (letters.charCodeAt(i) - 64); }
+  return { row: rowNum, col: colNum };
+}
+function isCoordInBounds(row, col, rows, cols) { return row >= 1 && row <= rows && col >= 1 && col <= cols; }
+function gridCellCenterPx(row, col, p) {
+  if (!p || !p.width || !p.height || !p.rows || !p.cols) return null;
+  const cellW = p.width / p.cols; const cellH = p.height / p.rows;
+  return { x: (col - 0.5) * cellW, y: (row - 0.5) * cellH };
+}
+async function loadImage(src){ return await new Promise((res,rej)=>{ const img=new Image(); img.onload=()=>res(img); img.onerror=rej; img.src=src; }); }
+async function drawImageToDataURL(img){ const c=document.createElement('canvas'); c.width=img.naturalWidth; c.height=img.naturalHeight; const ctx=c.getContext('2d'); ctx.drawImage(img,0,0); return c.toDataURL('image/png'); }
 function slug(s=''){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
 function download(href, filename){ const a=document.createElement('a'); a.href=href; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); }
 
