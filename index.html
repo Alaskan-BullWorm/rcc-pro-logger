@@ -702,42 +702,77 @@ async function onNotesPick(ev){
 
 /* Parse text into blocks that start with "N." and run until next "M." */
 function parseNotesBlocks(text){
-  const rawLines = text.split('\n').map(s=>s.replace(/\s+$/,''));
-  const startRe = /^\s*(\d{1,3})\.\s+/; // "1." or "12."
+  // normalize and scan for test starts anywhere in the OCR text
+  const s = String(text || '').replace(/\r/g,'');
+  // Match: line start OR newline, then number (1–3 digits), optional punctuation, then space
+  // We keep it strict-ish (still expects a separator/space) so we don't over-split inside locations.
+  const startReG = /(^|\n)\s*(\d{1,3})\s*(?:[.) :-])?\s+(?=\d)/g;
+
+  const starts = [];
+  let m;
+  while ((m = startReG.exec(s)) !== null){
+    const idx = m.index + (m[1] ? m[1].length : 0);
+    const n = parseInt(m[2],10);
+    starts.push({ idx, n });
+  }
+  if (!starts.length) return [];
+
   const blocks = [];
-  let i = 0;
-  while (i < rawLines.length){
-    const start = rawLines[i].match(startRe);
-    if (!start){ i++; continue; }
-    const n = parseInt(start[1],10);
-    let j = i+1;
-    while (j < rawLines.length && !startRe.test(rawLines[j])) j++;
-    const chunk = rawLines.slice(i, j).join(' ').replace(/\s{2,}/g,' ').trim();
-    const parsed = parseOneBlock(chunk, n);
+  for (let i = 0; i < starts.length; i++){
+    const a = starts[i].idx;
+    const b = (i+1 < starts.length) ? starts[i+1].idx : s.length;
+    const chunk = s.slice(a, b).trim();
+    const parsed = parseOneBlockSlice(chunk, starts[i].n);
     if (parsed) blocks.push(parsed);
-    i = j;
   }
   return blocks;
 }
-/* Inside one block:
-   - Strictly search AFTER the "N." marker
-   - Moist: 1–2 digits, optional .digit => \d{1,2}(?:\.\d)?
-   - WD:   3 digits, optional .digit     => \d{3}(?:\.\d)?
-   - Location = text after whichever (moist/wd) appears second
-*/
-function parseOneBlock(block, testNum){
-  const mark = block.match(/^\s*(\d{1,3})\.\s+/);
-  if (!mark) return null;
-  const rest = block.slice(mark[0].length);
 
-  // Tokenize numeric candidates with boundaries so "1st" is not captured.
-  // e.g., ["148.9@", idx, "8.9@", idx, "1@", idx, "50@", idx, ...]
+// Parse a single slice that begins with "N" plus optional punctuation, then the rest of the text.
+// Picks the first valid WD+Moist pair; everything after the second number is the location.
+function parseOneBlockSlice(slice, testNum){
+  // remove the leading test number & optional punctuation
+  const m = slice.match(/^\s*(\d{1,3})\s*(?:[.) :-])?\s+(.*)$/s);
+  if (!m) return null;
+  let rest = m[2].replace(/\s+/g,' ').trim();
+
+  // tokenise all numeric-looking items with word boundaries so "1st" isn't a number
   const numRe = /\b\d{1,3}(?:\.\d)?\b/g;
   const tokens = [];
-  for (const m of rest.matchAll(numRe)) {
-    const val = parseFloat(m[0]);
-    tokens.push({ val, start: m.index, end: m.index + m[0].length, text: m[0] });
+  for (const k of rest.matchAll(numRe)){
+    tokens.push({ val: parseFloat(k[0]), start: k.index, end: k.index + k[0].length });
   }
+  if (tokens.length < 2) return null;
+
+  const isWD    = v => v >= 100 && v <= 250; // generous for safety
+  const isMoist = v => v >= 0   && v <= 40;
+
+  // Look for the earliest pair that fits WD+Moist, only among the first few numbers
+  // so "50ft / 200ft" etc. don't hijack the match.
+  const limit = Math.min(8, tokens.length);
+  let iHit = -1, jHit = -1, wd = null, moist = null;
+
+  outer:
+  for (let i = 0; i < limit; i++){
+    for (let j = i+1; j < limit; j++){
+      const a = tokens[i].val, b = tokens[j].val;
+      if ((isWD(a) && isMoist(b)) || (isMoist(a) && isWD(b))){
+        iHit = i; jHit = j; wd = isWD(a) ? a : b; moist = isMoist(a) ? a : b;
+        break outer;
+      }
+    }
+  }
+  if (iHit === -1) return null;
+
+  // Everything after the 2nd matched number is location (may include more numbers)
+  const after = tokens[jHit].end;
+  const loc = rest.slice(after).replace(/^[^\w(]+/, '').trim() || null;
+
+  const t = state.job.targetDensity;
+  const pct = (t && t>0) ? Math.round((wd/t*100)*10)/10 : null;
+
+  return { n: testNum, loc, wet: wd, moist, pct };
+}
   if (!tokens.length) return null;
 
   // Heuristics: find the earliest pair where one looks like WD and the other Moist.
