@@ -2,1064 +2,829 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>RCC Pro Logger</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<link rel="preconnect" href="https://unpkg.com" crossorigin>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>RCC Pro Logger — Grid Coords + Annotated Exports</title>
+<meta name="color-scheme" content="dark light" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0b0f1a; --panel:#0d1426; --ink:#e7ecf5; --muted:#9fb1d1;
-    --line:#1a2540; --accent:#22c55e; --warn:#f59e0b; --err:#ef4444; --focus:#3b82f6;
-    --chip:#0a1229; --ink-strong:#ffffff; --ok:#16a34a; --labelBg:#0b132a; --shade:#0c172e;
+    --bg:#0b1220;--panel:#101826;--muted:#9aa5b1;--text:#e6e8eb;--brand:#22d3ee;
+    --ok:#34d399;--warn:#fbbf24;--err:#f87171;--stroke:rgba(148,163,184,.25);
+    --radius:12px;--shadow:0 12px 32px rgba(0,0,0,.35);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
-  body{
-    margin:0; color:var(--ink);
-    font-family: ui-sans-serif, system-ui, -apple-system, "SF Pro", Segoe UI, Roboto, Arial;
-    background: radial-gradient(1200px 600px at 10% -10%, #121a34 0%, #0b0f1a 40%, #070a14 100%);
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  header{padding:14px 16px; position:sticky; top:0; z-index:10; backdrop-filter:saturate(140%) blur(6px); background:#080d1acc; border-bottom:1px solid var(--line)}
-  .header-wrap{max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px}
-  .brand{display:flex; align-items:center; gap:10px}
-  .logo{width:36px; height:36px; border-radius:10px; overflow:hidden; display:grid; place-items:center; background:linear-gradient(135deg,#2dd4bf 0%,#22c55e 35%,#4ade80 70%,#60a5fa 100%); box-shadow:0 5px 28px #22c55e22}
-  .logo svg{width:22px; height:22px; color:#05140a}
-  h1{margin:0; font-size:16px; letter-spacing:.3px}
-  .pill{background:var(--chip); border:1px solid var(--line); padding:6px 10px; border-radius:999px; font-size:12px; color:#cbd5e1}
-  .btn{cursor:pointer; padding:12px 12px; border-radius:12px; border:1px solid #243255; background:#0f172a; color:var(--ink); font-weight:700; letter-spacing:.2px; transition:transform .05s ease}
-  .btn:active{transform:translateY(1px)} .btn.primary{background:linear-gradient(180deg,#22c55e,#16a34a); color:#03140b; border-color:#0b3b22}
-  .btn.secondary{background:#0c1224} .btn.warning{background:linear-gradient(180deg,#f59e0b,#d97706); color:#1a1203; border-color:#6b3f03}
-  main{max-width:1100px; margin:18px auto 90px; padding:0 14px}
-  .grid{display:grid; gap:18px; grid-template-columns:1.3fr .7fr}
-  .card{background:linear-gradient(180deg,#0c1328 0%, #0a1022 100%); border:1px solid var(--line); border-radius:16px; padding:16px; box-shadow:0 18px 60px #0007}
-  .section-title{margin:0 0 12px; font-size:16px; font-weight:800; color:var(--ink-strong)}
-  .row{display:grid; gap:12px; grid-template-columns:repeat(2,minmax(0,1fr)); margin-bottom:10px}
-  label{font-size:12px; color:var(--muted); display:block; margin-bottom:6px}
-  .input-wrap{position:relative}
-  input, textarea, select{
-    width:100%; padding:14px 12px; border-radius:12px; border:1px solid #223055; outline:none;
-    background:#0b132a; color:#e7ecf5; font-size:16px; transition:border .15s ease, box-shadow .15s ease;
-  }
-  textarea{min-height:180px; resize:vertical}
-  input:focus, textarea:focus, select:focus{border-color:var(--focus); box-shadow:0 0 0 3px #3b82f633}
-  input::placeholder, textarea::placeholder{color:#7383a6}
-  .unit{position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#a9b4cf; font-size:12px; background:#09122a; border:1px solid #1d2a4b; padding:2px 6px; border-radius:8px; pointer-events:none}
-  .inline{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
-  .muted{color:#9fb1d1; font-size:12px}
-  .kbd{font-family:ui-monospace,Menlo,monospace; background:#0c1328; border:1px solid #1d2a4b; padding:2px 6px; border-radius:6px; font-size:12px; color:#cbd5e1}
-  .divider{height:1px; background:linear-gradient(90deg,transparent,#1b2746,transparent); margin:12px 0}
-  .banner{border:1px solid #1e2b50; background:#0b152f; color:#bcd3ff; padding:10px 12px; border-radius:12px; font-size:13px}
-  .banner.ok{border-color:#0a3e25; background:#082317; color:#b9f2ce}
-  .banner.err{border-color:#4a1b1b; background:#220b0b; color:#fbcaca}
-  table{width:100%; border-collapse:collapse; font-size:14px}
-  th, td{border-bottom:1px dashed #223055; padding:10px 8px; text-align:left}
-  th{color:#cbd5e1; font-weight:800; position:sticky; top:0; background:#0a0f20}
-  tbody tr:hover{background:#0b1123}
-  td[contenteditable="true"]{outline:2px dashed #1f2e56; outline-offset:2px; border-radius:6px}
-  .hidden{display:none !important} .miss{color:#f59e0b; font-style:italic} .misscell{background:#2c1706}
-  .badge{font-size:11px; padding:4px 8px; border:1px solid #253055; border-radius:8px; color:#9fb0d4; background:#09122a}
-  video{width:100%; border:1px solid #1f294a; border-radius:10px; background:#000}
-  canvas{max-width:100%; background:#050816; border:1px dashed #233057; border-radius:8px}
-  .modal{position:fixed; inset:0; background:#0009; display:flex; align-items:flex-end; justify-content:center; z-index:50}
-  .sheet{width:min(980px, 96vw); max-height:90vh; overflow:auto; background:#0a0f20; border:1px solid #1c2540; border-radius:16px 16px 0 0; padding:14px}
-  .scan-grid{display:grid; grid-template-columns:1.2fr .8fr; gap:12px}
-  .menu{position:relative}
-  .menu-pop{position:absolute; right:0; top:110%; background:#0c1224; border:1px solid #223055; border-radius:10px; padding:6px; display:grid; gap:4px; z-index:20}
-  .menu-pop button{background:#0d1426; color:#e7ecf5; border:1px solid #223055; padding:10px 12px; text-align:left; border-radius:8px; min-width:180px}
-  #actionBar{position:fixed; left:0; right:0; bottom:0; z-index:40; display:flex; gap:8px; padding:10px 12px calc(12px + env(safe-area-inset-bottom)); backdrop-filter:saturate(140%) blur(8px); background:#060b18d9; border-top:1px solid #1a2746}
-  .bar-btn{flex:1; min-height:52px; font-weight:800; border-radius:12px; border:1px solid #243255; background:#0f172a; color:#e7ecf5}
-  .bar-btn.primary{background:linear-gradient(180deg,#22c55e,#16a34a); color:#07130b; border-color:#0b3b22}
-  @media (min-width:860px){ #actionBar{position:sticky; bottom:auto; padding:0; background:transparent; border:0} main{margin-bottom:60px} }
-  #sessionProgress{margin:10px 0} #progTrack{height:8px; border-radius:999px; background:#111a34; margin-top:8px; overflow:hidden}
-  #progFill{height:100%; width:0%; background:linear-gradient(90deg,#22c55e,#60a5fa); transition:width .35s ease}
-  #resumeBadge{cursor:pointer} .diff-ins{color:#b9f2ce} .diff-move{color:#fcd98d}
-  @media (max-width: 980px){ .grid{grid-template-columns:1fr} .scan-grid{grid-template-columns:1fr} }
-  @media (max-width: 600px){ input{padding:16px 14px; font-size:17px} .unit{right:12px} }
-  .iconbtn{padding:10px 12px}
+  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 Inter,system-ui,Segoe UI,Roboto,Arial}
+  header{position:sticky;top:0;z-index:10;background:linear-gradient(to bottom,rgba(16,24,38,.9),rgba(16,24,38,.6));border-bottom:1px solid var(--stroke);backdrop-filter:blur(10px) saturate(140%)}
+  .nav{max-width:1200px;margin:0 auto;padding:12px 18px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
+  .brand{display:inline-flex;gap:10px;font-weight:700}
+  .logo{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--brand),#0891b2);box-shadow:inset 0 0 10px rgba(255,255,255,.25),0 6px 16px rgba(8,145,178,.45)}
+  nav a{color:var(--muted);text-decoration:none;padding:8px 10px;border-radius:8px}
+  nav a[aria-current="page"],nav a:hover{color:var(--text);background:rgba(148,163,184,.15)}
+  .right{justify-self:end;display:flex;gap:8px}
+  .btn{border:1px solid var(--stroke);background:linear-gradient(180deg,rgba(2,6,23,.5),rgba(2,6,23,.2));color:var(--text);padding:8px 12px;border-radius:10px;cursor:pointer}
+  .btn.primary{border-color:rgba(34,211,238,.4);background:linear-gradient(180deg,rgba(34,211,238,.18),rgba(8,145,178,.14))}
+  .btn.danger{border-color:rgba(248,113,113,.45)}
+  .btn:disabled{opacity:.6;cursor:not-allowed}
+  main{max-width:1200px;margin:20px auto 60px;padding:0 18px}
+  .grid{display:grid;gap:16px;grid-template-columns:repeat(12,1fr)}
+  .card{grid-column:span 12;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.03));border:1px solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+  @media(min-width:900px){.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-8{grid-column:span 8}.span-12{grid-column:span 12}}
+  .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:140px}
+  .field label{color:var(--muted);font-size:12px}
+  .field input,.field select{border:1px solid var(--stroke);background:#0e1626;color:var(--text);border-radius:10px;padding:8px 10px}
+  .muted{color:var(--muted)}
+  .canvasWrap{position:relative;border:1px solid var(--stroke);border-radius:10px;overflow:hidden;touch-action:none;background:#0a1020}
+  canvas{display:block;width:100%;height:auto}
+  .handle{position:absolute;width:12px;height:12px;border:2px solid #fff;border-radius:2px;background:rgba(0,0,0,.35);box-shadow:0 0 0 1px rgba(0,0,0,.5)}
+  .toast{position:fixed;right:16px;bottom:16px;background:#0b1220;border:1px solid var(--stroke);border-radius:12px;padding:10px 12px;display:none;min-width:240px}
+  .toast.show{display:block;animation:pop .2s ease-out}
+  @keyframes pop{from{transform:translateY(6px);opacity:0}to{transform:translateY(0);opacity:1}}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:10px;border-bottom:1px solid rgba(148,163,184,.15);text-align:left}
+  th{background:rgba(148,163,184,.12);position:sticky;top:0}
+  td input{width:100%;padding:6px 8px;border-radius:8px;border:1px solid var(--stroke);background:#0f172a;color:var(--text)}
+  .pill{display:inline-flex;gap:6px;align-items:center}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
 </style>
 </head>
 <body>
 <header>
-  <div class="header-wrap">
-    <div class="brand">
-      <div class="logo" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M6 18V6h7.2a4.8 4.8 0 0 1 0 9.6H10l4 2.4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div>
-      <h1>RCC Pro Logger</h1>
-    </div>
-    <div class="inline">
-      <span class="pill">Local Save: <strong id="lsStatus">ready</strong></span>
-      <button class="btn secondary" id="btnReset" aria-label="Reset App">Reset</button>
+  <div class="nav">
+    <div class="brand"><div class="logo" aria-hidden="true"></div><span>RCC <span style="opacity:.75">Pro</span></span></div>
+    <nav class="tabbar" role="tablist" aria-label="Primary">
+      <a id="tab-setup" href="#/setup" role="tab" aria-selected="true">Job Setup</a>
+      <a id="tab-entry" href="#/entry" role="tab">RCC Results Entry</a>
+      <a id="tab-summary" href="#/summary" role="tab">Summary</a>
+    </nav>
+    <div class="right">
+      <button class="btn" id="btn-refresh">↻ Refresh</button>
+      <button class="btn primary" id="btn-export">Export ▾</button>
     </div>
   </div>
 </header>
 
 <main>
-  <!-- SETUP -->
-  <section id="setupCard" class="card">
-    <div class="section-title">1) Job Setup</div>
-    <div class="banner" id="httpsHint">For camera & GPS on iPhone, open over <span class="kbd">https://</span> or from Files.</div>
-    <div class="divider"></div>
-
-    <div class="row">
-      <div><label for="jobName">Job Name</label><input id="jobName" type="text" placeholder="e.g., I‑71 Ramp Improvements — Section B" required autocomplete="on"></div>
-      <div><label for="jobDate">Job Date</label><input id="jobDate" type="date" required></div>
-    </div>
-
-    <div class="row">
-      <div class="input-wrap"><label for="targetDensity">Target Density</label><input id="targetDensity" type="number" step="0.1" inputmode="decimal" placeholder="e.g., 135.0"><span class="unit">pcf</span></div>
-      <div class="input-wrap"><label for="targetMoist">Target Moisture</label><input id="targetMoist" type="number" step="0.1" inputmode="decimal" placeholder="e.g., 7.0"><span class="unit">%</span></div>
-    </div>
-
-    <div class="row">
-      <div style="grid-column:1 / -1">
-        <label for="jobLocation">Job Location (address, city, state)</label>
-        <div class="inline" style="gap:8px">
-          <div class="input-wrap" style="flex:1"><input id="jobLocation" type="text" placeholder="e.g., 123 Main St, Columbus, OH" autocomplete="street-address"></div>
-          <button class="btn secondary" id="btnUseGPS" style="white-space:nowrap">Use Current Location</button>
-        </div>
-        <div class="help" id="gpsStatus" aria-live="polite"></div>
-      </div>
-    </div>
-
-    <div class="inline" style="gap:10px; margin-top:8px">
-      <button class="btn primary" id="btnStart">Start Logging</button>
-      <button class="btn secondary" id="btnLoad">Load Last Session</button>
-    </div>
-
-    <div class="inline pill" style="margin-top:10px; gap:12px; flex-wrap:wrap">
-      <div>Origin: <span class="kbd">Geotechnical Consultants Inc., Westerville, Ohio</span></div>
-      <div>Mileage Method: <span id="method" class="kbd">Routing (OSRM)</span></div>
-      <div>Status: <span id="netStatus" class="kbd">idle</span></div>
-    </div>
-  </section>
-
-  <!-- SESSION PROGRESS -->
-  <section id="sessionProgress" class="banner">
-    <div class="inline" style="justify-content:space-between; width:100%">
-      <div><strong id="testsCount">0</strong> tests logged today</div>
-      <div id="resumeBadge" class="pill hidden">Unfinished session — Resume?</div>
-    </div>
-    <div id="progTrack"><div id="progFill"></div></div>
-  </section>
-
-  <div class="grid">
-    <!-- ENTRY -->
-    <section id="entryCard" class="card hidden">
-      <div class="section-title">2) RCC Results Entry</div>
-
-      <!-- Test navigator -->
-      <div class="inline" style="gap:8px; margin-bottom:8px">
-        <button class="btn iconbtn" id="btnPrev" title="Previous test">◀</button>
-        <select id="testPicker" style="min-width:160px"></select>
-        <button class="btn iconbtn" id="btnNext" title="Next test">▶</button>
-        <button class="btn secondary" id="btnNew" title="New test">New Test</button>
-        <span class="muted" id="editModeHint">Adding new test</span>
-      </div>
-
-      <div class="row">
-        <div><label>Test #</label><input id="testNumber" type="number" min="1" step="1" value="1"></div>
-        <div><label for="testLocation">Test Location</label><input id="testLocation" type="text" placeholder="e.g., Sta. 10+50, LT 12’"></div>
-      </div>
-
-      <div class="row">
-        <div class="input-wrap"><label for="wetDensity">Wet Density</label><input id="wetDensity" type="number" step="0.1" inputmode="decimal" placeholder="e.g., 149.0"><span class="unit">pcf</span></div>
-        <div class="input-wrap"><label for="moisture">Moisture</label><input id="moisture" type="number" step="0.1" inputmode="decimal" placeholder="e.g., 8.9"><span class="unit">%</span></div>
-      </div>
-
-      <div class="row">
-        <div class="input-wrap">
-          <label for="gridCoord">Grid Coord (optional)</label>
-          <input id="gridCoord" type="text" inputmode="latin" placeholder="e.g., A3" maxlength="4">
-          <div class="help">Row letter(s) + column number (e.g., A3, B12). Must fit your site photo grid.</div>
-        </div>
-        <div class="inline" style="align-items:flex-end; gap:8px">
-          <button class="btn secondary" id="btnScan">Scan Gauge (OCR)</button>
-          <button class="btn secondary" id="btnImportNotes">Import Notes Screenshot</button>
-          <button class="btn secondary" id="btnPasteText">Paste Text</button>
-          <button class="btn secondary" id="btnPhotoGrid">Site Photo + Grid</button>
-        </div>
-      </div>
-
-      <div class="input-wrap"><label for="densityPct">% of Target (auto)</label><input id="densityPct" type="text" disabled placeholder="—"><span class="unit">%</span></div>
-      <div class="help">WD & Moisture accept whole numbers or one decimal. Grid Coord validated against your configured grid.</div>
-
-      <div class="inline" style="gap:10px; margin-top:10px">
-        <button class="btn primary" id="btnSaveNext">Save & Next</button>
-        <button class="btn secondary" id="btnUpdate" disabled>Update Test</button>
-        <button class="btn secondary" id="btnClearForm">Clear</button>
-        <button class="btn warning" id="btnFinish">Finish & View Summary</button>
-      </div>
-    </section>
-
-    <!-- SUMMARY -->
-    <section id="summaryCard" class="card hidden">
-      <div class="section-title">3) Summary (click cells to edit)</div>
-
-      <div id="statusBanner" class="banner hidden"></div>
-
-      <div class="inline" style="justify-content:space-between; gap:14px; margin:10px 0 6px">
-        <div class="inline" style="gap:10px; flex-wrap:wrap">
-          <span class="badge">Job: <strong id="summaryJobName">—</strong></span>
-          <span class="badge">Target: <strong id="summaryTarget">—</strong></span>
-          <span class="badge">Date: <strong id="summaryJobDate">—</strong></span>
-          <span class="badge">Location: <strong id="summaryJobLocation">—</strong></span>
-          <span class="badge">Mileage: <strong id="summaryMileage">— mi</strong></span>
-        </div>
-        <div class="menu">
-          <button class="btn secondary" id="btnExport">Export ▾</button>
-          <div id="exportMenu" class="menu-pop hidden">
-            <button data-act="png">PNG</button>
-            <button data-act="pdf">PDF</button>
-            <button data-act="csv">CSV</button>
-            <button data-act="svd">SVD</button>
-            <button data-act="photo">Export Annotated Photo</button>
-            <button data-act="share">Copy Share Link</button>
-          </div>
-        </div>
-      </div>
-
-      <div id="exportArea" class="card" style="background:#091126; border-color:#16244a; padding:0">
-        <div style="padding:16px 16px 0; border-bottom:1px solid #16244a">
-          <h2 style="margin:0 0 6px; font-size:18px">RCC Test Log</h2>
-          <div class="muted" id="summarySubtitle"></div>
-        </div>
-
-        <!-- Annotated photo (grid + markers) -->
-        <div id="photoWrap" class="card hidden" style="background:#0b1227; border-color:#15254c; padding:12px; margin:12px">
-          <div class="inline" style="justify-content:space-between; align-items:center">
-            <div class="section-title" style="margin:0">Site Photo (Grid + Markers)</div>
-            <span class="muted">Pins = test # at grid cell center</span>
-          </div>
-          <canvas id="photoCanvas" style="width:100%; max-height:60vh"></canvas>
-        </div>
-
-        <div style="overflow:auto; max-height:420px">
-          <table id="testsTable">
-            <thead><tr>
-              <th style="width:60px">#</th>
-              <th>Test Location</th>
-              <th>Wet Density (pcf)</th>
-              <th>Moisture (%)</th>
-              <th>% of Target</th>
-              <th style="width:90px">Grid</th>
-              <th style="width:110px">Mileage (mi)</th>
-            </tr></thead>
-            <tbody id="testsTbody"></tbody>
-          </table>
-        </div>
-        <div style="padding:10px 16px; display:flex; justify-content:space-between; align-items:center">
-          <div class="muted">Generated by RCC Pro Logger</div>
-          <div class="muted" id="generatedAt"></div>
-        </div>
-      </div>
-
-      <div class="inline" style="margin-top:10px">
-        <button class="btn secondary" id="btnBackToEntry">Back to Entry</button>
-      </div>
-    </section>
-  </div>
+  <div id="outlet" class="grid"></div>
 </main>
 
-<!-- Bottom Action Bar -->
-<nav id="actionBar" aria-label="primary actions">
-  <button class="bar-btn primary" id="barSaveNext">Save & Next</button>
-  <button class="bar-btn" id="barScan">Scan</button>
-  <button class="bar-btn" id="barImport">Import Notes</button>
-  <button class="bar-btn" id="barPaste">Paste Text</button>
-  <button class="bar-btn" id="barPhoto">Site Photo + Grid</button>
-</nav>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-<!-- libs -->
-<script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js" crossorigin="anonymous"></script>
+<!-- jsPDF for PDF export -->
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
 <script>
-/* ================= Permanent crash-guard + migrator (runs first) ================= */
-(function(){
-  window.addEventListener('error', e => {
-    try {
-      const bar = document.createElement('div');
-      bar.style.cssText = 'position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:99999;background:#220b0b;color:#fbcaca;border:1px solid #4a1b1b;padding:10px 12px;border-radius:10px;font:14px system-ui';
-      bar.textContent = 'RCC Pro Logger error: ' + (e.message || 'unknown');
-      document.body.appendChild(bar);
-      setTimeout(()=> bar.remove(), 6000);
-    } catch(_) {}
-  });
+/* =========================
+   RCC Pro — Grid Coordinates
+   ========================= */
 
-  const KEY = 'rcc_pro_logger_v6';
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return;
-    const saved = JSON.parse(raw);
-    let changed = false;
-    if (!saved || typeof saved !== 'object') { localStorage.removeItem(KEY); return; }
-    if (!saved.job || typeof saved.job !== 'object') { saved.job = {}; changed = true; }
-    if (!Array.isArray(saved.tests)) { saved.tests = []; changed = true; }
-    const photoDefaults = { original:null, annotatedBase:null, width:null, height:null, rows:10, cols:10, line:'#22c55e', alpha:0.8, lw:2, labels:true, markers:[], roi:{x:0,y:0,w:0,h:0}, labelMode:'lettersRows', zoom:1, bright:1, contrast:1, saturate:1, bandTop:36, bandLeft:48 };
-    if (!saved.photo || typeof saved.photo !== 'object'){ saved.photo = {...photoDefaults}; changed = true; }
-    else { saved.photo = Object.assign({}, photoDefaults, saved.photo); changed = true; }
-    if (changed) localStorage.setItem(KEY, JSON.stringify(saved));
-  } catch { localStorage.removeItem('rcc_pro_logger_v6'); }
-  if (location.hash === '#wipe') { localStorage.removeItem('rcc_pro_logger_v6'); location.hash=''; }
-})();
-
-/* ========================= Utilities & State ========================= */
-const $  = s => document.querySelector(s);
-const $$ = s => Array.from(document.querySelectorAll(s));
-const todayISO = () => new Date().toISOString().slice(0,10);
-const clamp1 = v => Math.round(v*10)/10;
-const toNumber = v => { const n = Number(String(v).trim()); return Number.isFinite(n) ? n : null; };
-const slug = (s='') => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-
-const APP_VERSION = '7.0';
-const LS_KEY = 'rcc_pro_logger_v6';
-const ORIGIN_TEXT = 'Geotechnical Consultants Inc., Westerville, Ohio';
-const NOMINATIM = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=';
-const NOMI_REV  = (lat,lon) => `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
-const OSRM = 'https://router.project-osrm.org/route/v1/driving/';
-const geocache = JSON.parse(localStorage.getItem('rcc_geo_cache') || '{}');
-
-const state = {
-  job: { name:'', date: todayISO(), location:'', targetDensity:null, targetMoist:null, mileageMi:null, origin: ORIGIN_TEXT, coords:null, version: APP_VERSION },
-  tests: [], // {n, loc, wet, moist, pct, grid}
-  photo: { original:null, annotatedBase:null, width:null, height:null, rows:10, cols:10, line:'#22c55e', alpha:0.8, lw:2, labels:true, markers:[],
-           roi:{x:0,y:0,w:0,h:0}, labelMode:'lettersRows', zoom:1, bright:1, contrast:1, saturate:1, bandTop:36, bandLeft:48 }
+const $ = (sel, root=document) => root.querySelector(sel);
+const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+const toast = (msg, kind='info') => {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.style.borderColor = {info:'var(--stroke)',ok:'rgba(16,185,129,.45)',warn:'rgba(245,158,11,.45)',err:'rgba(244,63,94,.45)'}[kind]||'var(--stroke)';
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 2200);
 };
 
-/* ========================= DOM & events ========================= */
-const setupCard = $('#setupCard'), entryCard = $('#entryCard'), summaryCard = $('#summaryCard');
-const jobName = $('#jobName'), jobDate = $('#jobDate'), jobLocation = $('#jobLocation'), targetDensity = $('#targetDensity'), targetMoist = $('#targetMoist');
-const testNumber = $('#testNumber'), testLocation = $('#testLocation'), wetDensity = $('#wetDensity'), moisture = $('#moisture'), densityPct = $('#densityPct');
-const testsTbody = $('#testsTbody'); const summaryJobName = $('#summaryJobName'); const summaryTarget = $('#summaryTarget'); const summaryJobDate = $('#summaryJobDate'); const summaryJobLocation = $('#summaryJobLocation'); const summaryMileage = $('#summaryMileage'); const summarySubtitle = $('#summarySubtitle'); const generatedAt = $('#generatedAt'); const statusBanner = $('#statusBanner'); const lsStatus=$('#lsStatus');
+// ---------- State ----------
+const state = {
+  job: { name:'', date: new Date().toISOString().slice(0,10) },
+  image: null,                 // HTMLImageElement
+  imgW: 0, imgH: 0,            // intrinsic size
+  roi: null,                   // {x,y,w,h} in image pixels
+  grid: {
+    rows: 12, cols: 12,
+    orientation: 'letters-rows', // 'letters-rows' or 'numbers-rows'
+    marginTop: 28, marginLeft: 28,
+    headerShade: true,
+    labelColor: '#ffffff',
+    labelShadow: '#000000'
+  },
+  tests: []                    // {id,num,location,wd,moist,coord,row,col,x,y}
+};
 
-const picker = $('#testPicker'), btnPrev=$('#btnPrev'), btnNext=$('#btnNext'), btnNew=$('#btnNew'), editHint=$('#editModeHint'), btnUpdate=$('#btnUpdate');
-
-$('#btnStart').addEventListener('click', startLogging);
-$('#btnLoad').addEventListener('click', loadLast);
-$('#btnReset').addEventListener('click', resetAll);
-$('#btnUseGPS').addEventListener('click', useCurrentLocation);
-
-$('#btnSaveNext').addEventListener('click', onSaveNext);
-btnUpdate.addEventListener('click', onUpdateCurrent);
-$('#btnClearForm').addEventListener('click', () => clearEntry(false));
-$('#btnFinish').addEventListener('click', showSummary);
-$('#btnBackToEntry').addEventListener('click', () => { summaryCard.classList.add('hidden'); entryCard.classList.remove('hidden'); testLocation.focus(); });
-
-$('#btnExport').addEventListener('click', ()=> $('#exportMenu').classList.toggle('hidden'));
-$('#exportMenu').addEventListener('click', e=>{
-  const act = e.target?.dataset?.act; if(!act) return; $('#exportMenu').classList.add('hidden');
-  if (act==='png') exportPNG(); if (act==='pdf') exportPDF(); if (act==='csv') exportCSV(); if (act==='svd') exportSVD(); if (act==='photo') exportAnnotatedPhotoPNG(); if (act==='share') copyShareLink();
-});
-document.addEventListener('click', (e)=>{ const m=$('#exportMenu'); if(!m.contains(e.target) && e.target!==$('#btnExport')) m.classList.add('hidden'); });
-
-$('#btnScan').addEventListener('click', openScanner);
-$('#btnImportNotes').addEventListener('click', openImportNotes);
-$('#btnPasteText').addEventListener('click', openPasteImport);
-$('#btnPhotoGrid').addEventListener('click', openPhotoGrid);
-$('#barSaveNext').addEventListener('click', ()=> $('#btnSaveNext').click());
-$('#barScan').addEventListener('click', ()=> $('#btnScan').click());
-$('#barImport').addEventListener('click', ()=> $('#btnImportNotes').click());
-$('#barPaste').addEventListener('click', ()=> $('#btnPasteText').click());
-$('#barPhoto').addEventListener('click', ()=> $('#btnPhotoGrid').click());
-
-picker.addEventListener('change', ()=> loadTestToForm(picker.selectedIndex));
-btnPrev.addEventListener('click', ()=> { if (state.tests.length) { const i = Math.max(0, (picker.selectedIndex||0)-1); picker.selectedIndex=i; loadTestToForm(i);} });
-btnNext.addEventListener('click', ()=> { if (state.tests.length) { const i = Math.min(state.tests.length-1, (picker.selectedIndex||0)+1); picker.selectedIndex=i; loadTestToForm(i);} });
-btnNew.addEventListener('click', ()=> { clearEntry(true); setEditMode(false); });
-
-[wetDensity, targetDensity].forEach(i => i.addEventListener('input', updatePctField));
-document.addEventListener('keydown', e => {
-  if (!entryCard.classList.contains('hidden') && e.key === 'Enter') { e.preventDefault(); if (btnUpdate.disabled) onSaveNext(); else onUpdateCurrent(); }
+// ---------- Router ----------
+const routes = {
+  '/setup': renderSetup,
+  '/entry': renderEntry,
+  '/summary': renderSummary
+};
+window.addEventListener('hashchange', onRoute);
+window.addEventListener('DOMContentLoaded', () => {
+  onRoute();
+  $('#btn-refresh').addEventListener('click', ()=> { onRoute(true); toast('Refreshed'); });
+  $('#btn-export').addEventListener('click', () => showExportMenu());
 });
 
-jobDate.value = todayISO();
-if (location.protocol === 'https:') $('#httpsHint').classList.add('hidden');
-restoreFromURL();
-updateProgress();
-refreshPicker();
-
-/* ========================= Core (create/update) ========================= */
-function startLogging(){
-  const name = jobName.value.trim(), date = jobDate.value || todayISO(), loc  = jobLocation.value.trim();
-  const tD = toNumber(targetDensity.value), tM = toNumber(targetMoist.value);
-  if (!name) return fieldError(jobName,'Please enter a Job Name.'); if (!loc) return fieldError(jobLocation,'Please enter a Job Location.');
-  Object.assign(state.job, { name, date, location:loc, targetDensity:tD, targetMoist:tM });
-  [jobName, jobDate, jobLocation, targetDensity, targetMoist].forEach(i=>i.disabled=true); $('#btnStart').disabled=true; $('#btnUseGPS').disabled=true;
-  entryCard.classList.remove('hidden'); testNumber.value = String(nextLogicalTestNumber()); testLocation.focus(); save(); updateProgress(); computeMileage().catch(()=>{});
-}
-function fieldError(input, msg){ input.focus(); toast(msg,'warn'); input.scrollIntoView({behavior:'smooth', block:'center'}); }
-function nextLogicalTestNumber(){ return state.tests.length ? Math.max(...state.tests.map(t=>t.n))+1 : 1; }
-function updatePctField(){ const wet=toNumber(wetDensity.value), t=toNumber(targetDensity.value); const pct=(wet!=null && t && t>0)? clamp1(wet/t*100): null; densityPct.value = pct==null ? '' : pct; }
-
-function onSaveNext(){
-  const { ok, t } = collectForm(false); if (!ok) return;
-  // auto compute pct
-  const TD = state.job.targetDensity; t.pct = (TD && TD>0) ? clamp1(t.wet/TD*100) : null;
-  // grid mapping
-  if (t.grid) { const rc = coordToRowCol(t.grid); const xy = gridCellCenterPx(rc.row, rc.col, state.photo); if (xy) state.photo.markers.push({ n: t.n, coord:t.grid, x:xy.x, y:xy.y }); }
-  state.tests.push(t); state.tests.sort((a,b)=>a.n-b.n);
-  save(); updateProgress(); refreshPicker(); clearEntry(true); testNumber.value = String(nextLogicalTestNumber()); testLocation.focus();
-}
-function onUpdateCurrent(){
-  const idx = picker.selectedIndex; if (idx<0 || idx>=state.tests.length) return toast('No test selected to update.','warn');
-  const { ok, t } = collectForm(true); if (!ok) return;
-  const TD = state.job.targetDensity; t.pct = (TD && TD>0) ? clamp1(t.wet/TD*100) : null;
-  // Update test
-  const oldN = state.tests[idx].n;
-  state.tests[idx] = t;
-  // Update marker for this n
-  const mark = state.photo.markers.find(m=>m.n===oldN);
-  if (mark){ if (t.grid){ const rc=coordToRowCol(t.grid); const xy=gridCellCenterPx(rc.row, rc.col, state.photo); if (xy){ mark.coord=t.grid; mark.x=xy.x; mark.y=xy.y; } } else { state.photo.markers = state.photo.markers.filter(m=>m!==mark);} }
-  else if (t.grid){ const rc=coordToRowCol(t.grid); const xy=gridCellCenterPx(rc.row, rc.col, state.photo); if (xy) state.photo.markers.push({ n:t.n, coord:t.grid, x:xy.x, y:xy.y }); }
-  state.tests.sort((a,b)=>a.n-b.n); refreshPicker(); picker.value = String(state.tests.findIndex(x=>x.n===t.n)); save(); toast('Test updated ✔️','ok');
-}
-function collectForm(isUpdate){
-  const n = parseInt(testNumber.value,10);
-  const loc = testLocation.value.trim();
-  const wet = toNumber(wetDensity.value);
-  const moi = toNumber(moisture.value);
-  const grid = ($('#gridCoord').value||'').trim().toUpperCase() || null;
-  if (!Number.isFinite(n) || n<=0) return { ok:false, t:null, msg:'Enter a valid Test #'};
-  if (!loc) return { ok:false, t:null, msg:'Enter a Test Location.'};
-  if (wet===null) return { ok:false, t:null, msg:'Enter Wet Density (pcf).'};
-  if (moi===null) return { ok:false, t:null, msg:'Enter Moisture (%).'};
-
-  // Validate grid if provided
-  if (grid){
-    const rc = coordToRowCol(grid); if (!rc) return { ok:false, t:null, msg:'Grid must look like A3 or 12B (depending on mode).'};
-    if (!state.photo.annotatedBase) return { ok:false, t:null, msg:'Add a Site Photo + Grid first if using Grid Coord.'};
-    if (!isCoordInBounds(rc.row, rc.col, state.photo)) return { ok:false, t:null, msg:`Grid ${grid} out of bounds.`};
+function onRoute(force=false) {
+  const path = location.hash.replace('#','') || '/setup';
+  for (const [p,id] of Object.entries({'/setup':'tab-setup','/entry':'tab-entry','/summary':'tab-summary'})) {
+    const el = $('#'+id);
+    if (el) el.setAttribute('aria-current', p===path ? 'page':'false');
   }
-
-  // Handle renumber conflicts if creating
-  if (!isUpdate){
-    const conflict = state.tests.some(t=>t.n===n);
-    if (conflict){
-      // shift up chain
-      const need = n;
-      state.tests.forEach(t=>{ if (t.n>=need) t.n+=1; });
-      toast(`Conflict on #${need} — shifted subsequent test numbers up.`, 'warn');
-    }
-  }
-
-  return { ok:true, t:{ n, loc, wet, moist:moi, pct:null, grid } };
-}
-function setEditMode(editing){
-  btnUpdate.disabled = !editing;
-  $('#btnSaveNext').disabled = editing;
-  editHint.textContent = editing ? 'Editing current test' : 'Adding new test';
+  const outlet = $('#outlet');
+  outlet.innerHTML = '';
+  (routes[path]||renderSetup)(outlet, force);
 }
 
-/* ========================= Summary & inline editing ========================= */
-function showSummary(){
-  summaryCard.classList.remove('hidden'); entryCard.classList.add('hidden');
-  banner('ok', `Ready — ${state.tests.length} test${state.tests.length===1?'':'s'} logged.`);
-  summaryJobName.textContent = state.job.name || '—';
-  summaryTarget.textContent  = (state.job.targetDensity ? `${state.job.targetDensity} pcf` : '—') + (state.job.targetMoist!=null ? ` @ ${state.job.targetMoist}%` : '');
-  summaryJobDate.textContent = state.job.date || '—';
-  summaryJobLocation.textContent = state.job.location || '—';
-  summaryMileage.textContent = (state.job.mileageMi ?? '—') + (state.job.mileageMi ? ' mi':'');
-  const subtitle = []; if (state.tests.length) subtitle.push(`${state.tests.length} tests`); if (state.job.origin) subtitle.push(`Origin: ${state.job.origin}`);
-  summarySubtitle.textContent = subtitle.join(' • ');
-  generatedAt.textContent = 'Generated ' + new Date().toLocaleString();
+// ---------- Setup View ----------
+function renderSetup(root) {
+  root.appendChild(card(`
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <h2 style="margin:0">Site Photo + Grid</h2>
+      <span class="pill"><span class="dot"></span> Live</span>
+    </div>
+  `,'span-12'));
 
-  testsTbody.innerHTML = '';
-  const mi = state.job.mileageMi ?? '—';
-  state.tests.sort((a,b)=>a.n-b.n).forEach((t,idx)=>{
-    const tr = document.createElement('tr'); tr.dataset.index=idx;
-    tr.innerHTML = `
-      <td>${t.n}</td>
-      <td contenteditable="true" data-key="loc">${escapeHTML(t.loc||'')}</td>
-      <td contenteditable="true" data-key="wet">${t.wet ?? ''}</td>
-      <td contenteditable="true" data-key="moist">${t.moist ?? ''}</td>
-      <td>${t.pct!=null ? (Number.isFinite(t.pct)?t.pct.toFixed(1):t.pct)+'%' : '—'}</td>
-      <td contenteditable="true" data-key="grid">${t.grid || ''}</td>
-      <td>${mi}</td>`;
-    testsTbody.appendChild(tr);
+  const controls = card(`
+    <div class="row">
+      <div class="field"><label>Job Name</label><input id="job-name" placeholder="Project / Section" value="${escapeHtml(state.job.name)}"></div>
+      <div class="field"><label>Date</label><input id="job-date" type="date" value="${state.job.date}"></div>
+      <div class="field"><label>Upload Site Photo</label><input id="site-photo" type="file" accept="image/*"></div>
+      <div class="field"><label>Rows</label><input id="grid-rows" type="number" min="1" max="26" value="${state.grid.rows}"></div>
+      <div class="field"><label>Cols</label><input id="grid-cols" type="number" min="1" max="200" value="${state.grid.cols}"></div>
+      <div class="field"><label>Orientation</label>
+        <select id="grid-orient">
+          <option value="letters-rows" ${state.grid.orientation==='letters-rows'?'selected':''}>Letters = Rows, Numbers = Cols</option>
+          <option value="numbers-rows" ${state.grid.orientation==='numbers-rows'?'selected':''}>Numbers = Rows, Letters = Cols</option>
+        </select>
+      </div>
+      <div class="field"><label>Top Label Margin (px)</label><input id="margin-top" type="number" min="0" max="200" value="${state.grid.marginTop}"></div>
+      <div class="field"><label>Left Label Margin (px)</label><input id="margin-left" type="number" min="0" max="200" value="${state.grid.marginLeft}"></div>
+      <div class="field"><label>Header Shading</label>
+        <select id="header-shade">
+          <option value="1" ${state.grid.headerShade?'selected':''}>On</option>
+          <option value="0" ${!state.grid.headerShade?'selected':''}>Off</option>
+        </select>
+      </div>
+      <div class="field"><label>Label Color</label><input id="label-color" type="color" value="${state.grid.labelColor}"></div>
+    </div>
+    <div class="row" style="margin-top:6px;">
+      <button class="btn" id="btn-start-roi">Start ROI</button>
+      <button class="btn" id="btn-reset-roi">Reset ROI</button>
+      <button class="btn primary" id="btn-save-grid">Save Grid</button>
+    </div>
+    <p class="muted" style="margin:8px 0 0">Tip: Drag to draw the grid area (ROI). Resize via corner handles. Labels render in the top/left margins you set.</p>
+  `,'span-12');
+  root.appendChild(controls);
+
+  // Canvas preview
+  const wrap = document.createElement('section');
+  wrap.className = 'card span-12';
+  wrap.innerHTML = `
+    <div class="canvasWrap" id="wrap">
+      <canvas id="cvs"></canvas>
+      <!-- selection handles are absolutely positioned; created dynamically -->
+    </div>
+  `;
+  root.appendChild(wrap);
+
+  // Wire inputs
+  $('#job-name').addEventListener('input', e => state.job.name = e.target.value);
+  $('#job-date').addEventListener('input', e => state.job.date = e.target.value);
+  $('#grid-rows').addEventListener('change', e => { state.grid.rows = clamp(+e.target.value,1,26); redraw(); });
+  $('#grid-cols').addEventListener('change', e => { state.grid.cols = clamp(+e.target.value,1,200); redraw(); });
+  $('#grid-orient').addEventListener('change', e => { state.grid.orientation = e.target.value; redraw(); });
+  $('#margin-top').addEventListener('change', e => { state.grid.marginTop = clamp(+e.target.value,0,200); redraw(); });
+  $('#margin-left').addEventListener('change', e => { state.grid.marginLeft = clamp(+e.target.value,0,200); redraw(); });
+  $('#header-shade').addEventListener('change', e => { state.grid.headerShade = e.target.value==='1'; redraw(); });
+  $('#label-color').addEventListener('change', e => { state.grid.labelColor = e.target.value; redraw(); });
+  $('#site-photo').addEventListener('change', onPhotoSelected);
+  $('#btn-start-roi').addEventListener('click', ()=> startROI());
+  $('#btn-reset-roi').addEventListener('click', ()=> { if (!state.image) return; state.roi = {x:0,y:0,w:state.imgW,h:state.imgH}; redraw(true); });
+  $('#btn-save-grid').addEventListener('click', ()=> {
+    if (!state.image) return toast('Upload a site photo first', 'warn');
+    if (!state.roi) return toast('Draw an ROI for the grid', 'warn');
+    toast('Grid saved ✔️','ok');
   });
 
-  // Attach inline save handlers
-  testsTbody.querySelectorAll('td[contenteditable="true"]').forEach(td=>{
-    td.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); td.blur(); } });
-    td.addEventListener('blur', ()=> inlineUpdate(td));
-  });
+  // Drawing logic
+  const cvs = $('#cvs'), ctx = cvs.getContext('2d');
+  const wrapEl = $('#wrap'); wrapEl.style.minHeight = '320px'; // so it doesn’t collapse before image loads
+  setupHiDPICanvas(cvs);
 
-  renderPhotoWithMarkersToCanvas();
-}
-function inlineUpdate(td){
-  const idx = parseInt(td.parentElement.dataset.index,10);
-  const key = td.dataset.key;
-  const val = td.textContent.trim();
-  const t = state.tests[idx];
+  // ROI selection via Pointer Events
+  const sel = {
+    active:false, mode:'idle', // 'draw' | 'move' | 'resize'
+    startX:0, startY:0,
+    x:0,y:0,w:0,h:0,
+    handle:null
+  };
 
-  if (key==='loc'){ t.loc = val; }
-  if (key==='wet'){
-    const n = toNumber(val); if (n==null) { td.textContent = t.wet ?? ''; return toast('Wet Density must be a number','warn'); }
-    t.wet = n;
+  function onPhotoSelected(e){
+    const f = e.target.files && e.target.files[0]; if(!f) return;
+    const img = new Image(); img.onload = () => {
+      state.image = img; state.imgW = img.naturalWidth; state.imgH = img.naturalHeight;
+      state.roi = {x:0,y:0,w:state.imgW,h:state.imgH};
+      redraw(true);
+      toast('Photo loaded ✔️','ok');
+    };
+    img.onerror = () => toast('Failed to load image','err');
+    img.src = URL.createObjectURL(f);
   }
-  if (key==='moist'){
-    const n = toNumber(val); if (n==null) { td.textContent = t.moist ?? ''; return toast('Moisture must be a number','warn'); }
-    t.moist = n;
+
+  function startROI(){
+    if(!state.image){ toast('Upload a site photo first','warn'); return; }
+    sel.mode = 'draw';
+    toast('Drag on the image to draw ROI');
   }
-  if (key==='grid'){
-    const grid = val ? val.toUpperCase() : '';
-    if (grid){
-      if (!state.photo.annotatedBase) { td.textContent = t.grid || ''; return toast('Add a Site Photo + Grid first','warn'); }
-      const rc = coordToRowCol(grid);
-      if (!rc || !isCoordInBounds(rc.row, rc.col, state.photo)) { td.textContent = t.grid || ''; return toast('Grid coord out of bounds','warn'); }
-      t.grid = grid;
-      // update/add marker
-      let mk = state.photo.markers.find(m=>m.n===t.n);
-      const xy = gridCellCenterPx(rc.row, rc.col, state.photo);
-      if (mk) { mk.coord=grid; mk.x=xy.x; mk.y=xy.y; }
-      else { state.photo.markers.push({ n:t.n, coord:grid, x:xy.x, y:xy.y }); }
+
+  function setupHiDPICanvas(canvas){
+    const dpr = Math.max(1, window.devicePixelRatio||1);
+    const rect = wrapEl.getBoundingClientRect();
+    const cssW = Math.max(320, rect.width);
+    const cssH = Math.max(240, rect.width * 0.6);
+    canvas.style.width = cssW+'px';
+    canvas.style.height = cssH+'px';
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0); // scale drawing back to CSS pixels
+  }
+
+  function clientToImage(px,py){
+    // map from canvas CSS pixels to image pixels
+    const rect = cvs.getBoundingClientRect();
+    const cx = px - rect.left, cy = py - rect.top;
+    const scale = fitContainScale(state.imgW, state.imgH, rect.width, rect.height);
+    const offX = (rect.width - state.imgW*scale)/2;
+    const offY = (rect.height - state.imgH*scale)/2;
+    const ix = (cx - offX) / scale, iy = (cy - offY) / scale;
+    return {x: clamp(ix, 0, state.imgW), y: clamp(iy, 0, state.imgH)};
+  }
+
+  wrapEl.addEventListener('pointerdown', (e)=>{
+    if(!state.image) return;
+    wrapEl.setPointerCapture(e.pointerId);
+    const {x,y} = clientToImage(e.clientX,e.clientY);
+    const hit = hitHandle(x,y);
+    if (sel.mode === 'draw'){
+      sel.active = true; sel.startX = x; sel.startY = y; sel.x = x; sel.y = y; sel.w = 0; sel.h = 0; sel.handle=null;
+    } else if (hit){
+      sel.active = true; sel.mode = 'resize'; sel.handle = hit;
+    } else if (pointInRect({x,y}, state.roi)){
+      sel.active = true; sel.mode = 'move'; sel.startX = x; sel.startY = y;
     } else {
-      // cleared
-      t.grid = null;
-      state.photo.markers = state.photo.markers.filter(m=>m.n!==t.n);
+      sel.active = false;
     }
-  }
-  // recompute pct
-  const TD = state.job.targetDensity; t.pct = (TD && TD>0 && t.wet!=null) ? clamp1(t.wet/TD*100) : null;
-
-  save();
-  showSummary(); // re-render table + photo for fresh pct/markers
-  toast('Updated ✔️','ok');
-}
-
-function banner(kind, msg){
-  statusBanner.classList.remove('hidden','ok','err');
-  statusBanner.classList.add(kind==='ok'?'ok':'err', 'banner');
-  statusBanner.textContent = msg;
-}
-function escapeHTML(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
-
-/* ========================= Picker/Load into form ========================= */
-function refreshPicker(){
-  picker.innerHTML='';
-  if (!state.tests.length){ picker.disabled=true; setEditMode(false); editHint.textContent='Adding new test'; return; }
-  picker.disabled=false;
-  state.tests.sort((a,b)=>a.n-b.n).forEach((t,i)=>{
-    const opt = document.createElement('option'); opt.value=i; opt.textContent=`#${t.n} — ${t.loc?.slice(0,40) || '—'}`; picker.appendChild(opt);
+    e.preventDefault();
   });
-}
-function loadTestToForm(i){
-  if (i<0 || i>=state.tests.length) return;
-  const t = state.tests.sort((a,b)=>a.n-b.n)[i];
-  testNumber.value = t.n; testLocation.value = t.loc || ''; wetDensity.value = t.wet ?? ''; moisture.value = t.moist ?? '';
-  $('#gridCoord').value = t.grid || '';
-  const TD = state.job.targetDensity; densityPct.value = (TD && TD>0 && t.wet!=null) ? clamp1(t.wet/TD*100) : '';
-  testLocation.focus(); setEditMode(true);
-}
 
-/* ========================= Save/Share/Progress ========================= */
-function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); lsStatus.textContent='saved'; } catch{ lsStatus.textContent='error'; } }
-function loadLast(){
-  try{
-    const raw = localStorage.getItem(LS_KEY); if (!raw) return toast('No saved session found.','warn');
-    const data = JSON.parse(raw); if (!data || !data.job) return;
-    Object.assign(state, data);
-    jobName.value = state.job.name; jobDate.value = state.job.date; jobLocation.value = state.job.location;
-    targetDensity.value = state.job.targetDensity ?? ''; targetMoist.value = state.job.targetMoist ?? '';
-    [jobName, jobDate, jobLocation, targetDensity, targetMoist].forEach(i=>i.disabled=true); $('#btnStart').disabled=true; $('#btnUseGPS').disabled=true;
-    entryCard.classList.remove('hidden'); testNumber.value = String(nextLogicalTestNumber()); testLocation.focus();
-    renderPhotoWithMarkersToCanvas(); updateProgress(); refreshPicker(); toast('Session loaded ✔️','ok');
-  }catch{ toast('Failed to load session.','err'); }
-}
-function resetAll(){ if (!confirm('Clear all data and restart?')) return; localStorage.removeItem(LS_KEY); location.href = location.pathname; }
-function updateProgress(){
-  const n = state.tests.length; $('#testsCount').textContent = n; $('#progFill').style.width = Math.min(100,(n/10)*100) + '%'; $('#resumeBadge').classList.toggle('hidden', n===0);
-}
-$('#resumeBadge').addEventListener('click', ()=>{ entryCard.classList.remove('hidden'); summaryCard.classList.add('hidden'); toast('Resumed session','ok'); });
-
-async function copyShareLink(){
-  const payload = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
-  const url = `${location.origin}${location.pathname}#${payload}`;
-  try{ await navigator.clipboard.writeText(url); toast('Share link copied ✔️','ok'); } catch{ toast('Could not copy link','err'); }
-}
-function restoreFromURL(){
-  const hash = location.hash.slice(1);
-  if (!hash) return;
-  try{
-    const data = JSON.parse(decodeURIComponent(escape(atob(hash))));
-    if (data && data.job && data.tests){
-      Object.assign(state, data);
-      jobName.value = state.job.name; jobDate.value = state.job.date; jobLocation.value = state.job.location;
-      targetDensity.value = state.job.targetDensity ?? ''; targetMoist.value = state.job.targetMoist ?? '';
-      [jobName, jobDate, jobLocation, targetDensity, targetMoist].forEach(i=>i.disabled=true); $('#btnStart').disabled=true; $('#btnUseGPS').disabled=true;
-      entryCard.classList.remove('hidden'); testNumber.value = String(nextLogicalTestNumber());
-      showSummary(); updateProgress(); refreshPicker(); toast('Loaded from shared link ✔️','ok');
+  wrapEl.addEventListener('pointermove', (e)=>{
+    if(!state.image || !sel.active) return;
+    const {x,y} = clientToImage(e.clientX,e.clientY);
+    if (sel.mode==='draw'){
+      sel.x = Math.min(sel.startX, x);
+      sel.y = Math.min(sel.startY, y);
+      sel.w = Math.abs(x - sel.startX);
+      sel.h = Math.abs(y - sel.startY);
+      state.roi = normRect({x:sel.x,y:sel.y,w:sel.w,h:sel.h}, state);
+      redraw();
+    } else if (sel.mode==='move'){
+      const dx = x - sel.startX, dy = y - sel.startY;
+      sel.startX = x; sel.startY = y;
+      state.roi.x = clamp(state.roi.x + dx, 0, state.imgW - state.roi.w);
+      state.roi.y = clamp(state.roi.y + dy, 0, state.imgH - state.roi.h);
+      redraw();
+    } else if (sel.mode==='resize' && sel.handle){
+      resizeROI(sel.handle, x,y);
+      redraw();
     }
-  }catch{}
-}
+  }, {passive:true});
 
-/* ========================= Exports ========================= */
-async function ensureSummaryRendered(){ if (summaryCard.classList.contains('hidden')) showSummary(); await new Promise(r=>setTimeout(r,50)); }
-async function exportPNG(){ await ensureSummaryRendered(); const c = await html2canvas($('#exportArea'), { backgroundColor:'#091126', scale:2 }); download(c.toDataURL('image/png'), `${slug(state.job.name)}-${state.job.date}-RCC.png`); }
-async function exportPDF(){
-  await ensureSummaryRendered();
-  const c = await html2canvas($('#exportArea'), { backgroundColor:'#091126', scale:2 });
-  const img = c.toDataURL('image/png'); const { jsPDF } = window.jspdf; const pdf = new jsPDF({ unit:'pt', format:'a4' });
-  const pageW = pdf.internal.pageSize.getWidth(); const imgW = pageW - 48; const ratio = imgW / c.width; const imgH = c.height * ratio;
-  pdf.addImage(img, 'PNG', 24, 24, imgW, imgH); pdf.save(`${slug(state.job.name)}-${state.job.date}-RCC.pdf`);
-}
-function exportCSV(){
-  if (!state.tests.length) return toast('No tests to export.','warn');
-  const mi = state.job.mileageMi ?? '';
-  const rows = [
-    ['Job Name', state.job.name], ['Job Date', state.job.date], ['Job Location', state.job.location],
-    ['Target Density (pcf)', state.job.targetDensity ?? ''], ['Target Moisture (%)', state.job.targetMoist ?? ''], ['Mileage (mi)', mi], [],
-    ['#','Test Location','Wet Density (pcf)','Moisture (%)','% of Target','Grid Coord','Mileage (mi)']
-  ];
-  for (const t of state.tests){ rows.push([t.n, t.loc ?? '', t.wet ?? '', t.moist ?? '', t.pct!=null ? t.pct : '', t.grid ?? '', mi]); }
-  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
-  download('data:text/csv;charset=utf-8,' + encodeURIComponent(csv), `${slug(state.job.name)}-${state.job.date}-RCC.csv`);
-}
-function exportSVD(){
-  if (!state.tests.length) return toast('No tests to export.','warn');
-  const mi = state.job.mileageMi ?? '';
-  const header = [
-    '# SVD 1.2',
-    `JobName|${state.job.name}`, `JobDate|${state.job.date}`, `JobLocation|${state.job.location}`,
-    `TargetDensity_pcf|${state.job.targetDensity ?? ''}`, `TargetMoist_pct|${state.job.targetMoist ?? ''}`,
-    `Mileage_mi|${mi}`,
-    '# Columns: Test#,TestLocation,WetDensity_pcf,Moisture_pct,PercentOfTarget,GridCoord,Mileage_mi'
-  ].join('\n');
-  const lines = state.tests.map(t => [t.n, t.loc ?? '', t.wet ?? '', t.moist ?? '', t.pct!=null ? t.pct : '', t.grid ?? '', mi].map(x=>String(x).replace(/\|/g,'/')).join('|'));
-  download('data:text/plain;charset=utf-8,' + encodeURIComponent(header+'\n'+lines.join('\n')+'\n'), `${slug(state.job.name)}-${state.job.date}-RCC.svd`);
-}
-async function exportAnnotatedPhotoPNG(){
-  const p = state.photo; if (!p || !p.annotatedBase) return toast('No annotated photo to export yet.','warn');
-  const tmp = document.createElement('canvas'); tmp.width = p.width + p.bandLeft; tmp.height = p.height + p.bandTop;
-  const ctx = tmp.getContext('2d'); const base = await loadImage(p.annotatedBase);
-  ctx.drawImage(base, 0, 0); drawMarkersOnCtx(ctx, p); download(tmp.toDataURL('image/png'), `${slug(state.job.name)}-${state.job.date}-RCC-photo.png`);
-}
+  ['pointerup','pointercancel','lostpointercapture'].forEach(ev =>
+    wrapEl.addEventListener(ev, ()=>{ sel.active=false; if (sel.mode==='draw') sel.mode='idle'; }));
 
-/* ========================= GPS / routing helpers ========================= */
-async function useCurrentLocation(){
-  if (!('geolocation' in navigator)) return toast('Geolocation unavailable','err');
-  $('#btnUseGPS').disabled = true;
-  try{
-    const pos = await new Promise((resolve,reject)=> navigator.geolocation.getCurrentPosition(resolve,reject,{ enableHighAccuracy:true, timeout:15000, maximumAge:0 }));
-    const { latitude:lat, longitude:lon } = pos.coords;
-    const rev = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`, { headers:{'Accept-Language':'en'} }).then(r=>r.json());
-    const label = rev?.display_name || `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
-    jobLocation.value = label; state.job.coords = {lat,lon,label}; toast('Job location filled from current GPS','ok'); save();
-  }catch{ toast('Location permission needed or timed out','warn'); }
-  $('#btnUseGPS').disabled = false;
-}
-async function geocode(q){ const res = await fetch(NOMINATIM + encodeURIComponent(q), { headers:{'Accept-Language':'en'} }); if (!res.ok) return null; const a = await res.json(); if (!a?.length) return null; const g = a[0]; return {lat:+g.lat, lon:+g.lon, label:g.display_name}; }
-async function computeMileage(){
-  try{
-    const o = await geocode(ORIGIN_TEXT), d = state.job.coords ? state.job.coords : await geocode(state.job.location);
-    if (!o || !d) throw 0;
-    const u = `${OSRM}${o.lon},${o.lat};${d.lon},${d.lat}?overview=false`; const j = await fetch(u).then(r=>r.json()); const dist = j?.routes?.[0]?.distance;
-    const mi = dist ? +(dist/1609.344).toFixed(2) : +(haversine(o.lat,o.lon,d.lat,d.lon)).toFixed(2);
-    state.job.mileageMi = mi; summaryMileage.textContent = `${mi} mi`; save(); toast(`Mileage computed: ${mi} mi ✔️`,'ok');
-  }catch{ toast('Routing failed, will show straight‑line if possible','warn'); }
-}
-function haversine(lat1, lon1, lat2, lon2){ const toRad=d=>d*Math.PI/180, R=3958.761; const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1); const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2; return 2*R*Math.asin(Math.sqrt(a)); }
+  function resizeROI(handle, x,y){
+    const r = state.roi;
+    if (handle.includes('w')) { const nx = clamp(x,0,r.x+r.w); r.w = (r.x+r.w) - nx; r.x = nx; }
+    if (handle.includes('e')) { const nx = clamp(x,r.x, state.imgW); r.w = nx - r.x; }
+    if (handle.includes('n')) { const ny = clamp(y,0,r.y+r.h); r.h = (r.y+r.h) - ny; r.y = ny; }
+    if (handle.includes('s')) { const ny = clamp(y,r.y, state.imgH); r.h = ny - r.y; }
+  }
 
-/* ========================= OCR Gauge (unchanged core) ========================= */
-let scanModal=null, scanStream=null;
-function openScanner(){ if (!scanModal) buildScannerModal(); $('#scanStatus').textContent='Initializing camera…'; scanModal.classList.remove('hidden'); startCamera(); }
-function buildScannerModal(){
-  scanModal = document.createElement('div'); scanModal.className='modal hidden';
-  scanModal.innerHTML = `
-    <div class="sheet">
-      <header class="inline" style="justify-content:space-between">
-        <h2>Scan Gauge (OCR)</h2>
-        <div class="inline">
-          <input type="file" id="fileInput" accept="image/*" class="btn secondary" style="padding:8px 10px; width:auto">
-          <button class="btn secondary" id="btnCloseScan" style="width:auto">Close</button>
-        </div>
-      </header>
-      <div class="scan-grid">
-        <div><video id="video" playsinline autoplay muted></video></div>
-        <div>
-          <canvas id="frameCanvas" height="360"></canvas>
-          <div id="scanStatus" class="help">—</div>
-          <div class="inline" style="gap:8px">
-            <button class="btn primary" id="btnCapture">Capture & Read</button>
-            <button class="btn secondary" id="btnFill" disabled>Fill Fields</button>
-          </div>
-          <div class="help">Accepts integers or 1‑decimal (e.g., 149 / 149.0).</div>
-          <pre id="ocrOut" class="muted" style="margin-top:8px; white-space:pre-wrap"></pre>
-        </div>
-      </div>
-    </div>`;
-  document.body.appendChild(scanModal);
-  $('#btnCloseScan').addEventListener('click', ()=>{ scanModal.classList.add('hidden'); stopCamera(); });
-  $('#btnCapture').addEventListener('click', onCaptureAndRead);
-  $('#btnFill').addEventListener('click', ()=>{ const wd=scanModal.dataset.lastWd, m=scanModal.dataset.lastMoist; if (wd) wetDensity.value=wd; if(m) moisture.value=m; updatePctField(); toast('Filled from OCR ✔️','ok'); scanModal.classList.add('hidden'); stopCamera(); });
-  $('#fileInput').addEventListener('change', onPickImage);
-}
-async function startCamera(){ try{ scanStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ideal:'environment'} }, audio:false }); $('#video').srcObject=scanStream; await $('#video').play(); $('#scanStatus').textContent='Camera ready. Capture when sharp.'; }catch{ $('#scanStatus').textContent='Camera blocked. Upload a photo instead.'; } }
-function stopCamera(){ if (scanStream){ for (const t of scanStream.getTracks()) t.stop(); } const v=$('#video'); if (v) v.srcObject=null; }
-async function onCaptureAndRead(){ const v=$('#video'); if (!v.videoWidth) return $('#scanStatus').textContent='Camera not ready.'; const W=1000, H=Math.round(v.videoHeight*(W/v.videoWidth)); const c=$('#frameCanvas'); c.width=W; c.height=H; const ctx=c.getContext('2d'); ctx.drawImage(v,0,0,W,H); preprocess(ctx,W,H); $('#scanStatus').textContent='Reading…'; const {text,wd,moist}=await ocrGauge(c); showOcrResult(text,wd,moist); }
-async function onPickImage(ev){ const f=ev.target.files?.[0]; if(!f) return; const img=new Image(); img.onload=async()=>{ const maxW=1600, sc=Math.min(1, maxW/img.width); const c=$('#frameCanvas'); c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc); const ctx=c.getContext('2d'); ctx.drawImage(img,0,0,c.width,c.height); preprocess(ctx,c.width,c.height); $('#scanStatus').textContent='Reading image…'; const {text,wd,moist}=await ocrGauge(c); showOcrResult(text,wd,moist); }; img.src=URL.createObjectURL(f); }
-function showOcrResult(text, wd, moist){ $('#ocrOut').textContent=text.trim()||'(no text)'; if (wd!=null || moist!=null){ $('#scanStatus').textContent=`Found: WD=${wd??'—'} pcf, %Moist=${moist??'—'} %`; scanModal.dataset.lastWd=wd??''; scanModal.dataset.lastMoist=moist??''; $('#btnFill').disabled=false; banner('ok','Gauge scan successful.'); } else { $('#scanStatus').textContent='Couldn’t find WD/%Moist.'; $('#btnFill').disabled=true; banner('err','Gauge scan did not detect values.'); } }
-function preprocess(ctx,w,h){ const img=ctx.getImageData(0,0,w,h), d=img.data; const contrast=1.25, bright=10; for(let i=0;i<d.length;i+=4){ const r=d[i],g=d[i+1],b=d[i+2]; let y=(r*0.299+g*0.587+b*0.114); y=(y-128)*contrast+128+bright; y=Math.max(0,Math.min(255,y)); d[i]=d[i+1]=d[i+2]=y; } ctx.putImageData(img,0,0); }
-async function ocrGauge(canvas){ const out={text:'',wd:null,moist:null}; try{ const res=await Tesseract.recognize(canvas,'eng'); const text=res?.data?.text?.replace(/\r/g,'')||''; out.text=text; const wdMatch=text.match(/\b(1\d{2}|[2-9]\d{2})(?:\.\d)?\b/); const moistMatch=text.match(/\b(\d{1,2})(?:\.\d)?\b/); out.wd=wdMatch?parseFloat(wdMatch[0]):null; out.moist=moistMatch?parseFloat(moistMatch[0]):null; if (out.wd!=null && (out.wd<100 || out.wd>200)) out.wd=null; if (out.moist!=null && (out.moist<0 || out.moist>40)) out.moist=null; }catch{} return out; }
+  function redraw(forceSize=false){
+    if (forceSize) setupHiDPICanvas(cvs);
+    ctx.clearRect(0,0,cvs.width, cvs.height);
+    if(!state.image) return drawCheckerboard(ctx, cvs);
 
-/* ========================= Notes Import & Paste (unchanged parsing) ========================= */
-let importModal=null, parsedBlocks=[], diffModal=null, lastPlan=null, pasteModal=null;
-function openImportNotes(){ if(!importModal) buildImportModal(); importModal.classList.remove('hidden'); }
-function buildImportModal(){
-  importModal=document.createElement('div'); importModal.className='modal hidden';
-  importModal.innerHTML=`<div class="sheet"><header class="inline" style="justify-content:space-between"><h2>Import Notes Screenshot</h2><div class="inline"><input type="file" id="notesFile" accept="image/*" class="btn secondary" style="padding:8px 10px; width:auto"><button class="btn secondary" id="btnCloseImport" style="width:auto">Close</button></div></header><div class="row" style="grid-template-columns:1fr"><div class="help">Tests start with a number (1., 2), 3:). First WD (100–250) and first Moist (0–40) after that (any order). Rest is location.</div><canvas id="notesCanvas" height="360" class="hidden"></canvas><pre id="notesOut" class="muted" style="white-space:pre-wrap"></pre><div class="inline" style="gap:8px"><button class="btn primary" id="btnReview" disabled>Review Changes…</button></div></div></div>`;
-  document.body.appendChild(importModal);
-  $('#btnCloseImport').addEventListener('click', ()=>importModal.classList.add('hidden'));
-  $('#notesFile').addEventListener('change', onNotesPick);
-  $('#btnReview').addEventListener('click', openDiffPreview);
-}
-async function onNotesPick(ev){ const f=ev.target.files?.[0]; if(!f) return; const img=new Image(); img.onload=async()=>{ const maxW=1900, sc=Math.min(1, maxW/img.width); const c=$('#notesCanvas'); c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc); const ctx=c.getContext('2d'); ctx.drawImage(img,0,0,c.width,c.height); preprocess(ctx,c.width,c.height); let text=''; try{ const res=await Tesseract.recognize(c,'eng'); text=res?.data?.text?.replace(/\r/g,'')||''; }catch{} parsedBlocks = parseNotesBlocks(text); const preview = parsedBlocks.length ? parsedBlocks.map(o=>`#${o.n} | WD:${o.wet??'—'} | %Moist:${o.moist??'—'} | Loc: ${o.loc||'(none)'}`).join('\n') : '(No valid tests found.)'; $('#notesOut').textContent=preview; $('#btnReview').disabled=!parsedBlocks.length; if(parsedBlocks.length) toast(`Detected ${parsedBlocks.length} test(s) ✔️`,'ok'); else toast('No numbered tests detected','warn'); }; img.src=URL.createObjectURL(f); }
-function openPasteImport(){ if(!pasteModal) buildPasteModal(); pasteModal.classList.remove('hidden'); $('#pasteArea').focus(); }
-function buildPasteModal(){ pasteModal=document.createElement('div'); pasteModal.className='modal hidden'; pasteModal.innerHTML=`<div class="sheet"><header class="inline" style="justify-content:space-between"><h2>Paste Text</h2><div class="inline"><button class="btn secondary" id="btnClosePaste" style="width:auto">Close</button></div></header><div class="row" style="grid-template-columns:1fr"><textarea id="pasteArea" placeholder="Paste raw text here — one test per line or paragraph.&#10;Example:&#10;1. 148.9 8.9 North lane 50ft E&#10;2) 147.6 8.5 Lane 2 @ 200ft E"></textarea><div class="inline" style="gap:8px"><button class="btn primary" id="btnAnalyzePaste">Analyze</button><button class="btn secondary" id="btnReviewPaste" disabled>Review Changes…</button></div><pre id="pasteOut" class="muted" style="white-space:pre-wrap"></pre></div></div>`; document.body.appendChild(pasteModal); $('#btnClosePaste').addEventListener('click', ()=>pasteModal.classList.add('hidden')); $('#btnAnalyzePaste').addEventListener('click', ()=>{ const text=$('#pasteArea').value||''; parsedBlocks=parseNotesBlocks(text); const preview=parsedBlocks.length?parsedBlocks.map(o=>`#${o.n} | WD:${o.wet??'—'} | %Moist:${o.moist??'—'} | Loc: ${o.loc||'(none)'}`).join('\n'):'(No valid tests found.)'; $('#pasteOut').textContent=preview; $('#btnReviewPaste').disabled=!parsedBlocks.length; if(parsedBlocks.length) toast(`Detected ${parsedBlocks.length} test(s) ✔️`,'ok'); else toast('No numbered tests detected','warn'); }); $('#btnReviewPaste').addEventListener('click', openDiffPreview); }
-function parseNotesBlocks(text){
-  const s = String(text||'').replace(/\r/g,''); const startReG=/(^|\n)\s*(\d{1,3})\s*(?:[.) :-])?\s+(?=\d)/g; const starts=[]; let m; while((m=startReG.exec(s))!==null){ const idx = m.index + (m[1]?m[1].length:0); starts.push({ idx, n:parseInt(m[2],10)}); }
-  if (!starts.length) return [];
-  const blocks=[]; for(let i=0;i<starts.length;i++){ const a=starts[i].idx, b=(i+1<starts.length)?starts[i+1].idx:s.length; const chunk=s.slice(a,b).trim(); const parsed=parseOneBlockSlice(chunk,starts[i].n); if(parsed) blocks.push(parsed); } return blocks;
-}
-function parseOneBlockSlice(slice,testNum){
-  const m=slice.match(/^\s*(\d{1,3})\s*(?:[.) :-])?\s+([\s\S]*)$/); if(!m) return null; let rest=m[2].replace(/\s+/g,' ').trim();
-  const numRe=/\b\d{1,3}(?:\.\d)?\b/g; const tokens=[]; let k; while((k=numRe.exec(rest))!==null) tokens.push({ val:parseFloat(k[0]), start:k.index, end:k.index+k[0].length });
-  if (tokens.length<2) return null;
-  const isWD=v=>v>=100&&v<=250, isMoist=v=>v>=0&&v<=40; let iHit=-1,jHit=-1,wd=null,moist=null; outer: for(let i=0;i<Math.min(8,tokens.length);i++){ for(let j=i+1;j<Math.min(8,tokens.length);j++){ const a=tokens[i].val,b=tokens[j].val; if((isWD(a)&&isMoist(b))||(isMoist(a)&&isWD(b))){ iHit=i;jHit=j; wd=isWD(a)?a:b; moist=isMoist(a)?a:b; break outer; } } }
-  if (iHit===-1) return null; const after=tokens[jHit].end; const loc = rest.slice(after).replace(/^[^\w(]+/,'').trim()||null; const t=state.job.targetDensity; const pct=(t&&t>0)?Math.round((wd/t*100)*10)/10:null; return { n:testNum, loc, wet:wd, moist:moist, pct };
-}
-function openDiffPreview(){
-  if (!parsedBlocks.length) return;
-  if (!diffModal) buildDiffModal();
-  lastPlan = planRenumberAndAssignments(parsedBlocks, state.tests);
-  const moved = lastPlan.existingMoves.filter(x => x.from !== x.to);
-  $('#diffSummary').textContent = `Will insert ${lastPlan.assignments.length} test(s)` + (moved.length?` and renumber ${moved.length} existing.`:'.');
-  const insList=$('#diffInserts'); insList.innerHTML=''; lastPlan.assignments.forEach(a=>{ const li=document.createElement('li'); li.textContent=`#${a.desired} → #${a.assigned} • WD ${a.block.wet} • %Moist ${a.block.moist} • ${a.block.loc||'(no location)'}`; li.classList.add('diff-ins'); insList.appendChild(li); });
-  const mvList=$('#diffMoves'); mvList.innerHTML=''; if (moved.length){ moved.sort((a,b)=>a.from-b.from).forEach(m=>{ const li=document.createElement('li'); li.textContent=`Test #${m.from} → #${m.to}`; li.classList.add('diff-move'); mvList.appendChild(li); }); $('#movesWrap').classList.remove('hidden'); } else { $('#movesWrap').classList.add('hidden'); }
-  diffModal.classList.remove('hidden');
-}
-function buildDiffModal(){
-  diffModal=document.createElement('div'); diffModal.className='modal hidden';
-  diffModal.innerHTML=`<div class="sheet"><header class="inline" style="justify-content:space-between"><h2>Review Changes</h2><div class="inline"><button class="btn secondary" id="btnCancelDiff" style="width:auto">Cancel</button><button class="btn primary" id="btnApplyDiff" style="width:auto">Confirm & Apply</button></div></header><div class="banner" id="diffSummary">—</div><div class="divider"></div><h3 style="margin:10px 0 6px">New Tests to Insert</h3><ul id="diffInserts" style="margin:0 0 8px 18px; padding:0"></ul><div id="movesWrap"><h3 style="margin:12px 0 6px">Existing Tests to Renumber</h3><ul id="diffMoves" style="margin:0 0 8px 18px; padding:0"></ul></div></div>`;
-  document.body.appendChild(diffModal);
-  $('#btnCancelDiff').addEventListener('click', ()=> diffModal.classList.add('hidden'));
-  $('#btnApplyDiff').addEventListener('click', applyDiffPlan);
-}
-function planRenumberAndAssignments(blocks, existing){
-  const currNums=new Set(existing.map(t=>t.n)); const originals=existing.map(t=>t.n).sort((a,b)=>a-b); const currMap=new Map(originals.map(n=>[n,n]));
-  const sorted=[...blocks].sort((a,b)=>a.n-b.n); const assignments=[];
-  for (const b of sorted){ let target=b.n; while(currNums.has(target)){ const newSet=new Set(); for(const n of currNums){ newSet.add(n>=target?n+1:n); } currNums.clear(); newSet.forEach(x=>currNums.add(x)); for(const [orig,cur] of currMap.entries()){ if(cur>=target) currMap.set(orig,cur+1); } target+=1; } currNums.add(target); assignments.push({ desired:b.n, assigned:target, block:b }); }
-  const existingMoves = Array.from(currMap.entries()).map(([from,to])=>({from,to}));
-  return { assignments, existingMoves };
-}
-function applyDiffPlan(){
-  const moveMap=new Map(lastPlan.existingMoves.map(m=>[m.from,m.to]));
-  state.tests.forEach(t=>{ const to=moveMap.get(t.n); if (to!=null) t.n=to; });
-  lastPlan.assignments.forEach(a=>{ const b=a.block; state.tests.push({ n:a.assigned, loc:b.loc, wet:b.wet, moist:b.moist, pct:b.pct, grid:null }); });
-  state.tests.sort((x,y)=>x.n-y.n); save(); diffModal.classList.add('hidden'); if(importModal) importModal.classList.add('hidden'); if(pasteModal) pasteModal.classList.add('hidden'); testNumber.value=String(nextLogicalTestNumber()); refreshPicker(); banner('ok','Inserted tests & renumbered as needed.'); updateProgress();
-}
+    const rect = cvs.getBoundingClientRect();
+    const scale = fitContainScale(state.imgW, state.imgH, rect.width, rect.height);
+    const offX = (rect.width - state.imgW*scale)/2;
+    const offY = (rect.height - state.imgH*scale)/2;
 
-/* ========================= Site Photo + Grid (ROI + Filters + Orientation) ========================= */
-let photoModal=null, editingROI=false, roiDrag=null;
-function openPhotoGrid(){ if(!photoModal) buildPhotoModal(); photoModal.classList.remove('hidden'); refreshGridPreview(); }
-function buildPhotoModal(){
-  photoModal=document.createElement('div'); photoModal.className='modal hidden';
-  photoModal.innerHTML = `
-    <div class="sheet">
-      <header class="inline" style="justify-content:space-between">
-        <h2>Site Photo + Grid</h2>
-        <div class="inline">
-          <input type="file" id="photoPick" accept="image/*" class="btn secondary" style="padding:8px 10px; width:auto">
-          <button class="btn secondary" id="btnClosePhoto" style="width:auto">Close</button>
-        </div>
-      </header>
-
-      <div class="row">
-        <div class="input-wrap"><label for="gridRows">Rows (letters/numbers)</label><input id="gridRows" type="number" min="1" max="52" value="10"></div>
-        <div class="input-wrap"><label for="gridCols">Cols (numbers/letters)</label><input id="gridCols" type="number" min="1" max="200" value="10"></div>
-      </div>
-
-      <div class="row">
-        <div class="input-wrap"><label for="labelMode">Label Orientation</label>
-          <select id="labelMode">
-            <option value="lettersRows">Letters = Rows / Numbers = Cols</option>
-            <option value="lettersCols">Letters = Cols / Numbers = Rows</option>
-          </select>
-        </div>
-        <div class="input-wrap"><label for="gridColor">Line Color</label><input id="gridColor" type="color" value="#22c55e"></div>
-      </div>
-
-      <div class="row">
-        <div class="input-wrap"><label for="gridAlpha">Line Opacity</label><input id="gridAlpha" type="range" min="0.1" max="1" step="0.05" value="0.8"></div>
-        <div class="input-wrap"><label for="gridLW">Line Width</label><input id="gridLW" type="number" min="1" max="10" value="2"></div>
-      </div>
-
-      <div class="row">
-        <div class="input-wrap"><label for="zoom">Preview Zoom</label><input id="zoom" type="range" min="0.3" max="3" step="0.05" value="1"></div>
-        <div class="input-wrap"><label for="bright">Brightness</label><input id="bright" type="range" min="0.3" max="2" step="0.05" value="1"></div>
-      </div>
-      <div class="row">
-        <div class="input-wrap"><label for="contrast">Contrast</label><input id="contrast" type="range" min="0.3" max="2" step="0.05" value="1"></div>
-        <div class="input-wrap"><label for="saturate">Saturation</label><input id="saturate" type="range" min="0" max="2" step="0.05" value="1"></div>
-      </div>
-
-      <div class="inline" style="gap:8px; margin:6px 0">
-        <label class="muted"><input type="checkbox" id="gridLabels" checked> Show Labels</label>
-        <button class="btn secondary" id="btnEditArea">Draw/Edit Grid Area</button>
-        <button class="btn secondary" id="btnClearArea">Reset Area</button>
-      </div>
-
-      <div class="scan-grid">
-        <div style="position:relative">
-          <canvas id="photoCanvasEdit" height="360"></canvas>
-          <div id="roiHint" class="muted" style="position:absolute;left:8px;top:8px;background:#0008;padding:4px 8px;border-radius:8px">Drag rectangle to set grid area</div>
-        </div>
-        <div>
-          <div class="help">Adjust area, orientation, and visibility. <strong>Save to Summary</strong> to render a high‑res annotated photo (with shaded label bands on top/left).</div>
-          <div class="inline" style="gap:8px; margin-top:8px">
-            <button class="btn primary" id="btnSaveGrid">Save to Summary</button>
-            <button class="btn secondary" id="btnResetMarkers">Clear Markers</button>
-          </div>
-          <div id="photoNote" class="muted" style="margin-top:8px"></div>
-        </div>
-      </div>
-    </div>`;
-  document.body.appendChild(photoModal);
-  $('#btnClosePhoto').addEventListener('click', ()=> photoModal.classList.add('hidden'));
-  $('#photoPick').addEventListener('change', onPickSitePhoto);
-  ['gridRows','gridCols','gridColor','gridAlpha','gridLW','gridLabels','labelMode','zoom','bright','contrast','saturate'].forEach(id=> $('#'+id).addEventListener('input', refreshGridPreview));
-  $('#btnSaveGrid').addEventListener('click', saveGridToState);
-  $('#btnResetMarkers').addEventListener('click', ()=>{ state.photo.markers=[]; renderPhotoWithMarkersToCanvas(); toast('Cleared all markers ✔️','ok'); });
-  $('#btnEditArea').addEventListener('click', ()=>{ editingROI=!editingROI; $('#btnEditArea').textContent = editingROI?'Finish Area':'Draw/Edit Grid Area'; refreshGridPreview(); });
-  $('#btnClearArea').addEventListener('click', ()=>{ const p=state.photo; p.roi={x:0,y:0,w:0,h:0}; refreshGridPreview(); });
-  const editCv = $('#photoCanvasEdit'); editCv.addEventListener('mousedown', roiMouseDown); window.addEventListener('mousemove', roiMouseMove); window.addEventListener('mouseup', roiMouseUp);
-}
-
-async function onPickSitePhoto(ev){
-  const file = ev.target.files?.[0]; if(!file) return;
-  const img = await loadImage(URL.createObjectURL(file));
-  const p = state.photo;
-  p.original = await drawImageToDataURL(img); p.width = img.naturalWidth; p.height = img.naturalHeight;
-  if (!p.roi.w || !p.roi.h){ p.roi = { x: Math.round(p.width*0.1), y: Math.round(p.height*0.1), w: Math.round(p.width*0.8), h: Math.round(p.height*0.8) }; }
-  toast('Photo loaded ✔️','ok'); refreshGridPreview();
-}
-
-function refreshGridPreview(){
-  const p = state.photo;
-  const c = $('#photoCanvasEdit'); if(!c) return; const ctx = c.getContext('2d');
-
-  // read controls
-  p.rows = clampInt($('#gridRows').value,1,52,p.rows);
-  p.cols = clampInt($('#gridCols').value,1,200,p.cols);
-  p.line = $('#gridColor').value || p.line;
-  p.alpha = +($('#gridAlpha').value || p.alpha);
-  p.lw = clampInt($('#gridLW').value,1,10,p.lw);
-  p.labels = $('#gridLabels').checked;
-  p.labelMode = $('#labelMode').value;
-  p.zoom = +($('#zoom').value || p.zoom);
-  p.bright = +($('#bright').value || p.bright);
-  p.contrast = +($('#contrast').value || p.contrast);
-  p.saturate = +($('#saturate').value || p.saturate);
-
-  ctx.clearRect(0,0,c.width,c.height);
-  if (!p.original){ $('#photoNote').textContent='Pick a photo to begin.'; return; }
-
-  const img = new Image(); img.onload = ()=>{
-    // fit to preview with zoom
-    const maxW = 1000; const sc = Math.min(1, maxW/img.width) * p.zoom;
-    c.width = Math.round(img.width*sc); c.height = Math.round(img.height*sc);
-    ctx.clearRect(0,0,c.width,c.height);
-    ctx.filter = `brightness(${p.bright}) contrast(${p.contrast}) saturate(${p.saturate})`;
-    ctx.drawImage(img, 0, 0, c.width, c.height);
-    ctx.filter = 'none';
-
-    // draw ROI rectangle
-    const rx = (p.roi.x||0)*sc, ry=(p.roi.y||0)*sc, rw=(p.roi.w||img.width)*sc, rh=(p.roi.h||img.height)*sc;
+    // draw photo
     ctx.save();
-    ctx.fillStyle = '#0006';
-    // outside shade
-    ctx.beginPath(); ctx.rect(0,0,c.width,c.height); ctx.rect(rx,ry,rw,rh); ctx.fill('evenodd');
-    ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 2; ctx.strokeRect(rx,ry,rw,rh);
+    ctx.translate(offX, offY);
+    ctx.scale(scale, scale);
+    ctx.drawImage(state.image, 0,0, state.imgW, state.imgH);
 
-    if (editingROI){
-      $('#roiHint').style.display='block';
-      // handles
-      drawHandle(ctx, rx,ry); drawHandle(ctx, rx+rw,ry); drawHandle(ctx, rx,ry+rh); drawHandle(ctx, rx+rw,ry+rh);
-    } else {
-      $('#roiHint').style.display='none';
-      // draw grid preview inside ROI
-      drawGridOnCtx(ctx, c.width, c.height, p, sc, true);
+    // ROI dim overlay
+    ctx.fillStyle = 'rgba(0,0,0,.35)';
+    ctx.fillRect(0,0,state.imgW,state.imgH);
+    if (state.roi){
+      ctx.clearRect(state.roi.x, state.roi.y, state.roi.w, state.roi.h);
+      drawGrid(ctx, state); // grid inside ROI
+      drawROIFrame(ctx, state.roi);
     }
     ctx.restore();
 
-    $('#photoNote').textContent = `Preview • ${p.rows}×${p.cols} • ROI ${p.roi.w}×${p.roi.h}px • Labels: ${p.labelMode==='lettersRows'?'Rows=Letters':'Cols=Letters'}`;
-  };
-  img.src = p.original;
-}
-function clampInt(v,min,max,fallback){ const n=parseInt(v,10); return Number.isFinite(n) ? Math.max(min, Math.min(max,n)) : fallback; }
-function drawHandle(ctx,x,y){ ctx.beginPath(); ctx.arc(x,y,6,0,Math.PI*2); ctx.fillStyle='#60a5fa'; ctx.fill(); ctx.strokeStyle='#1e3a8a'; ctx.stroke(); }
-
-function roiMouseDown(e){
-  if (!editingROI) return;
-  const c = $('#photoCanvasEdit'); const rect = c.getBoundingClientRect(); const x = e.clientX-rect.left, y = e.clientY-rect.top;
-  roiDrag = { startX:x, startY:y, active:true };
-}
-function roiMouseMove(e){
-  if (!editingROI || !roiDrag?.active) return;
-  const p = state.photo; const c=$('#photoCanvasEdit'), rect=c.getBoundingClientRect(); const x=e.clientX-rect.left, y=e.clientY-rect.top;
-  const sc = c.width / (p.width * p.zoom); // actually sc we used in draw: sc = (min(1,maxW/img.width)*zoom). Recover approx:
-  const scale = (p.width>0) ? (c.width / (p.width*p.zoom)) : 1;
-  const rx1 = Math.min(roiDrag.startX, x), ry1 = Math.min(roiDrag.startY, y);
-  const rx2 = Math.max(roiDrag.startX, x), ry2 = Math.max(roiDrag.startY, y);
-  p.roi.x = Math.round(rx1/scale); p.roi.y = Math.round(ry1/scale); p.roi.w = Math.round((rx2-rx1)/scale); p.roi.h = Math.round((ry2-ry1)/scale);
-  refreshGridPreview();
-}
-function roiMouseUp(){ if (roiDrag){ roiDrag.active=false; roiDrag=null; } }
-
-/* Save grid (render full‑res, with label bands & shaded headers) */
-async function saveGridToState(){
-  const p = state.photo; if (!p.original) return toast('Pick a photo first.','warn');
-  if (!p.roi.w || !p.roi.h) { p.roi = { x:0, y:0, w:p.width, h:p.height }; }
-
-  const base = await loadImage(p.original);
-  const bandTop = p.bandTop, bandLeft = p.bandLeft;
-
-  const outW = p.width + bandLeft, outH = p.height + bandTop;
-  const c = document.createElement('canvas'); c.width = outW; c.height = outH;
-  const ctx = c.getContext('2d');
-
-  // background
-  ctx.fillStyle = '#050816'; ctx.fillRect(0,0,outW,outH);
-
-  // draw photo with filters
-  ctx.filter = `brightness(${p.bright}) contrast(${p.contrast}) saturate(${p.saturate})`;
-  ctx.drawImage(base, bandLeft, bandTop);
-  ctx.filter = 'none';
-
-  // shaded bands for labels
-  ctx.fillStyle = '#0b132a'; ctx.fillRect(0,0,outW,bandTop); ctx.fillRect(0,0,bandLeft,outH);
-  ctx.strokeStyle = '#1c2b50'; ctx.strokeRect(0,0,outW,bandTop); ctx.strokeRect(0,0,bandLeft,outH);
-
-  // draw grid inside ROI (offset by bands)
-  drawGridOnCtx(ctx, outW, outH, p, 1, false, bandLeft, bandTop);
-
-  p.annotatedBase = c.toDataURL('image/png');
-  save(); renderPhotoWithMarkersToCanvas(); toast('Saved annotated photo ✔️','ok');
-}
-
-/* Draw grid helper (preview/full) */
-function drawGridOnCtx(ctx, cw, ch, p, previewScale=1, isPreview=false, bandLeft=0, bandTop=0){
-  // ROI in output coords
-  const rx = (p.roi.x||0)*previewScale + (isPreview?0:bandLeft);
-  const ry = (p.roi.y||0)*previewScale + (isPreview?0:bandTop);
-  const rw = (p.roi.w||p.width)*previewScale;
-  const rh = (p.roi.h||p.height)*previewScale;
-
-  ctx.save();
-  ctx.globalAlpha = p.alpha;
-  ctx.strokeStyle = p.line; ctx.lineWidth = p.lw;
-
-  const cellW = rw / p.cols, cellH = rh / p.rows;
-
-  // headers shading over label bands (top of ROI & left of ROI)
-  ctx.fillStyle = 'rgba(11,19,42,0.85)';
-  // top header cells
-  ctx.fillRect(rx, ry- (isPreview?0:0) - 0, rw, 24);
-  // left header cells
-  ctx.fillRect(rx- (isPreview?0:0) - 0, ry, 24, rh);
-
-  // grid lines
-  for (let x=0; x<=p.cols; x++){
-    const px = Math.round(rx + x*cellW)+0.5; ctx.beginPath(); ctx.moveTo(px, ry); ctx.lineTo(px, ry+rh); ctx.stroke();
-  }
-  for (let y=0; y<=p.rows; y++){
-    const py = Math.round(ry + y*cellH)+0.5; ctx.beginPath(); ctx.moveTo(rx, py); ctx.lineTo(rx+rw, py); ctx.stroke();
+    // position handles in CSS space
+    placeHandles();
   }
 
-  // labels (bold)
-  if (p.labels){
-    ctx.fillStyle = '#e7ecf5';
-    ctx.font = '700 14px ui-monospace, Menlo, monospace';
-    ctx.textAlign = 'center'; ctx.textBaseline='top';
-
-    // determine which axis uses letters
-    const lettersRows = (p.labelMode === 'lettersRows');
-
-    // column labels along the top of ROI
-    for (let x=1; x<=p.cols; x++){
-      const label = lettersRows ? String(x) : rowNumberToLetters(x);
-      const px = rx + (x-0.5)*cellW; ctx.fillText(label, px, ry-20);
+  function drawGrid(ctx, s){
+    const {roi, grid} = s;
+    // header shading bands
+    if (grid.headerShade){
+      ctx.fillStyle = 'rgba(12,18,32,.55)';
+      if (grid.marginTop>0) ctx.fillRect(roi.x, roi.y - grid.marginTop, roi.w, grid.marginTop);
+      if (grid.marginLeft>0) ctx.fillRect(roi.x - grid.marginLeft, roi.y, grid.marginLeft, roi.h);
     }
-    // row labels along the left of ROI
-    ctx.textAlign='left'; ctx.textBaseline='middle';
-    for (let y=1; y<=p.rows; y++){
-      const label = lettersRows ? rowNumberToLetters(y) : String(y);
-      const py = ry + (y-0.5)*cellH; ctx.fillText(label, rx-20, py);
+    // grid lines
+    ctx.strokeStyle = 'rgba(255,255,255,.45)';
+    ctx.lineWidth = 1;
+    for (let c=0;c<=grid.cols;c++){
+      const x = roi.x + c*(roi.w/grid.cols);
+      ctx.beginPath(); ctx.moveTo(x, roi.y); ctx.lineTo(x, roi.y+roi.h); ctx.stroke();
+    }
+    for (let r=0;r<=grid.rows;r++){
+      const y = roi.y + r*(roi.h/grid.rows);
+      ctx.beginPath(); ctx.moveTo(roi.x, y); ctx.lineTo(roi.x+roi.w, y); ctx.stroke();
+    }
+    // labels
+    const labelColor = grid.labelColor;
+    const shadow = grid.labelShadow;
+    const fontSize = Math.max(10, Math.min(18, Math.min(roi.w/grid.cols, roi.h/grid.rows) * 0.45));
+    ctx.font = `600 ${fontSize}px Inter, system-ui, sans-serif`;
+    ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+    const rH = roi.h/grid.rows, cW = roi.w/grid.cols;
+
+    // helper to stroke+fill for contrast
+    function drawLabel(txt, x,y){
+      ctx.lineWidth = Math.max(2, fontSize/6);
+      ctx.strokeStyle = shadow;
+      ctx.fillStyle = labelColor;
+      ctx.strokeText(txt,x,y);
+      ctx.fillText(txt,x,y);
+    }
+
+    if (grid.orientation==='letters-rows'){
+      // top numbers for columns
+      for (let c=1;c<=grid.cols;c++){
+        drawLabel(String(c), roi.x + (c-0.5)*cW, roi.y - grid.marginTop/2);
+      }
+      // left letters for rows
+      for (let r=1;r<=grid.rows;r++){
+        drawLabel(letterFor(r), roi.x - grid.marginLeft/2, roi.y + (r-0.5)*rH);
+      }
+    } else {
+      // top letters for columns
+      for (let c=1;c<=grid.cols;c++){
+        drawLabel(letterFor(c), roi.x + (c-0.5)*cW, roi.y - grid.marginTop/2);
+      }
+      // left numbers for rows
+      for (let r=1;r<=grid.rows;r++){
+        drawLabel(String(r), roi.x - grid.marginLeft/2, roi.y + (r-0.5)*rH);
+      }
     }
   }
-  ctx.restore();
+
+  function drawROIFrame(ctx, r){
+    ctx.save();
+    ctx.strokeStyle = '#22d3ee';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(r.x, r.y, r.w, r.h);
+    ctx.restore();
+  }
+
+  function placeHandles(){
+    // remove old
+    $$('.handle', wrapEl).forEach(h => h.remove());
+    if (!state.roi || !state.image) return;
+    const rect = cvs.getBoundingClientRect();
+    const scale = fitContainScale(state.imgW, state.imgH, rect.width, rect.height);
+    const offX = (rect.width - state.imgW*scale)/2;
+    const offY = (rect.height - state.imgH*scale)/2;
+    const r = state.roi;
+    const points = {nw:[r.x,r.y], ne:[r.x+r.w,r.y], sw:[r.x,r.y+r.h], se:[r.x+r.w,r.y+r.h]};
+    for (const [name,[ix,iy]] of Object.entries(points)){
+      const hx = offX + ix*scale - 6, hy = offY + iy*scale - 6;
+      const h = document.createElement('div');
+      h.className = 'handle'; h.dataset.dir = name;
+      h.style.left = hx+'px'; h.style.top = hy+'px';
+      wrapEl.appendChild(h);
+      h.addEventListener('pointerdown', (e)=>{ sel.mode='resize'; sel.active=true; sel.handle=name; wrapEl.setPointerCapture(e.pointerId); e.preventDefault(); });
+    }
+  }
+
+  function hitHandle(ix,iy){
+    // hit test in image space around 8x8px corners
+    const r = state.roi; if(!r) return null;
+    const h = 8;
+    if (near(ix,iy,r.x,r.y,h)) return 'nw';
+    if (near(ix,iy,r.x+r.w,r.y,h)) return 'ne';
+    if (near(ix,iy,r.x,r.y+r.h,h)) return 'sw';
+    if (near(ix,iy,r.x+r.w,r.y+r.h,h)) return 'se';
+    return null;
+  }
+
+  function drawCheckerboard(ctx,c){
+    const s=20; ctx.fillStyle='#0d1426'; ctx.fillRect(0,0,c.width,c.height);
+    ctx.save(); ctx.scale(window.devicePixelRatio||1, window.devicePixelRatio||1);
+    for(let y=0;y<c.height;y+=s) for(let x=0;x<c.width;x+=s) if(((x+y)/s)%2===0){
+      ctx.fillStyle='#0a1020'; ctx.fillRect(x,y,s,s);
+    }
+    ctx.restore();
+  }
+
+  // initial draw
+  redraw(true);
 }
 
-/* ========================= Render photo with markers (summary) ========================= */
-function renderPhotoWithMarkersToCanvas() {
-  const p = state.photo, wrap = $('#photoWrap'), cv = $('#photoCanvas');
-  if (!wrap || !cv) return; if (!p?.annotatedBase) { wrap.classList.add('hidden'); return; }
-  wrap.classList.remove('hidden');
-  cv.width = (p.width + p.bandLeft); cv.height = (p.height + p.bandTop);
-  const ctx = cv.getContext('2d');
-  const base = new Image(); base.onload = ()=>{ ctx.clearRect(0,0,cv.width,cv.height); ctx.drawImage(base, 0, 0, cv.width, cv.height); drawMarkersOnCtx(ctx, p); }; base.src = p.annotatedBase;
-}
-function drawMarkersOnCtx(ctx, p){
-  const pins = p.markers || [];
-  ctx.save();
-  ctx.font = Math.max(14, Math.round((p.width+p.bandLeft) * 0.02)) + 'px ui-monospace, Menlo, monospace';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  pins.forEach(pin => {
-    const x = pin.x + p.bandLeft, y = pin.y + p.bandTop;
-    const r = Math.max(8, Math.round((p.width+p.bandLeft) * 0.008));
-    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fillStyle = '#0b132a'; ctx.fill();
-    ctx.lineWidth = Math.max(2, Math.round((p.width+p.bandLeft) * 0.003)); ctx.strokeStyle = '#22c55e'; ctx.stroke();
-    const label = String(pin.n); const padX=6,padY=3; const metrics = ctx.measureText(label); const lw=metrics.width+padX*2; const lh=parseInt(ctx.font,10)+padY*2; const lx=x, ly=y-r-lh*0.9;
-    ctx.fillStyle = 'rgba(0,0,0,0.6)'; roundRect(ctx, lx-lw/2, ly-lh/2, lw, lh, 6); ctx.fill();
-    ctx.fillStyle = '#e7ecf5'; ctx.fillText(label, lx, ly);
+// ---------- Entry View ----------
+function renderEntry(root){
+  root.appendChild(card(`<h2 style="margin:0 0 8px">RCC Results Entry</h2>`,'span-12'));
+
+  const form = card(`
+    <div class="row">
+      <div class="field"><label>Location</label><input id="t-loc" placeholder="Station / Offset"></div>
+      <div class="field"><label>Wet Density (pcf)</label><input id="t-wd" type="number" inputmode="decimal" step="0.1"></div>
+      <div class="field"><label>Moisture (%)</label><input id="t-moist" type="number" inputmode="decimal" step="0.1"></div>
+      <div class="field"><label>Grid Coord (e.g., A3)</label><input id="t-grid" placeholder="A3 / B12"></div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <button class="btn primary" id="t-add">Add Test</button>
+      <button class="btn" id="t-clear">Clear</button>
+    </div>
+    <p class="muted" style="margin:8px 0 0">Grid coord checks your current grid settings and ROI; markers are auto-plotted in Summary.</p>
+  `,'span-12');
+  root.appendChild(form);
+
+  $('#t-add').addEventListener('click', ()=>{
+    const location = $('#t-loc').value.trim();
+    const wd = parseFloat($('#t-wd').value);
+    const moist = parseFloat($('#t-moist').value);
+    const coordTxt = $('#t-grid').value.trim().toUpperCase();
+    const v = validateCoord(coordTxt, state.grid);
+    if (coordTxt && !v.ok) { toast(v.msg,'warn'); return; }
+
+    let row=null,col=null,x=null,y=null;
+    if (coordTxt){
+      const rc = parseCoord(coordTxt, state.grid);
+      if (!rc) { toast('Invalid coord','warn'); return; }
+      row = rc.row; col = rc.col;
+      const p = gridCellCenterPx(row,col, state.roi, state.grid);
+      if (!p) { toast('Coord outside ROI or grid','warn'); return; }
+      x = p.x; y = p.y;
+    }
+    const id = cryptoId();
+    const num = state.tests.length + 1;
+    state.tests.push({id,num,location,wd:isFinite(wd)?wd:null,moist:isFinite(moist)?moist:null,coord:coordTxt,row,col,x,y});
+    toast(`Test #${num} added ✔️`,'ok');
+    // clear
+    $('#t-loc').value=''; $('#t-wd').value=''; $('#t-moist').value=''; $('#t-grid').value='';
   });
-  ctx.restore();
+
+  $('#t-clear').addEventListener('click', ()=>{
+    $('#t-loc').value=''; $('#t-wd').value=''; $('#t-moist').value=''; $('#t-grid').value='';
+  });
 }
 
-/* ========================= Coord ↔ grid helpers ========================= */
-function rowNumberToLetters(num){ let s=''; while(num>0){ const rem=(num-1)%26; s=String.fromCharCode(65+rem)+s; num=Math.floor((num-1)/26);} return s; }
-function coordToRowCol(coord){
-  const s=String(coord||'').trim().toUpperCase();
-  // We accept either Letters+Number or Number+Letters to respect labelMode
-  const m1=s.match(/^([A-Z]{1,2})(\d{1,3})$/); // e.g., A12
-  const m2=s.match(/^(\d{1,3})([A-Z]{1,2})$/); // e.g., 12A
-  if (m1){ return { row: lettersToNum(m1[1]), col: parseInt(m1[2],10) }; }
-  if (m2){ return { row: lettersToNum(m2[2]), col: parseInt(m2[1],10) }; }
-  return null;
-}
-function lettersToNum(letters){ let n=0; for(let i=0;i<letters.length;i++){ n = n*26 + (letters.charCodeAt(i)-64); } return n; }
-function isCoordInBounds(rowCol, colMaybe, pMaybe){
-  if (typeof rowCol==='object'){ const {row,col}=rowCol; return isCoordInBounds(row,col, pMaybe); }
-  const row=rowCol, col=colMaybe, p=pMaybe||state.photo;
-  return (row>=1 && row<=p.rows && col>=1 && col<=p.cols);
-}
-function gridCellCenterPx(row, col, p){
-  if (!p?.width || !p?.height) return null;
-  const rx = p.roi?.x ?? 0, ry = p.roi?.y ?? 0, rw = p.roi?.w || p.width, rh = p.roi?.h || p.height;
-  const cellW = rw / p.cols, cellH = rh / p.rows;
-  return { x: Math.round((col-0.5)*cellW + rx), y: Math.round((row-0.5)*cellH + ry) };
+// ---------- Summary View ----------
+function renderSummary(root){
+  root.appendChild(card(`
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <h2 style="margin:0">Summary</h2>
+      <div class="pill"><span class="dot"></span> ${escapeHtml(state.job.name||'Untitled Job')} • ${state.job.date}</div>
+    </div>
+  `,'span-12'));
+
+  // Annotated preview
+  const prev = document.createElement('section');
+  prev.className = 'card span-12';
+  prev.innerHTML = `
+    <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+      <strong>Annotated Site Photo</strong>
+      <div>
+        <button class="btn" id="btn-regen">Rebuild Image</button>
+        <button class="btn" id="btn-save-png">Save PNG</button>
+        <button class="btn" id="btn-save-pdf">Save PDF</button>
+        <button class="btn" id="btn-save-csv">Save CSV</button>
+      </div>
+    </div>
+    <div class="canvasWrap">
+      <canvas id="anno"></canvas>
+    </div>
+  `;
+  root.appendChild(prev);
+
+  // Table
+  const table = document.createElement('section');
+  table.className = 'card span-12';
+  table.innerHTML = `
+    <h3 style="margin:0 0 8px">Tests</h3>
+    <div style="overflow:auto; max-height:420px">
+      <table id="sum-table">
+        <thead><tr>
+          <th style="width:60px">#</th>
+          <th>Location</th>
+          <th style="width:140px">Wet Density</th>
+          <th style="width:140px">Moisture</th>
+          <th style="width:120px">Grid</th>
+          <th style="width:80px"></th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  `;
+  root.appendChild(table);
+
+  // Canvas + export wiring
+  const cvs = $('#anno'), ctx = cvs.getContext('2d');
+  setupHiDPICanvas(cvs, 900);
+
+  function setupHiDPICanvas(canvas, cssW=900){
+    const dpr = Math.max(1, window.devicePixelRatio||1);
+    const cssH = Math.round(cssW * 0.62);
+    canvas.style.width = cssW+'px';
+    canvas.style.height = cssH+'px';
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+  function buildAnnotated(){
+    ctx.clearRect(0,0,cvs.width,cvs.height);
+    if (!state.image){ drawNoImage(ctx,cvs); return; }
+    // Fit entire image into canvas, then draw ROI grid+labels and markers
+    const rect = cvs.getBoundingClientRect();
+    const scale = fitContainScale(state.imgW, state.imgH, rect.width, rect.height);
+    const offX = (rect.width - state.imgW*scale)/2;
+    const offY = (rect.height - state.imgH*scale)/2;
+    ctx.save();
+    ctx.translate(offX, offY);
+    ctx.scale(scale, scale);
+    ctx.drawImage(state.image, 0,0, state.imgW, state.imgH);
+    if (state.roi) drawGrid(ctx, state);
+    // markers
+    drawMarkers(ctx, state, scale=1);
+    ctx.restore();
+  }
+
+  function drawNoImage(ctx, c){
+    ctx.fillStyle='#0e1626'; ctx.fillRect(0,0,c.width,c.height);
+    ctx.fillStyle='#8aa0b6'; ctx.font='600 18px Inter, system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('Upload a site photo in Job Setup to see the annotated preview', c.width/2, c.height/2);
+  }
+
+  function drawMarkers(ctx, s){
+    const fontSize = 14;
+    ctx.font = `700 ${fontSize}px Inter, system-ui, sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    s.tests.forEach(t =>{
+      if (t && isFinite(t.x) && isFinite(t.y)){
+        // pin
+        ctx.beginPath();
+        ctx.fillStyle = '#22d3ee';
+        ctx.strokeStyle = '#0b1220';
+        ctx.lineWidth = 2;
+        ctx.arc(t.x, t.y, 10, 0, Math.PI*2);
+        ctx.fill(); ctx.stroke();
+        // number
+        ctx.fillStyle = '#0b1220';
+        ctx.fillText(String(t.num), t.x, t.y+0.5);
+        ctx.strokeStyle = 'rgba(255,255,255,.85)';
+        ctx.lineWidth = 3;
+        ctx.strokeText(String(t.num), t.x, t.y+0.5);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(String(t.num), t.x, t.y+0.5);
+      }
+    });
+  }
+
+  $('#btn-regen').addEventListener('click', ()=> { buildAnnotated(); toast('Image rebuilt'); });
+  $('#btn-save-png').addEventListener('click', ()=> {
+    buildAnnotated();
+    const a = document.createElement('a');
+    a.download = safeName(state.job.name||'rcc') + '-annotated.png';
+    a.href = cvs.toDataURL('image/png');
+    a.click();
+  });
+  $('#btn-save-pdf').addEventListener('click', async ()=>{
+    buildAnnotated();
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({orientation:'landscape', unit:'pt', format:'a4'});
+    const imgData = cvs.toDataURL('image/png');
+    const pgW = pdf.internal.pageSize.getWidth(), pgH = pdf.internal.pageSize.getHeight();
+    // image
+    const m = 28, iw = pgW - m*2, ih = (cvs.height/cvs.width)*iw;
+    pdf.setFont('helvetica','bold'); pdf.setFontSize(14);
+    pdf.text((state.job.name||'RCC Pro Report') + ' — ' + state.job.date, m, 26);
+    pdf.addImage(imgData, 'PNG', m, 40, iw, ih, undefined, 'FAST');
+    // table (simple)
+    let y = 60 + ih;
+    pdf.setFontSize(12);
+    pdf.text('Tests', m, y); y+=6;
+    pdf.setFontSize(10);
+    const headers = ['#','Location','Wet Density','Moisture','Grid'];
+    const colW = [22, 220, 100, 90, 60];
+    y+=10;
+    // header
+    headers.forEach((h,i)=> pdf.text(h, m + colW.slice(0,i).reduce((a,b)=>a+b,0), y));
+    y+=12;
+    state.tests.forEach(t=>{
+      const row = [
+        String(t.num),
+        t.location||'',
+        isFinite(t.wd)? String(t.wd):'',
+        isFinite(t.moist)? String(t.moist):'',
+        t.coord||''
+      ];
+      row.forEach((val,i)=> pdf.text(val, m + colW.slice(0,i).reduce((a,b)=>a+b,0), y));
+      y+=12;
+      if (y > pgH - 40){ pdf.addPage(); y=40; }
+    });
+    pdf.save(safeName(state.job.name||'rcc') + '-report.pdf');
+  });
+  $('#btn-save-csv').addEventListener('click', ()=>{
+    const header = ['num','location','wet_density','moisture','grid'];
+    const csv = [header.join(',')].concat(
+      state.tests.map(t => [t.num,t.location,t.wd??'',t.moist??'',t.coord??''].map(v=>JSON.stringify(v)).join(','))
+    ).join('\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download = safeName(state.job.name||'rcc') + '.csv'; a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // Build table
+  const tbody = $('#sum-table tbody');
+  function rebuildTable(){
+    tbody.innerHTML = '';
+    for (const t of state.tests){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${t.num}</td>
+        <td><input value="${escapeHtml(t.location||'')}" data-k="location"></td>
+        <td><input type="number" step="0.1" value="${isFinite(t.wd)?t.wd:''}" data-k="wd"></td>
+        <td><input type="number" step="0.1" value="${isFinite(t.moist)?t.moist:''}" data-k="moist"></td>
+        <td><input value="${escapeHtml(t.coord||'')}" data-k="coord"></td>
+        <td><button class="btn danger" data-del="${t.id}">Delete</button></td>
+      `;
+      // events
+      tr.querySelectorAll('input').forEach(inp=>{
+        inp.addEventListener('keydown', e=>{ if (e.key==='Enter') inp.blur(); });
+        inp.addEventListener('blur', ()=>{
+          const k = inp.dataset.k;
+          const v = inp.type==='number' ? (inp.value===''?null:parseFloat(inp.value)) : inp.value.trim();
+          if (k==='coord'){
+            if (v){
+              const val = validateCoord(v, state.grid);
+              if (!val.ok){ toast(val.msg,'warn'); inp.focus(); return; }
+              const rc = parseCoord(v, state.grid);
+              const p = gridCellCenterPx(rc.row, rc.col, state.roi, state.grid);
+              Object.assign(t, {coord:v.toUpperCase(), row:rc.row, col:rc.col, x:p?.x ?? null, y:p?.y ?? null});
+            } else {
+              Object.assign(t, {coord:'', row:null,col:null,x:null,y:null});
+            }
+          } else {
+            t[k] = v;
+          }
+          buildAnnotated();
+        });
+      });
+      tr.querySelector('button[data-del]').addEventListener('click', ()=>{
+        const idx = state.tests.findIndex(x=>x.id===t.id);
+        if (idx>=0){ state.tests.splice(idx,1); renumber(); rebuildTable(); buildAnnotated(); }
+      });
+      tbody.appendChild(tr);
+    }
+  }
+  function renumber(){ state.tests.forEach((t,i)=> t.num = i+1); }
+
+  rebuildTable();
+  buildAnnotated();
 }
 
-/* ========================= Misc helpers ========================= */
-function roundRect(ctx,x,y,w,h,r){ const rr=Math.min(r,w/2,h/2); ctx.beginPath(); ctx.moveTo(x+rr,y); ctx.arcTo(x+w,y,x+w,y+h,rr); ctx.arcTo(x+w,y+h,x,y+h,rr); ctx.arcTo(x,y+h,x,y,rr); ctx.arcTo(x,y,x+w,y,rr); ctx.closePath(); }
-async function loadImage(src){ return await new Promise((res,rej)=>{ const img=new Image(); img.crossOrigin='anonymous'; img.onload=()=>res(img); img.onerror=rej; img.src=src; }); }
-async function drawImageToDataURL(img){ const c=document.createElement('canvas'); c.width=img.naturalWidth; c.height=img.naturalHeight; const ctx=c.getContext('2d'); ctx.drawImage(img,0,0); return c.toDataURL('image/png'); }
-function download(href, filename){ const a=document.createElement('a'); a.href=href; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); }
-let toastTimer=null; function toast(msg, type='ok'){ clearTimeout(toastTimer); let bar=document.getElementById('toast'); if(!bar){ bar=document.createElement('div'); bar.id='toast'; document.body.appendChild(bar); Object.assign(bar.style,{ position:'fixed', left:'50%', bottom:'22px', transform:'translateX(-50%)', padding:'12px 14px', borderRadius:'12px', border:'1px solid #203050', background:'#0b1227', color:'#e5e7eb', fontSize:'14px', zIndex:9999, boxShadow:'0 10px 30px #0007', transition:'opacity .2s' }); } const color=type==='ok'? '#22c55e': type==='warn'? '#f59e0b': '#ef4444'; bar.style.borderColor=color+'88'; bar.innerHTML=`<span style="color:${color}; font-weight:800; margin-right:8px">•</span>${msg}`; bar.style.opacity='1'; toastTimer=setTimeout(()=>bar.style.opacity='0',2600); }
+// ---------- Helpers ----------
+function card(inner, span='span-12'){ const c=document.createElement('section'); c.className='card '+span; c.innerHTML=inner; return c; }
+function clamp(n,min,max){ return Math.min(max, Math.max(min,n)); }
+function near(x,y,tx,ty,h=8){ return Math.abs(x-tx)<=h && Math.abs(y-ty)<=h; }
+function pointInRect(p,r){ return p.x>=r.x && p.x<=r.x+r.w && p.y>=r.y && p.y<=r.y+r.h; }
+function normRect(r, s){ // clamp to image bounds, min size
+  const min=10;
+  const x = clamp(r.x,0,s.imgW), y = clamp(r.y,0,s.imgH);
+  const w = clamp(r.w,0,s.imgW - x), h = clamp(r.h,0,s.imgH - y);
+  return {x, y, w: Math.max(w,min), h: Math.max(h,min)};
+}
+function fitContainScale(iw,ih,cw,ch){ const sx=cw/iw, sy=ch/ih; return Math.min(sx,sy); }
+function letterFor(n){ // 1->A ... 26->Z
+  const i = clamp(n,1,26); return String.fromCharCode(64+i);
+}
+function escapeHtml(s=''){ return s.replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+function safeName(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+function cryptoId(){ return 't'+Math.random().toString(36).slice(2,9); }
+
+function validateCoord(txt, grid){
+  const t = (txt||'').trim().toUpperCase();
+  if (!t) return {ok:true};
+  // accept A12 or 12A regardless, then interpret by orientation
+  const m = t.match(/^([A-Z]{1})(\d{1,3})$|^(\d{1,3})([A-Z]{1})$/);
+  if (!m) return {ok:false,msg:'Use A1..Z200 (one letter + numbers)'};
+  let row=null, col=null;
+  if (grid.orientation==='letters-rows'){
+    // rows letter, cols number
+    if (m[1]){ row = m[1].charCodeAt(0)-64; col = parseInt(m[2],10); }
+    else { row = m[4].charCodeAt(0)-64; col = parseInt(m[3],10); }
+  } else {
+    // rows number, cols letter
+    if (m[1]){ row = parseInt(m[2],10); col = m[1].charCodeAt(0)-64; }
+    else { row = parseInt(m[3],10); col = m[4].charCodeAt(0)-64; }
+  }
+  if (!(row>=1 && row<=26)) return {ok:false,msg:'Row out of range (A..Z or 1..rows)'};
+  if (!(col>=1 && col<=200)) return {ok:false,msg:'Column out of range (1..cols)'};
+  if (row> (grid.orientation==='letters-rows' ? grid.rows : grid.rows)) return {ok:false,msg:`Row exceeds grid (${grid.rows})`};
+  if (col> (grid.orientation==='letters-rows' ? grid.cols : grid.cols)) return {ok:false,msg:`Column exceeds grid (${grid.cols})`};
+  return {ok:true};
+}
+
+function parseCoord(txt, grid){
+  const t = (txt||'').trim().toUpperCase();
+  const m = t.match(/^([A-Z]{1})(\d{1,3})$|^(\d{1,3})([A-Z]{1})$/);
+  if (!m) return null;
+  if (grid.orientation==='letters-rows'){
+    const row = (m[1]?m[1]:m[4]).charCodeAt(0)-64;
+    const col = parseInt((m[2]?m[2]:m[3]),10);
+    return {row, col};
+  } else {
+    const row = parseInt((m[2]?m[2]:m[3]),10);
+    const col = (m[1]?m[1]:m[4]).charCodeAt(0)-64;
+    return {row, col};
+  }
+}
+
+function gridCellCenterPx(row, col, roi, grid){
+  if (!roi) return null;
+  if (!(row>=1 && col>=1)) return null;
+  if (row>grid.rows || col>grid.cols) return null;
+  // map cell center in image pixel space
+  const cw = roi.w / grid.cols, rh = roi.h / grid.rows;
+  const x = roi.x + (col - 0.5) * cw;
+  const y = roi.y + (row - 0.5) * rh;
+  return {x,y};
+}
+
+// Reuse drawGrid in Summary too
+function drawGrid(ctx, s){ // duplicated signature used by both views
+  const {roi, grid} = s;
+  if (!roi) return;
+  if (grid.headerShade){
+    ctx.fillStyle = 'rgba(12,18,32,.55)';
+    if (grid.marginTop>0) ctx.fillRect(roi.x, roi.y - grid.marginTop, roi.w, grid.marginTop);
+    if (grid.marginLeft>0) ctx.fillRect(roi.x - grid.marginLeft, roi.y, grid.marginLeft, roi.h);
+  }
+  ctx.strokeStyle = 'rgba(255,255,255,.45)'; ctx.lineWidth = 1;
+  for (let c=0;c<=grid.cols;c++){
+    const x = roi.x + c*(roi.w/grid.cols);
+    ctx.beginPath(); ctx.moveTo(x, roi.y); ctx.lineTo(x, roi.y+roi.h); ctx.stroke();
+  }
+  for (let r=0;r<=grid.rows;r++){
+    const y = roi.y + r*(roi.h/grid.rows);
+    ctx.beginPath(); ctx.moveTo(roi.x, y); ctx.lineTo(roi.x+roi.w, y); ctx.stroke();
+  }
+  const labelColor = grid.labelColor, shadow = grid.labelShadow;
+  const fontSize = Math.max(10, Math.min(18, Math.min(roi.w/grid.cols, roi.h/grid.rows) * 0.45));
+  ctx.font = `600 ${fontSize}px Inter, system-ui, sans-serif`;
+  ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+  const rH = roi.h/grid.rows, cW = roi.w/grid.cols;
+
+  function drawLabel(txt, x,y){
+    ctx.lineWidth = Math.max(2, fontSize/6);
+    ctx.strokeStyle = shadow;
+    ctx.fillStyle = labelColor;
+    ctx.strokeText(txt,x,y);
+    ctx.fillText(txt,x,y);
+  }
+  if (grid.orientation==='letters-rows'){
+    for (let c=1;c<=grid.cols;c++) drawLabel(String(c), roi.x + (c-0.5)*cW, roi.y - grid.marginTop/2);
+    for (let r=1;r<=grid.rows;r++) drawLabel(letterFor(r), roi.x - grid.marginLeft/2, roi.y + (r-0.5)*rH);
+  } else {
+    for (let c=1;c<=grid.cols;c++) drawLabel(letterFor(c), roi.x + (c-0.5)*cW, roi.y - grid.marginTop/2);
+    for (let r=1;r<=grid.rows;r++) drawLabel(String(r), roi.x - grid.marginLeft/2, roi.y + (r-0.5)*rH);
+  }
+}
+
+// Export menu (simple)
+function showExportMenu(){
+  const path = (location.hash.replace('#','') || '/setup');
+  if (path !== '/summary'){ location.hash = '#/summary'; setTimeout(()=> toast('Open Summary to export')), 0; return; }
+  toast('Use Save PNG / PDF / CSV in Summary ✔️','ok');
+}
 </script>
 </body>
 </html>
