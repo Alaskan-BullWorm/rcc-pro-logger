@@ -79,7 +79,6 @@
   .badge{font-size:11px; padding:4px 8px; border:1px solid #253055; border-radius:8px; color:#9fb0d4; background:#09122a}
   video{width:100%; border:1px solid #1f294a; border-radius:10px; background:#000}
   canvas{max-width:100%; background:#050816; border:1px dashed #233057; border-radius:8px}
-  /* Modal sheet */
   .modal{position:fixed; inset:0; background:#0009; display:flex; align-items:flex-end; justify-content:center; z-index:50}
   .sheet{width:min(920px, 96vw); max-height:90vh; overflow:auto; background:#0a0f20; border:1px solid #1c2540; border-radius:16px 16px 0 0; padding:14px}
   .scan-grid{display:grid; grid-template-columns:1.2fr .8fr; gap:12px}
@@ -92,7 +91,6 @@
   <div class="header-wrap">
     <div class="brand">
       <div class="logo" aria-hidden="true">
-        <!-- simple mark: compact R logotype -->
         <svg viewBox="0 0 24 24" fill="none"><path d="M6 18V6h7.2a4.8 4.8 0 0 1 0 9.6H10l4 2.4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
       <h1>RCC Pro Logger</h1>
@@ -167,7 +165,7 @@
         </div>
       </div>
 
-      <div class="help">OCR tuned to screens like: <span class="kbd">Moist: 11.2</span> / <span class="kbd">WD: 149.0 PCF</span>. Move closer, avoid glare.</div>
+      <div class="help">OCR tuned for numbers like <span class="kbd">WD: 149.0</span> <em>or</em> <span class="kbd">WD: 149</span>, and <span class="kbd">Moist: 11.2</span> <em>or</em> <span class="kbd">11</span>.</div>
 
       <div class="inline" style="gap:10px; margin-top:10px">
         <button class="btn primary" id="btnSaveNext">Save & Next Test</button>
@@ -238,10 +236,9 @@ const $$ = s => Array.from(document.querySelectorAll(s));
 const todayISO = () => new Date().toISOString().slice(0,10);
 const miles = meters => +(meters / 1609.344).toFixed(2);
 const clamp1 = v => Math.round(v*10)/10;
-const fmt = v => v==null ? '' : String(v);
 const toNumber = v => { const n = Number(String(v).trim()); return Number.isFinite(n) ? n : null; };
 
-const LS_KEY = 'rcc_pro_logger_v1';
+const LS_KEY = 'rcc_pro_logger_v3';
 const ORIGIN_TEXT = 'Geotechnical Consultants Inc., Westerville, Ohio';
 const NOMINATIM = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=';
 const NOMI_REV  = (lat,lon) => `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
@@ -304,8 +301,6 @@ function startLogging(){
   if (!name) return fieldError(jobName, 'Please enter a Job Name.');
   if (!loc)  return fieldError(jobLocation, 'Please enter a Job Location.');
 
-  clearFieldError(jobName); clearFieldError(jobLocation);
-
   Object.assign(state.job, { name, date, location:loc, targetDensity:tD, targetMoist:tM });
   disableSetup();
 
@@ -318,13 +313,8 @@ function startLogging(){
     .then(mi => { state.job.mileageMi = mi; summaryMileage.textContent = `${mi} mi`; save(); toast(`Mileage computed: ${mi} mi ✔️`, 'ok'); })
     .catch(() => { methodEl.textContent = 'Fallback (straight-line)'; toast('Routing failed, using straight‑line distance.', 'warn'); });
 }
-
-function disableSetup(){
-  [jobName, jobDate, jobLocation, targetDensity, targetMoist].forEach(i => i.disabled = true);
-  $('#btnStart').disabled = true; $('#btnUseGPS').disabled = true;
-}
+function disableSetup(){ [jobName, jobDate, jobLocation, targetDensity, targetMoist].forEach(i => i.disabled = true); $('#btnStart').disabled = true; $('#btnUseGPS').disabled = true; }
 function fieldError(input, msg){ input.focus(); toast(msg, 'warn'); input.scrollIntoView({behavior:'smooth', block:'center'}); }
-function clearFieldError(){}
 
 async function computeMileage(){
   netStatus.textContent = 'geocoding…';
@@ -333,10 +323,7 @@ async function computeMileage(){
   netStatus.textContent = 'routing…';
   const url = `${OSRM}${o.lon},${o.lat};${d.lon},${d.lat}?overview=false&alternatives=false&steps=false`;
   const res = await fetch(url, { headers:{'User-Agent':'RCC-Pro-Logger'} });
-  if (res.ok){
-    const j = await res.json(); const m = j?.routes?.[0]?.distance;
-    if (typeof m === 'number'){ methodEl.textContent='Routing (OSRM)'; netStatus.textContent='ready'; return miles(m); }
-  }
+  if (res.ok){ const j = await res.json(); const m = j?.routes?.[0]?.distance; if (typeof m === 'number'){ methodEl.textContent='Routing (OSRM)'; netStatus.textContent='ready'; return miles(m); } }
   methodEl.textContent='Fallback (straight-line)'; netStatus.textContent='ready';
   const mi = haversine(o.lat,o.lon,d.lat,d.lon); return +mi.toFixed(2);
 }
@@ -346,7 +333,7 @@ async function reverseGeocode(lat,lon){ const res = await fetch(NOMI_REV(lat,lon
 function haversine(lat1, lon1, lat2, lon2){ const toRad=d=>d*Math.PI/180, R=3958.761; const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1); const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2; return 2*R*Math.asin(Math.sqrt(a)); }
 
 /* ========================= Entry & %Target ========================= */
-function updatePctField(){ const wet=toNumber(wetDensity.value), t=toNumber(targetDensity.value); const pct=(wet!=null && t && t>0)? clamp1(wet/t*100): null; densityPct.value = pct==null ? '' : pct; }
+function updatePctField(){ const wet=toNumber(wetDensity.value), t=toNumber(targetDensity.value); const pct=(wet!=null && t && t>0)? Math.round((wet/t*100)*10)/10: null; densityPct.value = pct==null ? '' : pct; }
 
 function onSaveNext(){
   const loc = testLocation.value.trim();
@@ -360,7 +347,7 @@ function onSaveNext(){
   if (wet < 100 || wet > 170) toast('Wet Density seems off for RCC (~120–145 pcf).', 'warn');
   if (moi < 1 || moi > 20) toast('Moisture seems off (~4–10%).', 'warn');
 
-  const t = state.job.targetDensity; const pct = (t && t>0) ? clamp1(wet/t*100) : null;
+  const t = state.job.targetDensity; const pct = (t && t>0) ? Math.round((wet/t*100)*10)/10 : null;
   const n = state.tests.length + 1; state.tests.push({ n, loc, wet, moist:moi, pct });
 
   save(); clearEntry(true); testNumber.value = String(state.tests.length + 1); testLocation.focus();
@@ -432,7 +419,7 @@ function restoreFromURL(){
   }catch{}
 }
 
-/* ========================= Exports ========================= */
+/* ========================= Exports (unchanged) ========================= */
 async function ensureSummaryRendered(){ if (summaryCard.classList.contains('hidden')) showSummary(); await new Promise(r=>setTimeout(r,50)); }
 async function exportPNG(){ await ensureSummaryRendered(); const c = await html2canvas($('#exportArea'), { backgroundColor:'#091126', scale:2 }); download(c.toDataURL('image/png'), `${slug(state.job.name)}-${state.job.date}-RCC.png`); }
 async function exportPDF(){ await ensureSummaryRendered(); const c = await html2canvas($('#exportArea'), { backgroundColor:'#091126', scale:2 }); const img = c.toDataURL('image/png'); const { jsPDF } = window.jspdf; const pdf = new jsPDF({ unit:'pt', format:'a4' }); const pageW = pdf.internal.pageSize.getWidth(); const imgW = pageW - 48; const ratio = imgW / c.width; const imgH = c.height * ratio; pdf.addImage(img, 'PNG', 24, 24, imgW, imgH); pdf.save(`${slug(state.job.name)}-${state.job.date}-RCC.pdf`); }
@@ -508,7 +495,7 @@ function buildScannerModal(){
             <button class="btn primary" id="btnCapture">Capture & Read</button>
             <button class="btn secondary" id="btnFill" disabled>Fill Fields</button>
           </div>
-          <div class="help">Aim at lines like <span class="kbd">Moist: 11.2</span> and <span class="kbd">WD: 149.0 PCF</span>. Avoid glare; move closer.</div>
+          <div class="help">Accepts integers or 1‑decimal (e.g., <span class="kbd">WD: 149</span> or <span class="kbd">149.0</span>).</div>
           <pre id="ocrOut" class="muted" style="margin-top:8px; white-space:pre-wrap"></pre>
         </div>
       </div>
@@ -581,17 +568,16 @@ async function ocrGauge(canvas){
     const res = await Tesseract.recognize(canvas, 'eng', { logger: m=>{} });
     const text = (res?.data?.text || '').replace(/\r/g,'');
     out.text = text;
-    // Patterns for your screens:
-    // "WD: 149.0 PCF"  -> WD numeric
-    // "Moist: 11.2" or "%Moist: 8.1" or "W%: 8.1"
-    const wd = matchNumber(text, /W\s*D\s*[:=]?\s*([0-9]{3}(?:\.[0-9])?)/i);
-    const moist = matchNumber(text, /(Moist|%Moist|W\s*%)[^0-9]*([0-9]{1,2}(?:\.[0-9])?)/i, 2);
-    out.wd = wd!=null && wd>=100 && wd<=200 ? wd : null;
-    out.moist = moist!=null && moist>=0 && moist<=40 ? moist : null;
+    // WD: three digits (100-999), optional .digit; Moist: one/two digits, optional .digit
+    const wdMatch = text.match(/\b(1\d{2}|[2-9]\d{2})(?:\.\d)?\b/);
+    const moistMatch = text.match(/\b(\d{1,2})(?:\.\d)?\b/);
+    out.wd = wdMatch ? parseFloat(wdMatch[0]) : null;
+    out.moist = moistMatch ? parseFloat(moistMatch[0]) : null;
+    if (out.wd!=null && (out.wd<100 || out.wd>200)) out.wd=null;
+    if (out.moist!=null && (out.moist<0 || out.moist>40)) out.moist=null;
   }catch(e){ console.error(e); }
   return out;
 }
-function matchNumber(s, regex, group=1){ const m = s.match(regex); return m ? parseFloat(m[group]) : null; }
 function fillFromOCR(){
   const wd = scanModal.dataset.lastWd, m = scanModal.dataset.lastMoist;
   if (wd) wetDensity.value = wd;
@@ -601,8 +587,10 @@ function fillFromOCR(){
   closeScanner();
 }
 
-/* ========================= OCR: Notes Import ========================= */
-let importModal=null, parsedNotes=[];
+/* ========================= OCR: Notes Import — reworked + diff preview ========================= */
+let importModal=null, parsedBlocks=[];
+let diffModal=null, lastPlan=null;
+
 function openImportNotes(){ if(!importModal) buildImportModal(); importModal.classList.remove('hidden'); }
 function buildImportModal(){
   importModal = document.createElement('div'); importModal.className='modal hidden';
@@ -616,75 +604,240 @@ function buildImportModal(){
         </div>
       </header>
       <div class="row" style="grid-template-columns:1fr">
-        <div class="help">Rules: we look for <strong>numbered test lines</strong>. On each line, the <strong>lower number (≤2 digits, ≤1 decimal)</strong> is <em>Moisture</em> and the <strong>higher number (≥3 digits, ≤1 decimal)</strong> is <em>Wet Density</em>. Remaining text is the location. Headings or lines without both numbers are ignored.</div>
+        <div class="help">
+          Rules: each test <strong>starts</strong> with the test number (<span class="kbd">1.</span>, <span class="kbd">12.</span>).
+          After that, we expect one Moist (<span class="kbd">7</span> or <span class="kbd">7.2</span>) and one WD (<span class="kbd">149</span> or <span class="kbd">149.0</span>) in any order.
+          <strong>All wording after the second number</strong> is the test location. Tests may span multiple lines until the next numbered test starts.
+        </div>
         <canvas id="notesCanvas" height="360" class="hidden"></canvas>
         <pre id="notesOut" class="muted" style="white-space:pre-wrap"></pre>
-        <div class="inline" style="gap:8px"><button class="btn primary" id="btnApplyNotes" disabled>Add Parsed Tests</button></div>
+        <div class="inline" style="gap:8px">
+          <button class="btn primary" id="btnReview" disabled>Review Changes…</button>
+        </div>
       </div>
     </div>`;
   document.body.appendChild(importModal);
   $('#btnCloseImport').addEventListener('click', ()=>importModal.classList.add('hidden'));
   $('#notesFile').addEventListener('change', onNotesPick);
-  $('#btnApplyNotes').addEventListener('click', applyParsedNotes);
+  $('#btnReview').addEventListener('click', openDiffPreview);
 }
+
 async function onNotesPick(ev){
   const file = ev.target.files?.[0]; if (!file) return;
   const img = new Image();
   img.onload = async ()=>{
-    const maxW = 1800, scale = Math.min(1, maxW / img.width);
+    const maxW = 1900, scale = Math.min(1, maxW / img.width);
     const c = $('#notesCanvas'); c.width = Math.round(img.width*scale); c.height = Math.round(img.height*scale);
     const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, c.width, c.height);
     preprocess(ctx, c.width, c.height);
-    let text=''; try{ const res = await Tesseract.recognize(c, 'eng', { logger: m=>{} }); text = (res?.data?.text || '').replace(/\r/g,''); } catch{}
-    const lines = text.split('\n').map(s=>s.trim()).filter(Boolean);
-    parsedNotes = parseNumberedTests(lines);
-    const preview = parsedNotes.length ? parsedNotes.map(o => `#${o.n} | ${o.loc || '(no location)'} | WD:${o.wet ?? '—'} | %Moist:${o.moist ?? '—'} | %Target:${o.pct ?? '—'}`).join('\n') : '(No valid test lines found)';
+    let text=''; try{ const res = await Tesseract.recognize(c, 'eng', { logger: m=>{} }); text = (res?.data?.text || '').replace(/\r/g,''); } catch(e){ console.error(e); }
+    parsedBlocks = parseNotesBlocks(text);
+    const preview = parsedBlocks.length
+      ? parsedBlocks.map(o => `#${o.n} | WD:${o.wet ?? '—'} | %Moist:${o.moist ?? '—'} | Loc: ${o.loc || '(none)'}`).join('\n')
+      : '(No valid tests found. Make sure tests start with "1." / "2." etc.)';
     $('#notesOut').textContent = preview;
-    $('#btnApplyNotes').disabled = !parsedNotes.length;
-    if (parsedNotes.length) toast(`Detected ${parsedNotes.length} test line(s) ✔️`, 'ok'); else toast('No numbered test lines detected', 'warn');
+    $('#btnReview').disabled = !parsedBlocks.length;
+    if (parsedBlocks.length) toast(`Detected ${parsedBlocks.length} test block(s) ✔️`, 'ok'); else toast('No numbered tests detected', 'warn');
   };
   img.onerror = ()=> { $('#notesOut').textContent = 'Could not load image.'; };
   img.src = URL.createObjectURL(file);
 }
-function parseNumberedTests(lines){
-  // Detect lines that begin with a number marker like "1", "1.", "1)", "#1", "- 1."
-  const testLine = s => /^\s*(?:#|-)?\s*(\d{1,3})[.)]?\s+/i.test(s);
-  let items = [];
-  for (const line of lines){
-    if (!testLine(line)) continue;
-    // Extract numbers with at most one decimal: captures both 11.2 and 149.0
-    const nums = [...line.matchAll(/([0-9]+(?:\.[0-9])?)/g)].map(m => parseFloat(m[1]));
-    if (nums.length < 2) continue;
-    const smalls = nums.filter(n => n < 100);           // potential moisture
-    const bigs   = nums.filter(n => n >= 100 && n < 1000); // potential wet density
-    if (!smalls.length || !bigs.length) continue;
 
-    // Choose moisture as smallest value with ≤1 decimal; density as largest with ≥3 digits (>=100)
-    const moist = Math.min(...smalls);
-    const wet   = Math.max(...bigs);
-
-    // Location = line minus the numbers and list markers
-    let loc = line
-      .replace(/^\s*(?:#|-)?\s*\d{1,3}[.)]?\s*/,'')
-      .replace(/[0-9]+(?:\.[0-9])?/g,'')
-      .replace(/\s{2,}/g,' ')
-      .trim();
-
-    if (!loc) loc = null;
-
-    const t = state.job.targetDensity;
-    const pct = (t && t>0 && wet!=null) ? clamp1(wet / t * 100) : null;
-    items.push({ n: items.length+1, loc, wet, moist, pct });
+/* Parse text into blocks that start with "N." and run until next "M." */
+function parseNotesBlocks(text){
+  const rawLines = text.split('\n').map(s=>s.replace(/\s+$/,''));
+  const startRe = /^\s*(\d{1,3})\.\s+/; // "1." or "12."
+  const blocks = [];
+  let i = 0;
+  while (i < rawLines.length){
+    const start = rawLines[i].match(startRe);
+    if (!start){ i++; continue; }
+    const n = parseInt(start[1],10);
+    let j = i+1;
+    while (j < rawLines.length && !startRe.test(rawLines[j])) j++;
+    const chunk = rawLines.slice(i, j).join(' ').replace(/\s{2,}/g,' ').trim();
+    const parsed = parseOneBlock(chunk, n);
+    if (parsed) blocks.push(parsed);
+    i = j;
   }
-  return items;
+  return blocks;
 }
-function applyParsedNotes(){
-  if (!parsedNotes.length) { toast('Nothing to add', 'warn'); return; }
-  for (const r of parsedNotes){ state.tests.push({ n: state.tests.length+1, loc:r.loc, wet:r.wet, moist:r.moist, pct:r.pct }); }
-  save(); toast(`Added ${parsedNotes.length} test(s) ✔️`, 'ok'); importModal.classList.add('hidden'); testNumber.value = String(state.tests.length + 1);
+/* Inside one block:
+   - Strictly search AFTER the "N." marker
+   - Moist: 1–2 digits, optional .digit => \d{1,2}(?:\.\d)?
+   - WD:   3 digits, optional .digit     => \d{3}(?:\.\d)?
+   - Location = text after whichever (moist/wd) appears second
+*/
+function parseOneBlock(block, testNum){
+  const mark = block.match(/^\s*(\d{1,3})\.\s+/);
+  if (!mark) return null;
+  const rest = block.slice(mark[0].length);
+
+  const moistRe = /\b(\d{1,2}(?:\.\d)?)\b/;     // 7 or 7.2
+  const wdRe    = /\b(\d{3}(?:\.\d)?)\b/;      // 149 or 149.0
+
+  const m1 = moistRe.exec(rest);
+  const w1 = wdRe.exec(rest);
+  if (!m1 || !w1) return null;
+
+  // index of ends (relative to rest)
+  const moistEnd = m1.index + m1[0].length;
+  const wdEnd    = w1.index + w1[0].length;
+  const afterIdx = Math.max(moistEnd, wdEnd);
+
+  // everything after second number = location
+  const loc = rest.slice(afterIdx).replace(/^[^\w]+/,'').trim() || null;
+
+  const wet = parseFloat(w1[1]);
+  const moist = parseFloat(m1[1]);
+
+  // sanity limits to avoid picking random numbers
+  if (!(wet>=80 && wet<=250)) return null;
+  if (!(moist>=0 && moist<=40)) return null;
+
+  const t = state.job.targetDensity;
+  const pct = (t && t>0 && !Number.isNaN(wet)) ? Math.round((wet/t*100)*10)/10 : null;
+
+  return { n: testNum, loc, wet, moist, pct };
 }
 
-/* ========================= Toast ========================= */
+/* ---------- Diff preview + renumber planning ---------- */
+function openDiffPreview(){
+  if (!parsedBlocks.length) return;
+  if (!diffModal) buildDiffModal();
+
+  // Make a plan (simulate renumbering without touching state)
+  lastPlan = planRenumberAndAssignments(parsedBlocks, state.tests);
+
+  // Render diff
+  const moved = lastPlan.existingMoves.filter(x => x.from !== x.to);
+  const inserted = lastPlan.assignments;
+
+  $('#diffSummary').textContent =
+    `Will insert ${inserted.length} test${inserted.length===1?'':'s'}`
+    + (moved.length ? ` and renumber ${moved.length} existing.` : '.');
+
+  const insList = $('#diffInserts'); insList.innerHTML='';
+  inserted.forEach(a=>{
+    const li = document.createElement('li');
+    li.textContent = `#${a.desired} → #${a.assigned}  •  WD ${a.block.wet}  •  %Moist ${a.block.moist}  •  ${a.block.loc || '(no location)'}`;
+    insList.appendChild(li);
+  });
+
+  const mvList = $('#diffMoves'); mvList.innerHTML='';
+  if (moved.length){
+    moved.sort((a,b)=> a.from - b.from).forEach(m=>{
+      const li = document.createElement('li');
+      li.textContent = `Test #${m.from} → #${m.to}`;
+      mvList.appendChild(li);
+    });
+    $('#movesWrap').classList.remove('hidden');
+  } else {
+    $('#movesWrap').classList.add('hidden');
+  }
+
+  diffModal.classList.remove('hidden');
+}
+function buildDiffModal(){
+  diffModal = document.createElement('div'); diffModal.className='modal hidden';
+  diffModal.innerHTML = `
+    <div class="sheet">
+      <header class="inline" style="justify-content:space-between">
+        <h2>Review Changes</h2>
+        <div class="inline">
+          <button class="btn secondary" id="btnCancelDiff" style="width:auto">Cancel</button>
+          <button class="btn primary" id="btnApplyDiff" style="width:auto">Confirm & Apply</button>
+        </div>
+      </header>
+      <div class="banner" id="diffSummary">—</div>
+      <div class="divider"></div>
+      <h3 style="margin:10px 0 6px">New Tests to Insert</h3>
+      <ul id="diffInserts" style="margin:0 0 8px 18px; padding:0"></ul>
+      <div id="movesWrap">
+        <h3 style="margin:12px 0 6px">Existing Tests to Renumber</h3>
+        <ul id="diffMoves" style="margin:0 0 8px 18px; padding:0"></ul>
+      </div>
+    </div>`;
+  document.body.appendChild(diffModal);
+  $('#btnCancelDiff').addEventListener('click', ()=> diffModal.classList.add('hidden'));
+  $('#btnApplyDiff').addEventListener('click', applyDiffPlan);
+}
+
+/* Build a renumbering plan by simulating "make room" shifts on numbers only. */
+function planRenumberAndAssignments(blocks, existingTests){
+  // clone existing numbers
+  const currNums = new Set(existingTests.map(t=>t.n));
+  // track current number for each original number
+  const originals = existingTests.map(t=>t.n).sort((a,b)=>a-b);
+  const currMap = new Map(originals.map(n => [n, n])); // original -> current
+
+  const sortedBlocks = [...blocks].sort((a,b)=> a.n - b.n);
+  const assignments = []; // {desired, assigned, block}
+  for (const b of sortedBlocks){
+    // make room at b.n by shifting all existing numbers >= n up by 1 until free
+    let target = b.n;
+    while (currNums.has(target)){
+      // shift all "current" numbers >= target
+      const moved = [];
+      for (const [orig, cur] of currMap.entries()){
+        if (cur >= target){ currMap.set(orig, cur+1); moved.push(orig); }
+      }
+      // update the set from moved list
+      const newSet = new Set();
+      for (const n of currNums){ newSet.add(n >= target ? n+1 : n); }
+      currNums.clear();
+      newSet.forEach(x=> currNums.add(x));
+      target += 1;
+    }
+    // reserve the slot for the new block
+    currNums.add(target);
+    assignments.push({ desired:b.n, assigned:target, block:b });
+  }
+
+  const existingMoves = [];
+  for (const [orig, cur] of currMap.entries()){
+    existingMoves.push({ from: orig, to: cur });
+  }
+
+  return { assignments, existingMoves };
+}
+
+/* Apply the renumbering plan to real state and insert new tests */
+function applyDiffPlan(){
+  if (!lastPlan) return;
+
+  // 1) Renumber existing tests
+  const moveMap = new Map(lastPlan.existingMoves.map(m => [m.from, m.to]));
+  for (const t of state.tests){
+    const to = moveMap.get(t.n);
+    if (to != null) t.n = to;
+  }
+
+  // 2) Insert new tests with their assigned numbers
+  for (const a of lastPlan.assignments){
+    const b = a.block;
+    state.tests.push({ n: a.assigned, loc: b.loc, wet: b.wet, moist: b.moist, pct: b.pct });
+  }
+
+  // 3) Normalize order
+  state.tests.sort((x,y)=> x.n - y.n);
+
+  save();
+  diffModal.classList.add('hidden');
+  importModal.classList.add('hidden');
+  testNumber.value = String(state.tests.length + 1);
+
+  const moved = lastPlan.existingMoves.filter(x => x.from !== x.to).length;
+  const msg = `Added ${lastPlan.assignments.length} test${lastPlan.assignments.length===1?'':'s'}`
+            + (moved ? ` • Renumbered ${moved} existing` : '') + ' ✔️';
+  banner('ok', msg); toast(msg, 'ok');
+}
+
+/* ========================= Helpers ========================= */
+function slug(s=''){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+function download(href, filename){ const a=document.createElement('a'); a.href=href; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); }
+
+/* Toast */
 let toastTimer=null;
 function toast(msg, type='ok'){
   clearTimeout(toastTimer);
@@ -699,7 +852,7 @@ function toast(msg, type='ok'){
   bar.style.borderColor = color + '88';
   bar.innerHTML = `<span style="color:${color}; font-weight:800; margin-right:8px">•</span>${msg}`;
   bar.style.opacity='1';
-  toastTimer = setTimeout(()=> bar.style.opacity='0', 2500);
+  toastTimer = setTimeout(()=> bar.style.opacity='0', 2600);
 }
 </script>
 </body>
