@@ -55,13 +55,13 @@
   .input-wrap{position:relative}
   input{
     width:100%; padding:14px 12px; border-radius:12px; border:1px solid #223055; outline:none;
-    background:#0b132a; color:var(--ink); font-size:16px; transition:border .15s ease, box-shadow .15s ease;
+    background:#0b132a; color:#e7ecf5; font-size:16px; transition:border .15s ease, box-shadow .15s ease;
   }
   input:focus{border-color:var(--focus); box-shadow:0 0 0 3px #3b82f633}
   input::placeholder{color:#7383a6}
   .unit{position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#a9b4cf; font-size:12px; background:#09122a; border:1px solid #1d2a4b; padding:2px 6px; border-radius:8px; pointer-events:none}
   .inline{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
-  .muted{color:var(--muted); font-size:12px}
+  .muted{color:#9fb1d1; font-size:12px}
   .kbd{font-family:ui-monospace,Menlo,monospace; background:#0c1328; border:1px solid #1d2a4b; padding:2px 6px; border-radius:6px; font-size:12px; color:#cbd5e1}
   .divider{height:1px; background:linear-gradient(90deg,transparent,#1b2746,transparent); margin:12px 0}
   .help{margin-top:4px; color:#94a3b8; font-size:12px}
@@ -81,11 +81,11 @@
   .modal{position:fixed; inset:0; background:#0009; display:flex; align-items:flex-end; justify-content:center; z-index:50}
   .sheet{width:min(920px, 96vw); max-height:90vh; overflow:auto; background:#0a0f20; border:1px solid #1c2540; border-radius:16px 16px 0 0; padding:14px}
   .scan-grid{display:grid; grid-template-columns:1.2fr .8fr; gap:12px}
-  /* Export split menu */
+  /* Split export menu */
   .menu{position:relative}
   .menu-pop{position:absolute; right:0; top:110%; background:#0c1224; border:1px solid #223055; border-radius:10px; padding:6px; display:grid; gap:4px; z-index:20}
   .menu-pop button{background:#0d1426; color:#e7ecf5; border:1px solid #223055; padding:10px 12px; text-align:left; border-radius:8px; min-width:180px}
-  /* Bottom action bar (thumb zone) */
+  /* Bottom thumb bar */
   #actionBar{
     position:fixed; left:0; right:0; bottom:0; z-index:40; display:flex; gap:8px;
     padding:10px 12px calc(12px + env(safe-area-inset-bottom));
@@ -98,7 +98,7 @@
   }
   .bar-btn.primary{ background:linear-gradient(180deg,#22c55e,#16a34a); color:#07130b; border-color:#0b3b22 }
   @media (min-width:860px){ #actionBar{position:sticky; bottom:auto; padding:0; background:transparent; border:0} main{margin-bottom:60px} }
-  /* Progress bar */
+  /* Progress */
   #sessionProgress{margin:10px 0}
   #progTrack{height:8px; border-radius:999px; background:#111a34; margin-top:8px; overflow:hidden}
   #progFill{height:100%; width:0%; background:linear-gradient(90deg,#22c55e,#60a5fa); transition:width .35s ease}
@@ -166,7 +166,7 @@
     </div>
   </section>
 
-  <!-- SESSION PROGRESS (goal gradient + resume) -->
+  <!-- SESSION PROGRESS -->
   <section id="sessionProgress" class="banner">
     <div class="inline" style="justify-content:space-between; width:100%">
       <div><strong id="testsCount">0</strong> tests logged today</div>
@@ -187,7 +187,7 @@
 
       <div class="row">
         <div class="input-wrap"><label for="wetDensity">Wet Density</label><input id="wetDensity" type="number" step="0.1" inputmode="decimal" placeholder="e.g., 149.0"><span class="unit">pcf</span></div>
-        <div class="input-wrap"><label for="moisture">Moisture</label><input id="moisture" type="number" step="0.1" inputmode="decimal" placeholder="e.g., 11.2"><span class="unit">%</span></div>
+        <div class="input-wrap"><label for="moisture">Moisture</label><input id="moisture" type="number" step="0.1" inputmode="decimal" placeholder="e.g., 8.9"><span class="unit">%</span></div>
       </div>
 
       <div class="row">
@@ -198,7 +198,7 @@
         </div>
       </div>
 
-      <div class="help">OCR accepts integers or 1‑decimal: <span class="kbd">WD: 149</span> or <span class="kbd">149.0</span>; <span class="kbd">Moist: 11</span> or <span class="kbd">11.2</span>.</div>
+      <div class="help">OCR accepts integers or 1‑decimal: <span class="kbd">WD: 149</span> or <span class="kbd">149.0</span>; <span class="kbd">Moist: 8</span> or <span class="kbd">8.9</span>.</div>
 
       <div class="inline" style="gap:10px; margin-top:10px">
         <button class="btn primary" id="btnSaveNext">Save & Next Test</button>
@@ -261,7 +261,7 @@
   </div>
 </main>
 
-<!-- Bottom Action Bar (thumb zone / Fitts) -->
+<!-- Bottom Action Bar -->
 <nav id="actionBar" aria-label="primary actions">
   <button class="bar-btn primary" id="barSaveNext">Save & Next</button>
   <button class="bar-btn" id="barScan">Scan</button>
@@ -317,7 +317,7 @@ $('#btnBackToEntry').addEventListener('click', () => { summaryCard.classList.add
 
 $('#btnExport').addEventListener('click', ()=> exportMenu.classList.toggle('hidden'));
 exportMenu.addEventListener('click', e=>{
-  const act = e.target?.dataset?.act;
+  const act = e.target && e.target.dataset ? e.target.dataset.act : undefined;
   if(!act) return;
   exportMenu.classList.add('hidden');
   if (act==='png') exportPNG();
@@ -331,7 +331,7 @@ document.addEventListener('click', (e)=>{ if(!exportMenu.contains(e.target) && e
 $('#btnScan').addEventListener('click', openScanner);
 $('#btnImportNotes').addEventListener('click', openImportNotes);
 
-// Bottom bar wiring (no duplicate logic)
+// Bottom bar wiring
 $('#barSaveNext').addEventListener('click', ()=> $('#btnSaveNext').click());
 $('#barScan').addEventListener('click', ()=> $('#btnScan').click());
 $('#barImport').addEventListener('click', ()=> $('#btnImportNotes').click());
@@ -344,7 +344,7 @@ document.addEventListener('keydown', e => {
 jobDate.value = todayISO();
 if (location.protocol === 'https:') $('#httpsHint').classList.add('hidden');
 restoreFromURL();
-updateProgress(); // initial draw
+updateProgress();
 
 /* ========================= Core ========================= */
 function startLogging(){
@@ -379,13 +379,13 @@ async function computeMileage(){
   netStatus.textContent = 'routing…';
   const url = `${OSRM}${o.lon},${o.lat};${d.lon},${d.lat}?overview=false&alternatives=false&steps=false`;
   const res = await fetch(url, { headers:{'User-Agent':'RCC-Pro-Logger'} });
-  if (res.ok){ const j = await res.json(); const m = j?.routes?.[0]?.distance; if (typeof m === 'number'){ methodEl.textContent='Routing (OSRM)'; netStatus.textContent='ready'; return miles(m); } }
+  if (res.ok){ const j = await res.json(); const m = j && j.routes && j.routes[0] ? j.routes[0].distance : undefined; if (typeof m === 'number'){ methodEl.textContent='Routing (OSRM)'; netStatus.textContent='ready'; return miles(m); } }
   methodEl.textContent='Fallback (straight-line)'; netStatus.textContent='ready';
   const mi = haversine(o.lat,o.lon,d.lat,d.lon); return +mi.toFixed(2);
 }
 async function geocodeCached(q){ if (geocache[q]) return geocache[q]; const hit = await geocode(q); if (hit){ geocache[q]=hit; localStorage.setItem('rcc_geo_cache', JSON.stringify(geocache)); } return hit; }
-async function geocode(q){ const res = await fetch(NOMINATIM + encodeURIComponent(q), { headers:{'Accept-Language':'en'} }); if (!res.ok) return null; const a = await res.json(); if (!a?.length) return null; const {lat,lon,display_name} = a[0]; return {lat:+lat, lon:+lon, label:display_name}; }
-async function reverseGeocode(lat,lon){ const res = await fetch(NOMI_REV(lat,lon), { headers:{'Accept-Language':'en'} }); if (!res.ok) return null; const d = await res.json(); return {lat:+lat, lon:+lon, label: d?.display_name || `${lat.toFixed(6)}, ${lon.toFixed(6)}` }; }
+async function geocode(q){ const res = await fetch(NOMINATIM + encodeURIComponent(q), { headers:{'Accept-Language':'en'} }); if (!res.ok) return null; const a = await res.json(); if (!a || !a.length) return null; const g = a[0]; return {lat:+g.lat, lon:+g.lon, label:g.display_name}; }
+async function reverseGeocode(lat,lon){ const res = await fetch(NOMI_REV(lat,lon), { headers:{'Accept-Language':'en'} }); if (!res.ok) return null; const d = await res.json(); return {lat:+lat, lon:+lon, label: d && d.display_name ? d.display_name : (lat.toFixed(6)+', '+lon.toFixed(6)) }; }
 function haversine(lat1, lon1, lat2, lon2){ const toRad=d=>d*Math.PI/180, R=3958.761; const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1); const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2; return 2*R*Math.asin(Math.sqrt(a)); }
 
 /* ========================= Entry & %Target ========================= */
@@ -440,14 +440,14 @@ function banner(kind, msg){
   statusBanner.classList.add(kind==='ok'?'ok':'err', 'banner');
   statusBanner.textContent = msg;
 }
-function escapeHTML(s){ return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#039;"); }
+function escapeHTML(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
 
 /* ========================= Save/Share ========================= */
 function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); lsStatus.textContent='saved'; } catch{ lsStatus.textContent='error'; } }
 function loadLast(){
   try{
     const raw = localStorage.getItem(LS_KEY); if (!raw) return toast('No saved session found.', 'warn');
-    const data = JSON.parse(raw); if (!data?.job) return;
+    const data = JSON.parse(raw); if (!data || !data.job) return;
     Object.assign(state, data);
     jobName.value = state.job.name; jobDate.value = state.job.date; jobLocation.value = state.job.location;
     targetDensity.value = state.job.targetDensity ?? ''; targetMoist.value = state.job.targetMoist ?? '';
@@ -466,7 +466,7 @@ function restoreFromURL(){
   const hash = location.hash.slice(1); if (!hash) return;
   try{
     const data = JSON.parse(decodeURIComponent(escape(atob(hash))));
-    if (data?.job && data?.tests){
+    if (data && data.job && data.tests){
       Object.assign(state, data);
       jobName.value = state.job.name; jobDate.value = state.job.date; jobLocation.value = state.job.location;
       targetDensity.value = state.job.targetDensity ?? ''; targetMoist.value = state.job.targetMoist ?? '';
@@ -489,7 +489,7 @@ function exportCSV(){
     ['#','Test Location','Wet Density (pcf)','Moisture (%)','% of Target','Mileage (mi)']
   ];
   for (const t of state.tests){ rows.push([t.n, t.loc ?? '', t.wet ?? '', t.moist ?? '', t.pct!=null ? t.pct : '', mi]); }
-  const csv = rows.map(r => r.map(v => `"${String(v).replaceAll('"','""')}"`).join(',')).join('\r\n');
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
   download('data:text/csv;charset=utf-8,' + encodeURIComponent(csv), `${slug(state.job.name)}-${state.job.date}-RCC.csv`);
 }
 function exportSVD(){
@@ -502,7 +502,7 @@ function exportSVD(){
     `Mileage_mi|${mi}`,
     '# Columns: Test#,TestLocation,WetDensity_pcf,Moisture_pct,PercentOfTarget,Mileage_mi'
   ].join('\n');
-  const lines = state.tests.map(t => [t.n, t.loc ?? '', t.wet ?? '', t.moist ?? '', t.pct!=null ? t.pct : '', mi].map(x=>String(x).replaceAll('|','/')).join('|'));
+  const lines = state.tests.map(t => [t.n, t.loc ?? '', t.wet ?? '', t.moist ?? '', t.pct!=null ? t.pct : '', mi].map(x=>String(x).replace(/\|/g,'/')).join('|'));
   download('data:text/plain;charset=utf-8,' + encodeURIComponent(header+'\n'+lines.join('\n')+'\n'), `${slug(state.job.name)}-${state.job.date}-RCC.svd`);
 }
 function slug(s=''){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
@@ -571,7 +571,7 @@ async function startCamera(){
     $('#scanStatus').textContent = 'Camera ready. Capture when text is sharp.';
   }catch(e){ console.error(e); $('#scanStatus').textContent = 'Camera blocked/unavailable. Upload a photo instead.'; }
 }
-function stopCamera(){ if (scanStream){ for (const t of scanStream.getTracks()) t.stop(); scanStream=null; } const v=$('#video'); if (v) v.srcObject=null; }
+function stopCamera(){ if (scanStream){ for (const t of scanStream.getTracks()) t.stop(); } const v=$('#video'); if (v) v.srcObject=null; }
 
 async function onCaptureAndRead(){
   const v = $('#video');
@@ -585,7 +585,7 @@ async function onCaptureAndRead(){
   showOcrResult(text, wd, moist);
 }
 async function onPickImage(ev){
-  const file = ev.target.files?.[0]; if (!file) return;
+  const file = ev.target.files && ev.target.files[0] ? ev.target.files[0] : null; if (!file) return;
   const img = new Image();
   img.onload = async ()=>{
     const maxW = 1600, scale = Math.min(1, maxW / img.width);
@@ -623,9 +623,8 @@ async function ocrGauge(canvas){
   const out = { text:'', wd:null, moist:null };
   try{
     const res = await Tesseract.recognize(canvas, 'eng', { logger: m=>{} });
-    const text = (res?.data?.text || '').replace(/\r/g,'');
+    const text = (res && res.data && res.data.text ? res.data.text : '').replace(/\r/g,'');
     out.text = text;
-    // WD: three digits, opt .digit; Moist: one/two digits, opt .digit
     const wdMatch = text.match(/\b(1\d{2}|[2-9]\d{2})(?:\.\d)?\b/);
     const moistMatch = text.match(/\b(\d{1,2})(?:\.\d)?\b/);
     out.wd = wdMatch ? parseFloat(wdMatch[0]) : null;
@@ -644,7 +643,7 @@ function fillFromOCR(){
   closeScanner();
 }
 
-/* ========================= OCR: Notes Import — reworked + diff preview ========================= */
+/* ========================= Notes Import (robust & Safari-safe) ========================= */
 let importModal=null, parsedBlocks=[];
 let diffModal=null, lastPlan=null;
 
@@ -662,9 +661,9 @@ function buildImportModal(){
       </header>
       <div class="row" style="grid-template-columns:1fr">
         <div class="help">
-          Rules: each test <strong>starts</strong> with the test number (<span class="kbd">1.</span>, <span class="kbd">12.</span>).
-          After that, we expect one Moist (<span class="kbd">7</span> or <span class="kbd">7.2</span>) and one WD (<span class="kbd">149</span> or <span class="kbd">149.0</span>) in any order.
-          <strong>All wording after the second number</strong> is the test location. Tests may span multiple lines until the next numbered test starts.
+          Each test starts with its number (<span class="kbd">1.</span>, <span class="kbd">2)</span>, <span class="kbd">3:</span>, <span class="kbd">4 -</span>).
+          After that we take the <strong>first WD (100–250)</strong> and <strong>first Moist (0–40)</strong> in any order.  
+          Everything after the second number is the <strong>location</strong> (we keep numbers like <em>50ft</em>, lane #).
         </div>
         <canvas id="notesCanvas" height="360" class="hidden"></canvas>
         <pre id="notesOut" class="muted" style="white-space:pre-wrap"></pre>
@@ -680,14 +679,14 @@ function buildImportModal(){
 }
 
 async function onNotesPick(ev){
-  const file = ev.target.files?.[0]; if (!file) return;
+  const file = ev.target.files && ev.target.files[0] ? ev.target.files[0] : null; if (!file) return;
   const img = new Image();
   img.onload = async ()=>{
     const maxW = 1900, scale = Math.min(1, maxW / img.width);
     const c = $('#notesCanvas'); c.width = Math.round(img.width*scale); c.height = Math.round(img.height*scale);
     const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, c.width, c.height);
     preprocess(ctx, c.width, c.height);
-    let text=''; try{ const res = await Tesseract.recognize(c, 'eng', { logger: m=>{} }); text = (res?.data?.text || '').replace(/\r/g,''); } catch(e){ console.error(e); }
+    let text=''; try{ const res = await Tesseract.recognize(c, 'eng', { logger: m=>{} }); text = (res && res.data && res.data.text ? res.data.text : '').replace(/\r/g,''); } catch(e){ console.error(e); }
     parsedBlocks = parseNotesBlocks(text);
     const preview = parsedBlocks.length
       ? parsedBlocks.map(o => `#${o.n} | WD:${o.wet ?? '—'} | %Moist:${o.moist ?? '—'} | Loc: ${o.loc || '(none)'}`).join('\n')
@@ -700,16 +699,13 @@ async function onNotesPick(ev){
   img.src = URL.createObjectURL(file);
 }
 
-/* Parse text into blocks that start with "N." and run until next "M." */
-// Robust test-block splitting (tolerant "1.", "1)", "1 -", "1:" etc.)
+/* Robust splitter: find test starts; tolerant to "1.", "1)", "1:", "1 -" */
 function parseNotesBlocks(text){
   const s = String(text || '').replace(/\r/g,'');
-  // Find test starts at start-of-line or after a newline
   const startReG = /(^|\n)\s*(\d{1,3})\s*(?:[.) :-])?\s+(?=\d)/g;
   const starts = [];
   let m;
   while ((m = startReG.exec(s)) !== null){
-    // m[1] is the optional newline; compute real index of the digit
     const idx = m.index + (m[1] ? m[1].length : 0);
     const n = parseInt(m[2],10);
     starts.push({ idx, n });
@@ -727,15 +723,13 @@ function parseNotesBlocks(text){
   return blocks;
 }
 
-// Parse one slice that begins with "N[.) :-] " then the rest of the test.
-// Picks the first valid WD+Moist pair and treats the remainder as location.
+/* Parse a single test slice; pick earliest valid WD+Moist pair; rest is location */
 function parseOneBlockSlice(slice, testNum){
-  // Safari-safe (no /s): capture the remainder with [\s\S]*
   const m = slice.match(/^\s*(\d{1,3})\s*(?:[.) :-])?\s+([\s\S]*)$/);
   if (!m) return null;
   var rest = m[2].replace(/\s+/g,' ').trim();
 
-  // Tokenize numeric candidates WITHOUT matchAll (Safari-safe)
+  // Tokenize numbers without matchAll (Safari-safe)
   const numRe = /\b\d{1,3}(?:\.\d)?\b/g;
   const tokens = [];
   let k;
@@ -744,7 +738,7 @@ function parseOneBlockSlice(slice, testNum){
   }
   if (tokens.length < 2) return null;
 
-  const isWD    = v => v >= 100 && v <= 250; // generous RCC range
+  const isWD    = v => v >= 100 && v <= 250; // generous for RCC
   const isMoist = v => v >= 0   && v <= 40;  // %
   const limit = Math.min(8, tokens.length);
 
@@ -764,7 +758,7 @@ function parseOneBlockSlice(slice, testNum){
   }
   if (iHit === -1) return null;
 
-  // Everything after the second matched number is the location (keep numbers)
+  // Everything after the second matched number is the location
   const after = tokens[jHit].end;
   const loc = rest.slice(after).replace(/^[^\w(]+/, '').trim() || null;
 
@@ -772,56 +766,6 @@ function parseOneBlockSlice(slice, testNum){
   const pct = (t && t>0) ? Math.round((wd/t*100)*10)/10 : null;
 
   return { n: testNum, loc, wet: wd, moist, pct };
-}
-  if (iHit === -1) return null;
-
-  // Everything after the 2nd matched number is location (may include more numbers)
-  const after = tokens[jHit].end;
-  const loc = rest.slice(after).replace(/^[^\w(]+/, '').trim() || null;
-
-  const t = state.job.targetDensity;
-  const pct = (t && t>0) ? Math.round((wd/t*100)*10)/10 : null;
-
-  return { n: testNum, loc, wet: wd, moist, pct };
-}
-  if (!tokens.length) return null;
-
-  // Heuristics: find the earliest pair where one looks like WD and the other Moist.
-  const isWD     = v => v >= 100 && v <= 250; // allow 100–250 pcf to be safe
-  const isMoist  = v => v >= 0   && v <= 40;  // 0–40%
-  // To avoid picking location numbers (50ft, 200ft), prefer pairs inside the first ~4 numbers.
-  const searchLimit = Math.min(tokens.length, 6);
-
-  let firstIdx = -1, secondIdx = -1, wdVal = null, moistVal = null;
-
-  outer:
-  for (let i = 0; i < searchLimit; i++){
-    for (let j = i+1; j < searchLimit; j++){
-      const a = tokens[i].val, b = tokens[j].val;
-      if ((isWD(a) && isMoist(b)) || (isMoist(a) && isWD(b))){
-        firstIdx  = i;
-        secondIdx = j;
-        wdVal     = isWD(a) ? a : b;
-        moistVal  = isMoist(a) ? a : b;
-        break outer;
-      }
-    }
-  }
-
-  if (firstIdx === -1) return null; // no valid pair found near the start
-
-  // Everything after the second number is the location (can contain more numbers).
-  const afterIdx = tokens[secondIdx].end;
-  const loc = rest.slice(afterIdx).replace(/^[^\w(]+/, '').trim() || null;
-
-  // Sanity
-  if (!(wdVal>=80 && wdVal<=250)) return null;
-  if (!(moistVal>=0 && moistVal<=40)) return null;
-
-  const t = state.job.targetDensity;
-  const pct = (t && t>0 && !Number.isNaN(wdVal)) ? Math.round((wdVal/t*100)*10)/10 : null;
-
-  return { n: testNum, loc, wet: wdVal, moist: moistVal, pct };
 }
 
 /* ---------- Diff preview + renumber planning ---------- */
@@ -830,10 +774,8 @@ function openDiffPreview(){
   if (!parsedBlocks.length) return;
   if (!diffModalBuilt) buildDiffModal();
 
-  // Make a plan (simulate renumbering without touching state)
   lastPlan = planRenumberAndAssignments(parsedBlocks, state.tests);
 
-  // Render diff
   const moved = lastPlan.existingMoves.filter(x => x.from !== x.to);
   const inserted = lastPlan.assignments;
 
@@ -890,11 +832,8 @@ function buildDiffModal(){
   diffModalBuilt=true;
 }
 
-/* Build a renumbering plan by simulating "make room" shifts on numbers only. */
 function planRenumberAndAssignments(blocks, existingTests){
-  // Current numbers occupied by existing tests
   const currNums = new Set(existingTests.map(t=>t.n));
-  // Map original->current (so we can show which existing numbers will move)
   const originals = existingTests.map(t=>t.n).sort((a,b)=>a-b);
   const currMap = new Map(originals.map(n => [n, n])); // original -> current
 
@@ -903,19 +842,15 @@ function planRenumberAndAssignments(blocks, existingTests){
 
   for (const b of sortedBlocks){
     let target = b.n;
-    // While target is taken, shift all current >= target by +1 and try the next slot
     while (currNums.has(target)){
       const newSet = new Set();
-      // shift occupied set
       for (const n of currNums){ newSet.add(n >= target ? n+1 : n); }
       currNums.clear(); newSet.forEach(x=>currNums.add(x));
-      // shift our mapping of originals
       for (const [orig, cur] of currMap.entries()){
         if (cur >= target) currMap.set(orig, cur+1);
       }
       target += 1;
     }
-    // reserve this now-free slot for the new block
     currNums.add(target);
     assignments.push({ desired: b.n, assigned: target, block: b });
   }
@@ -924,24 +859,20 @@ function planRenumberAndAssignments(blocks, existingTests){
   return { assignments, existingMoves };
 }
 
-/* Apply the renumbering plan to real state and insert new tests */
 function applyDiffPlan(){
   if (!lastPlan) return;
 
-  // 1) Renumber existing tests according to plan
   const moveMap = new Map(lastPlan.existingMoves.map(m => [m.from, m.to]));
   for (const t of state.tests){
     const to = moveMap.get(t.n);
     if (to != null) t.n = to;
   }
 
-  // 2) Insert new tests with their assigned numbers
   for (const a of lastPlan.assignments){
     const b = a.block;
     state.tests.push({ n: a.assigned, loc: b.loc, wet: b.wet, moist: b.moist, pct: b.pct });
   }
 
-  // 3) Normalize order
   state.tests.sort((x,y)=> x.n - y.n);
 
   save();
@@ -955,13 +886,12 @@ function applyDiffPlan(){
   banner('ok', msg); toast(msg, 'ok'); updateProgress();
 }
 
-/* ========================= Progress (Goal Gradient + Zeigarnik) ========================= */
+/* ========================= Progress ========================= */
 function updateProgress(){
   const n = state.tests.length;
   $('#testsCount').textContent = n;
-  const pct = Math.min(100, (n/10)*100); // 10-test soft goal for today
+  const pct = Math.min(100, (n/10)*100); // soft goal: 10 tests
   $('#progFill').style.width = pct + '%';
-  // Resume badge if there are tests and we're not currently on entry (optional policy)
   $('#resumeBadge').classList.toggle('hidden', n===0);
 }
 $('#resumeBadge').addEventListener('click', ()=>{
@@ -982,7 +912,7 @@ function toast(msg, type='ok'){
     bar = document.createElement('div'); bar.id='toast'; document.body.appendChild(bar);
     Object.assign(bar.style, { position:'fixed', left:'50%', bottom:'22px', transform:'translateX(-50%)',
       padding:'12px 14px', borderRadius:'12px', border:'1px solid #203050', background:'#0b1227',
-      color:'#e5e7eb', fontSize:'14px', zIndex:9999, boxShadow:'0 10px 30px #0007' });
+      color:'#e5e7eb', fontSize:'14px', zIndex:9999, boxShadow:'0 10px 30px #0007', transition:'opacity .2s' });
   }
   const color = type==='ok'? '#22c55e' : type==='warn'? '#f59e0b' : '#ef4444';
   bar.style.borderColor = color + '88';
