@@ -150,12 +150,12 @@ const toNum = (v)=> { const n=parseFloat(v); return isNum(n)?n:null; };
 const state = {
   job: {
     name:'', date:new Date().toISOString().slice(0,10),
-    jobAddress:'', overallDepth:null, // <-- requested
+    jobAddress:'', overallDepth:null,
     mileage:null, mileageStatus:'idle', gps:null
   },
   image:null, imgW:0, imgH:0, originalImageDataUrl:null,
   roi:null,              // grid ROI (image pixels)
-  crop:null,             // crop rectangle (image pixels) in crop mode
+  crop:null,             // crop rectangle (image pixels)
   grid:{ rows:12, cols:12, orientation:'letters-rows', marginTop:28, marginLeft:28,
          headerShade:true, labelColor:'#ffffff', labelShadow:'#000000', dim:0.25,
          brightness:100, contrast:100, saturation:100 },
@@ -211,7 +211,10 @@ function renderSetup(root){
     <h3>Site Photo & Grid</h3>
     <div class="row">
       <div class="field"><label>Upload Site Photo</label><input id="site-photo" type="file" accept="image/*"></div>
-      <div class="field"><label>Dim Grid Overlay (%)</label><input id="grid-dim" type="range" min="0" max="70" value="${Math.round(state.grid.dim*100)}"><span class="small muted">${Math.round(state.grid.dim*100)}%</span></div>
+      <div class="field"><label>Dim Grid Overlay (%)</label>
+        <input id="grid-dim" type="range" min="0" max="70" value="${Math.round(state.grid.dim*100)}">
+        <span class="small muted">${Math.round(state.grid.dim*100)}%</span>
+      </div>
       <div class="field"><label>Brightness</label><input id="img-br" type="range" min="50" max="200" value="${state.grid.brightness}"></div>
       <div class="field"><label>Contrast</label><input id="img-ct" type="range" min="50" max="200" value="${state.grid.contrast}"></div>
       <div class="field"><label>Saturation</label><input id="img-sa" type="range" min="50" max="200" value="${state.grid.saturation}"></div>
@@ -245,7 +248,7 @@ function renderSetup(root){
     </div>
   `,'span-12'));
 
-  // Canvas preview with photo underlay, grid overlay, and ROI/crop rectangles
+  // Canvas preview
   const preview = document.createElement('section'); preview.className='card span-12';
   preview.innerHTML = `<div class="canvasWrap" id="wrap"><canvas id="cvs"></canvas></div>`;
   root.appendChild(preview);
@@ -310,16 +313,8 @@ function renderSetup(root){
     cvs.style.width=cssW+'px'; cvs.style.height=cssH+'px'; cvs.width=Math.round(cssW*dpr); cvs.height=Math.round(cssH*dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
   }
-  function imgFilter(){ // CSS-like filter drawn directly on canvas
-    const {brightness, contrast, saturation} = state.grid;
-    return `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
-  }
-  function applyFilter(ctx){ // quick canvas filter emulation
-    // We’ll draw image normally and put a translucent overlay for dim;
-    // For brightness/contrast/saturation, use offscreen canvas to keep things fast-ish.
-    // Simpler: rely on ctx.filter (widely supported).
-    ctx.filter = imgFilter();
-  }
+  function imgFilter(){ return `brightness(${state.grid.brightness}%) contrast(${state.grid.contrast}%) saturate(${state.grid.saturation}%)`; }
+  function applyFilter(ctx){ ctx.filter = imgFilter(); }
   function clearFilter(ctx){ ctx.filter = 'none'; }
 
   function clientToImage(px,py){
@@ -342,21 +337,16 @@ function renderSetup(root){
     ctx.drawImage(state.image, 0,0,state.imgW,state.imgH);
     clearFilter(ctx);
 
-    // Optional dim (so photo is visible underneath grid)
+    // Optional dim (photo remains visible)
     if(state.grid.dim>0){
       ctx.fillStyle = `rgba(0,0,0,${state.grid.dim})`;
       ctx.fillRect(0,0,state.imgW,state.imgH);
     }
 
-    // Show grid & ROI on top
-    if(state.roi){
-      drawGrid(ctx,state);
-      drawROI(ctx, state.roi);
-    }
-    // Show crop rectangle if in crop mode
-    if(sel.mode==='drawCROP' && state.crop){
-      drawCropRect(ctx, state.crop);
-    }
+    // Grid + ROI
+    if(state.roi){ drawGrid(ctx,state); drawRect(ctx, state.roi, '#22d3ee'); }
+    // Crop rectangle (when active)
+    if(sel.mode==='drawCROP' && state.crop){ drawRectDashed(ctx, state.crop, '#fbbf24'); }
     ctx.restore();
 
     placeHandles(); // ROI handles
@@ -366,8 +356,9 @@ function renderSetup(root){
     ctx.fillStyle='#8aa0b6'; ctx.font='600 16px Inter, system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('Upload a site photo to start', c.width/2, c.height/2);
   }
-  function drawROI(ctx,r){ ctx.save(); ctx.strokeStyle='#22d3ee'; ctx.lineWidth=2; ctx.strokeRect(r.x,r.y,r.w,r.h); ctx.restore(); }
-  function drawCropRect(ctx,r){ ctx.save(); ctx.strokeStyle='#fbbf24'; ctx.lineWidth=2; ctx.setLineDash([8,6]); ctx.strokeRect(r.x,r.y,r.w,r.h); ctx.restore(); }
+  function drawRect(ctx,r,color){ ctx.save(); ctx.strokeStyle=color; ctx.lineWidth=2; ctx.strokeRect(r.x,r.y,r.w,r.h); ctx.restore(); }
+  function drawRectDashed(ctx,r,color){ ctx.save(); ctx.strokeStyle=color; ctx.lineWidth=2; ctx.setLineDash([8,6]); ctx.strokeRect(r.x,r.y,r.w,r.h); ctx.restore(); }
+
   function drawGrid(ctx,s){
     const {roi,grid}=s; if(!roi) return;
     const cW=roi.w/grid.cols, rH=roi.h/grid.rows;
@@ -409,28 +400,6 @@ function renderSetup(root){
     if(handle.includes('n')){ const ny=clamp(y,0,r.y+r.h); r.h=(r.y+r.h)-ny; r.y=ny; }
     if(handle.includes('s')){ const ny=clamp(y,r.y, state.imgH); r.h=ny-r.y; }
   }
-
-  // Pointer events
-  on(wrap,'pointerdown', (e)=>{ if(!state.image) return; wrap.setPointerCapture(e.pointerId);
-    const {x,y} = clientToImage(e.clientX,e.clientY);
-    const hit = hitHandle(x,y, state.roi);
-    if(sel.mode==='drawROI'){ sel.active=true; sel.startX=x; sel.startY=y; state.roi={x,y,w:10,h:10}; }
-    else if(sel.mode==='drawCROP'){ sel.active=true; sel.startX=x; sel.startY=y; state.crop={x,y,w:10,h:10}; }
-    else if(hit){ sel.active=true; sel.mode='resize'; sel.handle=hit; }
-    else if(pointInRect({x,y}, state.roi)){ sel.active=true; sel.mode='move'; sel.startX=x; sel.startY=y; }
-  });
-  on(wrap,'pointermove', (e)=>{ if(!state.image || !sel.active) return;
-    const {x,y} = clientToImage(e.clientX,e.clientY);
-    if(sel.mode==='drawROI'){ const rx=Math.min(sel.startX,x), ry=Math.min(sel.startY,y), rw=Math.abs(x-sel.startX), rh=Math.abs(y-sel.startY);
-      state.roi = normRect({x:rx,y:ry,w:rw,h:rh}, state); redraw(); }
-    else if(sel.mode==='drawCROP'){ const rx=Math.min(sel.startX,x), ry=Math.min(sel.startY,y), rw=Math.abs(x-sel.startX), rh=Math.abs(y-sel.startY);
-      state.crop = normRect({x:rx,y:ry,w:rw,h:rh}, state); redraw(); }
-    else if(sel.mode==='move'){ const dx=x-sel.startX, dy=y-sel.startY; sel.startX=x; sel.startY=y;
-      state.roi.x=clamp(state.roi.x+dx,0,state.imgW-state.roi.w); state.roi.y=clamp(state.roi.y+dy,0,state.imgH-state.roi.h); redraw(); }
-    else if(sel.mode==='resize'){ resizeRect(state.roi, sel.handle, x,y); redraw(); }
-  }, {passive:true});
-  ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>on(wrap,ev, ()=>{ sel.active=false; if(sel.mode==='drawROI'||sel.mode==='drawCROP') sel.mode='idle'; }));
-
   function hitHandle(ix,iy,r){
     if(!r) return null; const h=10;
     const near=(x,y,tx,ty)=>Math.abs(x-tx)<=h && Math.abs(y-ty)<=h;
@@ -469,6 +438,27 @@ function renderSetup(root){
     }; img.src = state.originalImageDataUrl;
   });
 
+  // Pointer events
+  on(wrap,'pointerdown', (e)=>{ if(!state.image) return; wrap.setPointerCapture(e.pointerId);
+    const {x,y} = clientToImage(e.clientX,e.clientY);
+    const hit = hitHandle(x,y, state.roi);
+    if(sel.mode==='drawROI'){ sel.active=true; sel.startX=x; sel.startY=y; state.roi={x,y,w:10,h:10}; }
+    else if(sel.mode==='drawCROP'){ sel.active=true; sel.startX=x; sel.startY=y; state.crop={x,y,w:10,h:10}; }
+    else if(hit){ sel.active=true; sel.mode='resize'; sel.handle=hit; }
+    else if(pointInRect({x,y}, state.roi)){ sel.active=true; sel.mode='move'; sel.startX=x; sel.startY=y; }
+  });
+  on(wrap,'pointermove', (e)=>{ if(!state.image || !sel.active) return;
+    const {x,y} = clientToImage(e.clientX,e.clientY);
+    if(sel.mode==='drawROI'){ const rx=Math.min(sel.startX,x), ry=Math.min(sel.startY,y), rw=Math.abs(x-sel.startX), rh=Math.abs(y-sel.startY);
+      state.roi = normRect({x:rx,y:ry,w:rw,h:rh}, state); redraw(); }
+    else if(sel.mode==='drawCROP'){ const rx=Math.min(sel.startX,x), ry=Math.min(sel.startY,y), rw=Math.abs(x-sel.startX), rh=Math.abs(y-sel.startY);
+      state.crop = normRect({x:rx,y:ry,w:rw,h:rh}, state); redraw(); }
+    else if(sel.mode==='move'){ const dx=x-sel.startX, dy=y-sel.startY; sel.startX=x; sel.startY=y;
+      state.roi.x=clamp(state.roi.x+dx,0,state.imgW-state.roi.w); state.roi.y=clamp(state.roi.y+dy,0,state.imgH-state.roi.h); redraw(); }
+    else if(sel.mode==='resize'){ resizeRect(state.roi, sel.handle, x,y); redraw(); }
+  }, {passive:true});
+  ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>on(wrap,ev, ()=>{ sel.active=false; if(sel.mode==='drawROI'||sel.mode==='drawCROP') sel.mode='idle'; }));
+
   redraw(true);
 }
 
@@ -502,36 +492,20 @@ function renderEntry(root){
   root.appendChild(mini);
 
   // Wire mini canvas
-  const cvs = $('#mini'), ctx = cvs.getContext('2d');
+  const miniC = $('#mini'), miniX = miniC.getContext('2d');
   function setupMini(){ const dpr=Math.max(1,window.devicePixelRatio||1), cssW=Math.min(900, document.body.clientWidth-28), cssH=Math.round(cssW*0.5);
-    cvs.style.width=cssW+'px'; cvs.style.height=cssH+'px'; cvs.width=Math.round(cssW*dpr); cvs.height=Math.round(cssH*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); }
+    miniC.style.width=cssW+'px'; miniC.style.height=cssH+'px'; miniC.width=Math.round(cssW*dpr); miniC.height=Math.round(cssH*dpr); miniX.setTransform(dpr,0,0,dpr,0,0); }
   function buildMini(){
-    ctx.clearRect(0,0,cvs.width,cvs.height);
-    if(!state.image){ ctx.fillStyle='#0e1626'; ctx.fillRect(0,0,cvs.width,cvs.height);
-      ctx.fillStyle='#8aa0b6'; ctx.font='600 14px Inter'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('Upload a photo in Setup', cvs.width/2, cvs.height/2); return; }
-    const rect=cvs.getBoundingClientRect(); const scale=fitContainScale(state.imgW,state.imgH,rect.width,rect.height);
+    miniX.clearRect(0,0,miniC.width,miniC.height);
+    if(!state.image){ miniX.fillStyle='#0e1626'; miniX.fillRect(0,0,miniC.width,miniC.height);
+      miniX.fillStyle='#8aa0b6'; miniX.font='600 14px Inter'; miniX.textAlign='center'; miniX.textBaseline='middle'; miniX.fillText('Upload a photo in Setup', miniC.width/2, miniC.height/2); return; }
+    const rect=miniC.getBoundingClientRect(); const scale=fitContainScale(state.imgW,state.imgH,rect.width,rect.height);
     const offX=(rect.width - state.imgW*scale)/2, offY=(rect.height - state.imgH*scale)/2;
-    ctx.save(); ctx.translate(offX,offY); ctx.scale(scale,scale);
-    ctx.drawImage(state.image, 0,0,state.imgW,state.imgH);
-    if(state.roi) drawGridMini(ctx,state);
-    drawMarkers(ctx,state);
-    ctx.restore();
-  }
-  function drawGridMini(ctx,s){ // same as setup grid (lighter)
-    const {roi,grid}=s; if(!roi) return;
-    const cW=roi.w/grid.cols, rH=roi.h/grid.rows;
-    ctx.strokeStyle='rgba(255,255,255,.45)'; ctx.lineWidth=1;
-    for(let c=0;c<=grid.cols;c++){ const x=roi.x+c*cW; ctx.beginPath(); ctx.moveTo(x,roi.y); ctx.lineTo(x,roi.y+roi.h); ctx.stroke(); }
-    for(let r=0;r<=grid.rows;r++){ const y=roi.y+r*rH; ctx.beginPath(); ctx.moveTo(roi.x,y); ctx.lineTo(roi.x+roi.w,y); ctx.stroke(); }
-    const fz = 12; ctx.font=`600 ${fz}px Inter`; ctx.textBaseline='middle'; ctx.textAlign='center';
-    const draw=(txt,x,y)=>{ ctx.lineWidth=2; ctx.strokeStyle='#000'; ctx.fillStyle='#fff'; ctx.strokeText(txt,x,y); ctx.fillText(txt,x,y); };
-    if(state.grid.orientation==='letters-rows'){
-      for(let c=1;c<=state.grid.cols;c++) draw(String(c), roi.x+(c-0.5)*cW, roi.y-state.grid.marginTop/2);
-      for(let r=1;r<=state.grid.rows;r++) draw(letterFor(r), roi.x-state.grid.marginLeft/2, roi.y+(r-0.5)*rH);
-    } else {
-      for(let c=1;c<=state.grid.cols;c++) draw(letterFor(c), roi.x+(c-0.5)*cW, roi.y-state.grid.marginTop/2);
-      for(let r=1;r<=state.grid.rows;r++) draw(String(r), roi.x-state.grid.marginLeft/2, roi.y+(r-0.5)*rH);
-    }
+    miniX.save(); miniX.translate(offX,offY); miniX.scale(scale,scale);
+    miniX.drawImage(state.image, 0,0,state.imgW,state.imgH);
+    if(state.roi) drawGrid(miniX,state);
+    drawMarkers(miniX,state);
+    miniX.restore();
   }
   function drawMarkers(ctx,s){
     ctx.font='700 12px Inter'; ctx.textAlign='center'; ctx.textBaseline='middle';
@@ -646,29 +620,9 @@ function renderSummary(root){
     const offX=(rect.width - state.imgW*scale)/2, offY=(rect.height - state.imgH*scale)/2;
     ctx.save(); ctx.translate(offX,offY); ctx.scale(scale,scale);
     ctx.drawImage(state.image, 0,0,state.imgW,state.imgH);
-    if(state.roi) drawGridSummary(ctx,state);
+    if(state.roi) drawGrid(ctx,state);
     drawMarkersSummary(ctx,state);
     ctx.restore();
-  }
-  function drawGridSummary(ctx,s){ // same style as setup
-    const {roi,grid}=s; if(!roi) return;
-    const cW=roi.w/grid.cols, rH=roi.h/grid.rows;
-    if(grid.headerShade){ ctx.fillStyle='rgba(12,18,32,.55)';
-      if(grid.marginTop>0) ctx.fillRect(roi.x, roi.y-grid.marginTop, roi.w, grid.marginTop);
-      if(grid.marginLeft>0) ctx.fillRect(roi.x-grid.marginLeft, roi.y, grid.marginLeft, roi.h); }
-    ctx.strokeStyle='rgba(255,255,255,.55)'; ctx.lineWidth=1;
-    for(let c=0;c<=grid.cols;c++){ const x=roi.x+c*cW; ctx.beginPath(); ctx.moveTo(x,roi.y); ctx.lineTo(x,roi.y+roi.h); ctx.stroke(); }
-    for(let r=0;r<=grid.rows;r++){ const y=roi.y+r*rH; ctx.beginPath(); ctx.moveTo(roi.x,y); ctx.lineTo(roi.x+roi.w,y); ctx.stroke(); }
-    const fz=Math.max(10, Math.min(18, Math.min(cW,rH)*0.45));
-    const draw=(txt,x,y)=>{ ctx.lineWidth=Math.max(2,fz/6); ctx.strokeStyle=state.grid.labelShadow; ctx.fillStyle=state.grid.labelColor; ctx.strokeText(txt,x,y); ctx.fillText(txt,x,y); };
-    ctx.font=`600 ${fz}px Inter`; ctx.textBaseline='middle'; ctx.textAlign='center';
-    if(state.grid.orientation==='letters-rows'){
-      for(let c=1;c<=state.grid.cols;c++) draw(String(c), roi.x+(c-0.5)*cW, roi.y-state.grid.marginTop/2);
-      for(let r=1;r<=state.grid.rows;r++) draw(letterFor(r), roi.x-state.grid.marginLeft/2, roi.y+(r-0.5)*rH);
-    } else {
-      for(let c=1;c<=state.grid.cols;c++) draw(letterFor(c), roi.x+(c-0.5)*cW, roi.y-state.grid.marginTop/2);
-      for(let r=1;r<=state.grid.rows;r++) draw(String(r), roi.x-state.grid.marginLeft/2, roi.y+(r-0.5)*rH);
-    }
   }
   function drawMarkersSummary(ctx,s){
     ctx.font='700 14px Inter'; ctx.textAlign='center'; ctx.textBaseline='middle';
@@ -822,7 +776,7 @@ async function handleNotesOCR(file){
     toast('Reading notes…');
     const text = await ocr(file);
     const current = $('#t-notes').value;
-    $('#t-notes').value = current ? (current + '\\n' + text.trim()) : text.trim();
+    $('#t-notes').value = current ? (current + '\n' + text.trim()) : text.trim();
     toast('Notes OCR ✔️','ok');
   }catch(e){ console.error(e); toast('Notes OCR failed','err'); }
 }
@@ -842,6 +796,8 @@ function parseGaugeNumbers(text){
   const r1 = x=>x==null?null:Math.round(x*10)/10;
   return { wd:r1(wet), moist:r1(moist) };
 }
+function parsePasted(txt){
+  const wd = /(?:wd|wet[^a-z]?dens\w*|density)\D{0,4}(\d{2,3}(?:\.\d)?)/i.exec(txt)?.[1];
   const mo = /(?:moist\w*|water)\D{0,4}(\d{1,2}(?:\.\d)?)\s*%?/i.exec(txt)?.[1];
   const coord = /\b([A-Z]\d{1,3}|\d{1,3}[A-Z])\b/.exec(txt)?.[1];
   return { wd: wd?Number(wd):null, moist: mo?Number(mo):null, coord: coord?.toUpperCase()||'' };
@@ -856,27 +812,23 @@ function exportCSV(){
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url; a.download=safeName(state.job.name||'rcc')+'.csv'; a.click(); URL.revokeObjectURL(url);
 }
-
 function exportPDF(cvs){
   const { jsPDF } = window.jspdf; const pdf = new jsPDF({orientation:'landscape', unit:'pt', format:'a4'});
   const m=28; const pgW=pdf.internal.pageSize.getWidth();
   const iw = pgW - m*2; const ih = (cvs.height/cvs.width)*iw;
-  // header
   pdf.setFont('helvetica','bold'); pdf.setFontSize(14);
   pdf.text((state.job.name||'RCC Report') + ' — ' + state.job.date, m, 26);
   pdf.setFontSize(10);
   const meta = [
     state.job.jobAddress ? `Address: ${state.job.jobAddress}` : null,
-    Number.isFinite(state.job.overallDepth) ? `Overall Depth: ${state.job.overallDepth} in.` : null,
-    Number.isFinite(state.job.mileage) ? `Round-trip: ${state.job.mileage.toFixed(1)} mi (GCI ↔ Job)` : null,
+    isNum(state.job.overallDepth) ? `Overall Depth: ${state.job.overallDepth} in.` : null,
+    isNum(state.job.mileage) ? `Round-trip: ${state.job.mileage.toFixed(1)} mi (GCI ↔ Job)` : null,
     state.job.gps ? `GPS: ${state.job.gps.lat.toFixed(5)}, ${state.job.gps.lon.toFixed(5)} (±${Math.round(state.job.gps.acc)}m)` : null
   ].filter(Boolean);
   let y=40; meta.forEach(line=>{ pdf.text(line, m, y); y+=12; });
-  // image
   const img = cvs.toDataURL('image/png');
   pdf.addImage(img, 'PNG', m, y, iw, ih, undefined, 'FAST');
   y += ih + 14;
-  // table
   const headers=['#','Location','Wet','Moist','Grid','Notes'], col=[22,220,70,60,60,260];
   pdf.setFontSize(10); pdf.setFont('helvetica','bold');
   headers.forEach((h,i)=>pdf.text(h, m+col.slice(0,i).reduce((a,b)=>a+b,0), y));
@@ -888,16 +840,13 @@ function exportPDF(cvs){
   }
   pdf.save(safeName(state.job.name||'rcc')+'-report.pdf');
 }
-
 function exportSVG(){
   if(!state.image || !state.roi) return toast('Need a photo + grid','warn');
   const imgW=state.imgW, imgH=state.imgH; const svgNS='http://www.w3.org/2000/svg';
   const svg=document.createElementNS(svgNS,'svg'); svg.setAttribute('xmlns',svgNS); svg.setAttribute('width',imgW); svg.setAttribute('height',imgH);
-  // base raster
   const image=document.createElementNS(svgNS,'image');
   image.setAttributeNS(null,'href', state.image.src); image.setAttribute('x','0'); image.setAttribute('y','0'); image.setAttribute('width',imgW); image.setAttribute('height',imgH);
   svg.appendChild(image);
-  // grid
   const {roi,grid}=state; const cW=roi.w/grid.cols, rH=roi.h/grid.rows;
   if(grid.headerShade){
     const top=document.createElementNS(svgNS,'rect'); top.setAttribute('x',roi.x); top.setAttribute('y',roi.y-grid.marginTop); top.setAttribute('width',roi.w); top.setAttribute('height',grid.marginTop);
@@ -918,7 +867,6 @@ function exportSVG(){
     for(let c=1;c<=grid.cols;c++) labels.appendChild(svgText(letterFor(c), roi.x+(c-0.5)*cW, roi.y-state.grid.marginTop/2, fz));
     for(let r=1;r<=grid.rows;r++) labels.appendChild(svgText(String(r), roi.x-state.grid.marginLeft/2, roi.y+(r-0.5)*rH, fz));
   }
-  // markers
   const pins=document.createElementNS(svgNS,'g'); svg.appendChild(pins);
   for(const t of state.tests){
     if(isNum(t.x)&&isNum(t.y)){
@@ -937,11 +885,11 @@ function exportSVG(){
     t.setAttribute('text-anchor','middle'); t.setAttribute('dominant-baseline','middle'); t.setAttribute('font-size',size); t.textContent=txt; return t; }
 }
 
-/* ---------- Share link (URL-safe state) & restore ---------- */
+/* ---------- Share link (URL-safe state) ---------- */
 function buildShareURL(){
   const payload = JSON.stringify({
     job: state.job, grid: state.grid,
-    roi: state.roi, tests: state.tests.map(({id,...t})=>t) // omit ephemeral ids
+    roi: state.roi, tests: state.tests.map(({id,...t})=>t)
   });
   const b64 = btoa(unescape(encodeURIComponent(payload)));
   const base = location.origin + location.pathname + '#/summary';
@@ -959,16 +907,11 @@ function buildShareURL(){
 })();
 
 /* ---------- Mileage (GCI Westerville ↔ Job, round trip) ---------- */
-/* Uses free OSM services (rate-limited):
-   - Nominatim for geocoding
-   - OSRM public router for driving distance */
 async function computeRoundTripMiles(originQuery, destQuery){
-  // Geocode both ends
   const [orig, dest] = await Promise.all([geocodeNominatim(originQuery), geocodeNominatim(destQuery)]);
   if(!orig || !dest) throw new Error('Geocoding failed');
   const meters = await osrmDistanceMeters([orig.lon,orig.lat], [dest.lon,dest.lat]);
-  const round = meters*2; // round trip
-  return round / 1609.344;
+  return (meters*2) / 1609.344;
 }
 async function geocodeNominatim(q){
   const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`;
@@ -991,7 +934,7 @@ function mileageLabel(){
 /* ---------- UI helpers ---------- */
 function card(inner, span='span-12'){ const c=document.createElement('section'); c.className='card '+span; c.innerHTML=inner; return c; }
 
-/* ---------- Done ---------- */
+/* ---------- End ---------- */
 </script>
 </body>
 </html>
